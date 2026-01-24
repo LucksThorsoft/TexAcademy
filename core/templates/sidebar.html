@@ -65,11 +65,11 @@
                 <div class="profile-details">
                     <i class="mdi mdi-account"></i>
                     <div class="name_job">
-                        <div class="name">Juan Pilingas</div>
+                        <div class="name">{{ request.session.usuario_nombre|default:"Usuario" }}</div>
                         <div class="job">Docente</div>
                     </div>
                 </div>
-                <i class='mdi mdi-logout' id="log_out"></i>
+                <i class='mdi mdi-logout' id="log_out" onclick="window.location.href='/logout/'" style="cursor: pointer;"></i>
             </li>
         </ul>
     </div>
@@ -141,7 +141,7 @@
             height: 60px;
             display: flex;
             align-items: center;
-            /* justify-content: space-between;  <-- ELIMINADO para manejar mejor el espaciado manual */
+            /* justify-content: space-between; */
             position: relative;
             background-color: #1d1b31;
             overflow: hidden;
@@ -153,27 +153,23 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        /* ----- ESTILOS NUEVOS PARA EL LOGO ----- */
+        /* LOGO */
         .sidebar .logo-details .logo_icon_box {
             min-width: 40px;
             height: 40px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); /* Color resaltado */
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             margin-right: 12px;
             transition: all 0.5s ease;
-            opacity: 0; /* Oculto por defecto cuando está cerrado para no chocar con el icono menú */
+            opacity: 0;
         }
         
         .sidebar.open .logo-details .logo_icon_box {
-            opacity: 1; /* Visible solo al abrir */
+            opacity: 1;
         }
-
-        /* Si prefieres que el logo se vea SIEMPRE (incluso cerrado), 
-           cambia opacity: 0 a opacity: 1 en la clase de arriba 
-           y ajusta el padding de .logo-details */
         
         .sidebar .logo-details .logo_icon_box i {
             color: #fff;
@@ -182,7 +178,6 @@
             min-width: auto;
             line-height: normal;
         }
-        /* --------------------------------------- */
 
         .sidebar .logo-details .logo_name {
             color: #fff;
@@ -380,7 +375,6 @@
             width: calc(100% - 250px);
         }
 
-        /* HEADER */
         .top-header {
             background-color: #ffffff;
             height: 70px;
