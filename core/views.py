@@ -24,3 +24,5 @@ def estadisticas(request):
 
 def alertas(request):
     return render(request, "alertas.html")
+
+
