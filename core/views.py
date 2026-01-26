@@ -25,14 +25,20 @@ def estadisticas(request):
 def alertas(request):
     return render(request, "alertas.html")
 
+def sidebar(request):
+    return render(request, "sidebar.html")
+
+
+from django.shortcuts import render, redirect
+from django.contrib import messages
+# Asegúrate de importar tus modelos correctamente
+from .models import Usuario, UsuarioRol 
 
 def login_view(request):
-    # Si el usuario ya está logueado, lo mandamos directo al dashboard
     if request.session.get('usuario_id'):
-        return redirect('/dashboard')
+        return redirect('/sidebar')
 
     if request.method == 'POST':
-        # Capturamos los datos directamente de los inputs HTML por su 'name'
         correo = request.POST.get('correo')
         password = request.POST.get('password')
 
@@ -42,17 +48,25 @@ def login_view(request):
             try:
                 usuario = Usuario.objects.get(correo=correo)
                 
-                # Verificar contraseña (asegúrate de que en la BD estén hasheadas)
-                # Si en tu BD las tienes como texto plano (mal práctica pero posible),
-                # cambia esta línea por: if password == usuario.password:
-                # if check_password(password, usuario.password):
+                # Validación de contraseña (simple, como la tenías)
                 if password == usuario.password:
                     # --- ÉXITO ---
                     request.session['usuario_id'] = usuario.id
                     request.session['usuario_nombre'] = usuario.nombre
-                    # Opcional: Guardar rol si lo necesitas
-                    # request.session['usuario_rol'] = ... 
-                    return redirect('/dashboard')
+                    
+                    # --- AQUÍ ESTÁ EL CAMBIO ---
+                    # Buscamos en la tabla intermedia UsuarioRol
+                    # Usamos .filter().first() para evitar errores si no tiene rol asignado
+                    relacion = UsuarioRol.objects.filter(usuario=usuario).first()
+                    
+                    if relacion:
+                        # Si existe relación, guardamos el nombre del rol (ej: "Docente")
+                        request.session['usuario_rol'] = relacion.rol.nombre
+                    else:
+                        # Si no tiene rol asignado en la BD, ponemos un default
+                        request.session['usuario_rol'] = "Sin Asignar"
+
+                    return redirect('/sidebar')
                 else:
                     messages.error(request, 'Contraseña incorrecta.')
             
