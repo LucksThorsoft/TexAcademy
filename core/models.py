@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 
 
 # -------------------------
@@ -99,6 +100,7 @@ class Actividad(models.Model):
     descripcion = models.TextField()
     parcial = models.ForeignKey(Parcial, on_delete=models.CASCADE)
     fecha_entrega = models.DateField()
+    hora_entrega = models.TimeField(default=timezone.now)
 
 
 class Entrega(models.Model):
