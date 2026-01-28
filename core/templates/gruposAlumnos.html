@@ -4,7 +4,7 @@
 
 {% block content %}
 <style>
-    /* Estilos generales */
+    /* Tus estilos actuales se mantienen igual */
     .page-title {
         margin-bottom: 30px;
     }
@@ -48,30 +48,13 @@
         color: #333;
     }
     
-    /* Grid de grupos - MODIFICADO */
+    /* Grid de grupos */
     .groups-grid {
         display: grid;
-        /* Auto-fit se adapta al número de elementos, min 300px, max 1fr */
         grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
         gap: 20px;
         margin-bottom: 40px;
-        /* Asegura que use todo el espacio disponible */
         width: 100%;
-    }
-    
-    /* Opción alternativa más flexible */
-    .groups-flex-container {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 20px;
-        margin-bottom: 40px;
-    }
-    
-    .group-card-flex {
-        flex: 1;
-        min-width: 300px;
-        /* Esto hace que las tarjetas crezcan uniformemente */
-        flex-grow: 1;
     }
     
     /* Grid de alumnos (inicialmente oculto) */
@@ -88,9 +71,8 @@
         background: white;
         border-radius: 12px;
         padding: 20px;
-        border: 2px solid #d8d8d8;
+        border: 2px solid #e4e4e4;
         transition: transform 0.2s ease, box-shadow 0.2s ease;
-        /* Asegura que las tarjetas crezcan */
         height: 100%;
         box-sizing: border-box;
     }
@@ -104,6 +86,43 @@
         border-bottom: 1px solid #eee;
         padding-bottom: 15px;
         margin-bottom: 15px;
+    }
+
+    .group-header {
+        border-bottom: 1px solid #eee;
+        padding-bottom: 15px;
+        margin-bottom: 15px;
+    }
+
+    .group-header-main {
+        display: flex;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+
+    .group-clave {
+        color: #333;
+        font-size: 16px;
+        font-weight: 600;
+        margin-right: 10px;
+        white-space: nowrap;
+    }
+
+    .group-clave-separator {
+        color: #666;
+        margin-right: 10px;
+        font-weight: 500;
+    }
+
+    .materia-item {
+        color: #666;
+        font-size: 13px;
+        line-height: 1.4;
+        margin-bottom: 2px;
+    }
+
+    .materia-item:last-child {
+        margin-bottom: 0;
     }
     
     .group-name, .student-name {
@@ -119,6 +138,21 @@
         color: #666;
         font-size: 14px;
     }
+
+    .group-meta {
+        display: flex;
+        justify-content: space-between;
+        color: #666;
+        font-size: 14px;
+        margin-top: 5px;
+    }
+
+    /* .materias-columns {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 5px 15px;
+        margin-top: 8px;
+    } */
     
     /* Estadísticas */
     .group-stats {
@@ -132,6 +166,7 @@
         font-size: 22px;
         color: #333;
         line-height: 1.2;
+        font-weight: 600;
     }
     
     .stat-label {
@@ -155,58 +190,7 @@
         font-size: 12px;
     }
     
-    /* Información del alumno */
-    .student-info {
-        margin-bottom: 15px;
-    }
-    
-    .student-info-row {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 8px;
-        font-size: 14px;
-    }
-    
-    .info-label {
-        color: #666;
-    }
-    
-    .info-value {
-        color: #333;
-        font-weight: 500;
-    }
-    
-    .status-badge {
-        display: inline-block;
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 500;
-        margin-top: 5px;
-    }
-    
-    .status-ok {
-        background: #e8f5e9;
-        color: #2e7d32;
-    }
-    
-    .status-warning {
-        background: #fff3e0;
-        color: #e65100;
-    }
-    
-    .status-danger {
-        background: #ffebee;
-        color: #c62828;
-    }
-    
-    /* Opcional: Mejoras para diferentes tamaños de zoom */
-    @media (max-width: 1200px) {
-        .groups-grid {
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        }
-    }
-    
+    /* Responsive */
     @media (max-width: 768px) {
         .groups-grid {
             grid-template-columns: 1fr;
@@ -237,110 +221,59 @@
 
 <!-- Vista de Grupos (visible por defecto) -->
 <div id="groupsView" class="view-content">
-    <!-- VERSIÓN CON GRID (recomendada) -->
     <div class="groups-grid">
-        <!-- Grupo 1 -->
+        {% for grupo in grupos %}
         <div class="group-card">
             <div class="group-header">
-                <div class="group-name">Ingeniería en Software - 5A</div>
+                <div class="group-header-main">
+                    <span class="group-clave">{{ grupo.clave }}</span>
+                    <span class="group-clave-separator">|</span>
+                </div>
+                
+                {% if grupo.materias %}
+                <div class="materias-columns">
+                    {% for materia in grupo.materias %}
+                    <div class="materia-item">{{ materia }}</div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
                 <div class="group-meta">
-                    <span>32 alumnos</span>
+                    <span>{{ grupo.num_alumnos }} alumnos</span>
                 </div>
             </div>
             
             <div class="group-stats">
                 <div class="stat-item promedio">
                     <div class="stat-label">Promedio Grupal</div>
-                    <div class="stat-value">78</div>
+                    <div class="stat-value">--</div>
                 </div>
                 
                 <div class="stat-item riesgo">
                     <div class="stat-label">En Riesgo</div>
-                    <div class="stat-value">5</div>
+                    <div class="stat-value">--</div>
                 </div>
             </div>
             
             <div class="attention-btn">
-                <span>5 alumnos requieren atención</span>
+                <span>-- alumnos requieren atención</span>
             </div>
         </div>
-        
-        <!-- Grupo 2 -->
-        <div class="group-card">
-            <div class="group-header">
-                <div class="group-name">Sistemas Computacionales - 3B</div>
-                <div class="group-meta">
-                    <span>28 alumnos</span>
-                </div>
-            </div>
-            
-            <div class="group-stats">
-                <div class="stat-item promedio">
-                    <div class="stat-label">Promedio Grupal</div>
-                    <div class="stat-value">82</div>
-                </div>
-                
-                <div class="stat-item riesgo">
-                    <div class="stat-label">En Riesgo</div>
-                    <div class="stat-value">3</div>
-                </div>
-            </div>
-            
-            <div class="attention-btn">
-                <span>3 alumnos requieren atención</span>
-            </div>
+        {% empty %}
+        <div class="no-groups">
+            <p>No hay grupos registrados en el sistema.</p>
         </div>
-        
-        <!-- Grupo 3 -->
-        <div class="group-card">
-            <div class="group-header">
-                <div class="group-name">Desarrollo Web - 7C</div>
-                <div class="group-meta">
-                    <span>25 alumnos</span>
-                </div>
-            </div>
-            
-            <div class="group-stats">
-                <div class="stat-item promedio">
-                    <div class="stat-label">Promedio Grupal</div>
-                    <div class="stat-value">85</div>
-                </div>
-                
-                <div class="stat-item riesgo">
-                    <div class="stat-label">En Riesgo</div>
-                    <div class="stat-value">2</div>
-                </div>
-            </div>
-            
-            <div class="attention-btn">
-                <span>2 alumnos requieren atención</span>
-            </div>
-        </div>
+        {% endfor %}
     </div>
-    
-    <!-- OPCIÓN ALTERNATIVA CON FLEXBOX (descomentar si prefieres) -->
-    <!--
-    <div class="groups-flex-container">
-        <div class="group-card group-card-flex">
-            Grupo 1
-        </div>
-        <div class="group-card group-card-flex">
-            Grupo 2
-        </div>
-        <div class="group-card group-card-flex">
-            Grupo 3
-        </div>
-    </div>
-    -->
 </div>
 
 <!-- Vista de Todos los Alumnos (oculta por defecto) -->
 <div id="studentsView" class="view-content" style="display: none;">
     <div class="students-grid">
-        <!-- Ejemplo de tarjeta de alumno 1 -->
+        <!-- Aquí puedes agregar el contenido dinámico de alumnos cuando lo necesites -->
         <div class="student-card">
             <div class="student-header">
-                <div class="student-name">Ana García López</div>
+                <div class="student-name">Ejemplo Alumno</div>
                 <div class="student-meta">
                     <span>Matrícula: A12345</span>
                 </div>
@@ -349,73 +282,13 @@
             <div class="student-info">
                 <div class="student-info-row">
                     <span class="info-label">Grupo:</span>
-                    <span class="info-value">Ing. Software - 5A</span>
+                    <span class="info-value">Ejemplo Grupo</span>
                 </div>
                 <div class="student-info-row">
                     <span class="info-label">Promedio:</span>
-                    <span class="info-value">65</span>
-                </div>
-                <div class="student-info-row">
-                    <span class="info-label">Asistencias:</span>
-                    <span class="info-value">85%</span>
+                    <span class="info-value">--</span>
                 </div>
             </div>
-            
-            <div class="status-badge status-warning">Requiere atención</div>
-        </div>
-        
-        <!-- Ejemplo de tarjeta de alumno 2 -->
-        <div class="student-card">
-            <div class="student-header">
-                <div class="student-name">Carlos Martínez Ruiz</div>
-                <div class="student-meta">
-                    <span>Matrícula: A12346</span>
-                </div>
-            </div>
-            
-            <div class="student-info">
-                <div class="student-info-row">
-                    <span class="info-label">Grupo:</span>
-                    <span class="info-value">Sis. Computacionales - 3B</span>
-                </div>
-                <div class="student-info-row">
-                    <span class="info-label">Promedio:</span>
-                    <span class="info-value">58</span>
-                </div>
-                <div class="student-info-row">
-                    <span class="info-label">Asistencias:</span>
-                    <span class="info-value">72%</span>
-                </div>
-            </div>
-            
-            <div class="status-badge status-danger">En riesgo</div>
-        </div>
-        
-        <!-- Ejemplo de tarjeta de alumno 3 -->
-        <div class="student-card">
-            <div class="student-header">
-                <div class="student-name">María Rodríguez Sánchez</div>
-                <div class="student-meta">
-                    <span>Matrícula: A12347</span>
-                </div>
-            </div>
-            
-            <div class="student-info">
-                <div class="student-info-row">
-                    <span class="info-label">Grupo:</span>
-                    <span class="info-value">Desarrollo Web - 7C</span>
-                </div>
-                <div class="student-info-row">
-                    <span class="info-label">Promedio:</span>
-                    <span class="info-value">92</span>
-                </div>
-                <div class="student-info-row">
-                    <span class="info-label">Asistencias:</span>
-                    <span class="info-value">98%</span>
-                </div>
-            </div>
-            
-            <div class="status-badge status-ok">Excelente</div>
         </div>
     </div>
 </div>
