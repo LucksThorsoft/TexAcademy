@@ -19,6 +19,31 @@
             <i class='mdi mdi-menu' id="btn"></i>
         </div>
         <ul class="nav-list">
+            {% if 'Director' in request.session.usuario_roles %}
+            <li>
+                <a href="/director">
+                    <i class="mdi mdi-crown"></i>
+                    <span class="links_name">Director de Carrera</span>
+                </a>
+            </li>
+            {% endif %}
+            {% if 'Tutor' in request.session.usuario_roles %}
+            <li>
+                <a href="/tutor">
+                    <i class="mdi mdi-police-badge-outline"></i>
+                    <span class="links_name">Tutor</span>
+                </a>
+            </li>
+            {% endif %}
+            {% if 'Pedagogia' in request.session.usuario_roles %}
+            <li>
+                <a href="/pedagogia">
+                    <i class="mdi mdi-human-male-board"></i>
+                    <span class="links_name">Pedagogia</span>
+                </a>
+            </li>
+            {% endif %}
+            {% if 'Docente' in request.session.usuario_roles %}
             <li>
                 <a href="/dashboard">
                     <i class='mdi mdi-view-dashboard-outline'></i>
@@ -61,12 +86,13 @@
                 </a>
                 <span class="tooltip">Alertas</span>
             </li>
+            {% endif %}
             <li class="profile">
                 <div class="profile-details">
                     <i class="mdi mdi-account"></i>
                     <div class="name_job">
                         <div class="name">{{ request.session.usuario_nombre|default:"Usuario" }}</div>
-                        <div class="job">{{request.session.usuario_rol|default:"Usuario"}}</div>
+                        <div class="job">{{ request.session.usuario_roles|join:", "|default:"Sin Rol" }}</div>
                     </div>
                 </div>
                 <i class='mdi mdi-logout' id="log_out" onclick="window.location.href='/logout/'" style="cursor: pointer;"></i>

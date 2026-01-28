@@ -11,6 +11,8 @@ urlpatterns = [
     path('estadisticas', views.estadisticas),
     path('alertas', views.alertas),
     path('sidebar', views.sidebar),
-
+    path('director', views.director),
+    path('tutor', views.tutor),
+    path('pedagogia', views.pedagogia),
     
 ]
