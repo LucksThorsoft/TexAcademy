@@ -11,7 +11,57 @@ def dashboard(request):
     return render(request, "dashboard.html")
 
 def gruposAlumnos(request):
-    return render(request, "gruposAlumnos.html")
+    # Verificar si el usuario está autenticado
+    if not request.session.get('usuario_id'):
+        return redirect('login')
+    
+    # Obtener el usuario actual desde la sesión
+    usuario_id = request.session.get('usuario_id')
+    
+    try:
+        # Obtener el usuario
+        usuario = Usuario.objects.get(id=usuario_id)
+        
+        # Obtener todas las materias que imparte este docente por grupo
+        grupos_docente = GrupoDocenteMateria.objects.filter(
+            docente=usuario
+        ).select_related('grupo', 'materia').order_by('grupo__clave', 'materia__nombre')
+        
+        # Estructura para agrupar materias por grupo
+        grupos_dict = {}
+        
+        for gdm in grupos_docente:
+            grupo = gdm.grupo
+            materia = gdm.materia
+            
+            # Si el grupo no está en el diccionario, lo inicializamos
+            if grupo.clave not in grupos_dict:
+                # Contar alumnos en este grupo
+                num_alumnos = Alumno.objects.filter(grupo=grupo).count()
+                
+                grupos_dict[grupo.clave] = {
+                    'clave': grupo.clave,
+                    'materias': [],  # Lista de materias que imparte este docente
+                    'num_alumnos': num_alumnos,
+                    'grupo_id': grupo.id,  # Para posibles enlaces futuros
+                }
+            
+            # Agregar la materia a la lista de materias del grupo
+            grupos_dict[grupo.clave]['materias'].append(materia.nombre)
+        
+        # Convertir el diccionario a lista
+        grupos_data = list(grupos_dict.values())
+        
+        context = {
+            'grupos': grupos_data,
+            'docente_nombre': usuario.nombre
+        }
+        
+    except Usuario.DoesNotExist:
+        # Si el usuario no existe, redirigir al login
+        return redirect('login')
+    
+    return render(request, "gruposAlumnos.html", context)
 
 def actividades(request):
     return render(request, "actividades.html")
