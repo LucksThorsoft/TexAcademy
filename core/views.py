@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.hashers import check_password
+from django.views.decorators.http import require_POST
 from .forms import *
 from .models import *
 
@@ -79,7 +80,60 @@ def sidebar(request):
     return render(request, "sidebar.html")
 
 def director(request):
-    return render(request, "director.html")
+    if not request.session.get('usuario_id'):
+        return redirect('login')
+
+    roles = request.session.get('usuario_roles', [])
+    if 'Director' not in roles:
+        return redirect('dashboard')
+
+    form = DocenteForm()
+
+    relaciones = GrupoDocenteMateria.objects.select_related(
+        'grupo', 'materia', 'docente'
+    ).order_by('grupo__clave', 'materia__nombre')
+
+    grupos_data = []
+
+    for rel in relaciones:
+        grupo = rel.grupo
+        num_alumnos = Alumno.objects.filter(grupo=grupo).count()
+
+        grupos_data.append({
+            'clave': grupo.clave,
+            'materia': rel.materia.nombre,
+            'docente': rel.docente.nombre,
+            'num_alumnos': num_alumnos,
+            'tutor': grupo.tutor.nombre if grupo.tutor else 'Sin tutor',
+        })
+
+    return render(request, "director.html", {
+        "form": form,
+        "grupos": grupos_data
+    })
+
+    
+@require_POST
+def new_user(request):
+    if not request.session.get('usuario_id'):
+        return redirect('login')
+
+    roles = request.session.get('usuario_roles', [])
+    if 'Director' not in roles:
+        return redirect('dashboard')
+
+    form = DocenteForm(request.POST)
+
+    if form.is_valid():
+        usuario = form.save()
+
+        rol_docente, _ = Rol.objects.get_or_create(nombre="Docente")
+        UsuarioRol.objects.create(
+            usuario=usuario,
+            rol=rol_docente
+        )
+
+    return redirect('director')
 
 def tutor(request):
     return render(request, "tutor.html")
