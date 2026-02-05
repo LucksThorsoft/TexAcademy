@@ -109,7 +109,6 @@ def login_view(request):
     if request.method == 'POST':
         correo = request.POST.get('correo')
         password = request.POST.get('password')
-        # ... validaciones de campos vacíos ...
 
         try:
             usuario = Usuario.objects.get(correo=correo)
@@ -147,5 +146,5 @@ def login_view(request):
     return render(request, "login.html")
 
 def logout_view(request):
-    request.session.flush() # Borra toda la sesión
+    request.session.flush()
     return redirect('login')
