@@ -11,33 +11,55 @@ def dashboard(request):
     return render(request, "dashboard.html")
 
 def gruposAlumnos(request):
-    # Obtener todos los grupos
-    grupos = Grupo.objects.all()
+    # Verificar si el usuario está autenticado
+    if not request.session.get('usuario_id'):
+        return redirect('login')
     
-    # Preparar datos para cada grupo
-    grupos_data = []
+    # Obtener el usuario actual desde la sesión
+    usuario_id = request.session.get('usuario_id')
     
-    for grupo in grupos:
-        # Contar alumnos en este grupo
-        num_alumnos = Alumno.objects.filter(grupo=grupo).count()
+    try:
+        # Obtener el usuario
+        usuario = Usuario.objects.get(id=usuario_id)
         
-        # Obtener TODAS las materias asociadas a este grupo
-        materias_grupo = GrupoDocenteMateria.objects.filter(
-            grupo=grupo
-        ).select_related('materia').order_by('materia__nombre')
+        # Obtener todas las materias que imparte este docente por grupo
+        grupos_docente = GrupoDocenteMateria.objects.filter(
+            docente=usuario
+        ).select_related('grupo', 'materia').order_by('grupo__clave', 'materia__nombre')
         
-        # Obtener lista de nombres de materias
-        materias_nombres = [gd.materia.nombre for gd in materias_grupo]
+        # Estructura para agrupar materias por grupo
+        grupos_dict = {}
         
-        grupos_data.append({
-            'clave': grupo.clave,  # "5A", "3B", etc.
-            'materias': materias_nombres,  # Lista de nombres de materias
-            'num_alumnos': num_alumnos,
-        })
-    
-    context = {
-        'grupos': grupos_data
-    }
+        for gdm in grupos_docente:
+            grupo = gdm.grupo
+            materia = gdm.materia
+            
+            # Si el grupo no está en el diccionario, lo inicializamos
+            if grupo.clave not in grupos_dict:
+                # Contar alumnos en este grupo
+                num_alumnos = Alumno.objects.filter(grupo=grupo).count()
+                
+                grupos_dict[grupo.clave] = {
+                    'clave': grupo.clave,
+                    'materias': [],  # Lista de materias que imparte este docente
+                    'num_alumnos': num_alumnos,
+                    'grupo_id': grupo.id,  # Para posibles enlaces futuros
+                }
+            
+            # Agregar la materia a la lista de materias del grupo
+            grupos_dict[grupo.clave]['materias'].append(materia.nombre)
+        
+        # Convertir el diccionario a lista
+        grupos_data = list(grupos_dict.values())
+        
+        context = {
+            'grupos': grupos_data,
+            'docente_nombre': usuario.nombre
+        }
+        
+    except Usuario.DoesNotExist:
+        # Si el usuario no existe, redirigir al login
+        return redirect('login')
     
     return render(request, "gruposAlumnos.html", context)
 

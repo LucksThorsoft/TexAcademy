@@ -4,7 +4,7 @@
 
 {% block content %}
 <style>
-    /* Tus estilos actuales se mantienen igual */
+    /* Estilos generales */
     .page-title {
         margin-bottom: 30px;
     }
@@ -87,58 +87,37 @@
         padding-bottom: 15px;
         margin-bottom: 15px;
     }
-
-    .group-header {
-        border-bottom: 1px solid #eee;
-        padding-bottom: 15px;
-        margin-bottom: 15px;
-    }
-
+    
     .group-header-main {
         display: flex;
         align-items: center;
+        flex-wrap: wrap;
         margin-bottom: 8px;
     }
-
-    .group-clave {
+    
+    /* Materia en negritas a la izquierda */
+    .materia-principal {
         color: #333;
         font-size: 16px;
         font-weight: 600;
-        margin-right: 10px;
-        white-space: nowrap;
+        margin-right: 8px;
     }
-
-    .group-clave-separator {
+    
+    /* Separador */
+    .group-separator {
         color: #666;
-        margin-right: 10px;
+        margin-right: 8px;
         font-weight: 500;
     }
-
-    .materia-item {
-        color: #666;
-        font-size: 13px;
-        line-height: 1.4;
-        margin-bottom: 2px;
-    }
-
-    .materia-item:last-child {
-        margin-bottom: 0;
-    }
     
-    .group-name, .student-name {
-        color: #333;
+    /* Grupo sin negritas a la derecha */
+    .group-clave {
+        color: #666;
         font-size: 16px;
-        font-weight: 600;
-        margin-bottom: 5px;
+        font-weight: 400;
     }
     
-    .group-meta, .student-meta {
-        display: flex;
-        justify-content: space-between;
-        color: #666;
-        font-size: 14px;
-    }
-
+    /* Número de alumnos */
     .group-meta {
         display: flex;
         justify-content: space-between;
@@ -146,13 +125,6 @@
         font-size: 14px;
         margin-top: 5px;
     }
-
-    /* .materias-columns {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-        gap: 5px 15px;
-        margin-top: 8px;
-    } */
     
     /* Estadísticas */
     .group-stats {
@@ -179,7 +151,7 @@
         color: #DC2626;
     }
     
-    /* Botón de atención */
+    /* Botón de atención - Regresar al diseño original */
     .attention-btn {
         display: flex;
         align-items: center;
@@ -210,34 +182,48 @@
         .view-option {
             padding: 8px 20px;
         }
+        
+        .group-header-main {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .materia-principal,
+        .group-separator,
+        .group-clave {
+            margin-bottom: 2px;
+        }
     }
 </style>
 
 <!-- Switch de vista -->
 <div class="view-switch" id="viewSwitch">
-    <button class="view-option active" data-view="groups">Grupos</button>
+    <button class="view-option active" data-view="groups">Mis Grupos</button>
     <button class="view-option" data-view="students">Todos los Alumnos</button>
 </div>
 
-<!-- Vista de Grupos (visible por defecto) -->
+<!-- Vista de Mis Grupos (visible por defecto) -->
 <div id="groupsView" class="view-content">
     <div class="groups-grid">
         {% for grupo in grupos %}
         <div class="group-card">
             <div class="group-header">
+                <!-- Formato: [Materia en negritas] | [Grupo sin negritas] -->
                 <div class="group-header-main">
-                    <span class="group-clave">{{ grupo.clave }}</span>
-                    <span class="group-clave-separator">|</span>
+                    {% if grupo.materias %}
+                        <!-- Mostrar la PRIMERA materia en negritas -->
+                        <span class="materia-principal">{{ grupo.materias.0 }}</span>
+                        <span class="group-separator">|</span>
+                        <span class="group-clave">{{ grupo.clave }}</span>
+                    {% else %}
+                        <!-- Si no hay materias, mostrar solo el grupo -->
+                        <span class="materia-principal">Sin materia</span>
+                        <span class="group-separator">|</span>
+                        <span class="group-clave">{{ grupo.clave }}</span>
+                    {% endif %}
                 </div>
                 
-                {% if grupo.materias %}
-                <div class="materias-columns">
-                    {% for materia in grupo.materias %}
-                    <div class="materia-item">{{ materia }}</div>
-                    {% endfor %}
-                </div>
-                {% endif %}
-                
+                <!-- Número de alumnos -->
                 <div class="group-meta">
                     <span>{{ grupo.num_alumnos }} alumnos</span>
                 </div>
@@ -255,13 +241,21 @@
                 </div>
             </div>
             
+            <!-- Botón de atención rojo -->
             <div class="attention-btn">
                 <span>-- alumnos requieren atención</span>
             </div>
         </div>
         {% empty %}
         <div class="no-groups">
-            <p>No hay grupos registrados en el sistema.</p>
+            <div style="text-align: center; padding: 40px;">
+                <p style="color: #666; font-size: 16px; margin-bottom: 10px;">
+                    No tienes grupos asignados
+                </p>
+                <p style="color: #999; font-size: 14px;">
+                    Contacta con el administrador para que te asigne grupos y materias
+                </p>
+            </div>
         </div>
         {% endfor %}
     </div>
@@ -270,25 +264,14 @@
 <!-- Vista de Todos los Alumnos (oculta por defecto) -->
 <div id="studentsView" class="view-content" style="display: none;">
     <div class="students-grid">
-        <!-- Aquí puedes agregar el contenido dinámico de alumnos cuando lo necesites -->
-        <div class="student-card">
-            <div class="student-header">
-                <div class="student-name">Ejemplo Alumno</div>
-                <div class="student-meta">
-                    <span>Matrícula: A12345</span>
-                </div>
-            </div>
-            
-            <div class="student-info">
-                <div class="student-info-row">
-                    <span class="info-label">Grupo:</span>
-                    <span class="info-value">Ejemplo Grupo</span>
-                </div>
-                <div class="student-info-row">
-                    <span class="info-label">Promedio:</span>
-                    <span class="info-value">--</span>
-                </div>
-            </div>
+        <!-- Contenido dinámico de alumnos -->
+        <div style="text-align: center; padding: 40px;">
+            <p style="color: #666; font-size: 16px;">
+                Vista de todos los alumnos (en desarrollo)
+            </p>
+            <p style="color: #999; font-size: 14px;">
+                Esta funcionalidad estará disponible próximamente
+            </p>
         </div>
     </div>
 </div>
