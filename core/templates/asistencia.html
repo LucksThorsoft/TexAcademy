@@ -3,5 +3,782 @@
 {% block header_title %}Asistencia{% endblock %}
 
 {% block content %}
-    <h1>Aqui va la seccion de Asistencia</h1>
+    <!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Asistencia</title>
+    <script src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/js/all.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        body {
+            background-color: #f1f5f9;
+            margin: 0;
+            padding: 20px;
+            color: #1e293b;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            background-color: #e2e8f0;
+            padding: 4px;
+            border-radius: 12px;
+            width: fit-content;
+            margin-bottom: 10px;
+        }
+
+        .tab {
+            padding: 8px 32px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #64748b;
+            text-align: center;
+        }
+
+        .tab:hover {
+            background-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .tab.active {
+            background-color: white;
+            color: #1e293b;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        /* Contenido de las pestañas */
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Estilos para la vista de Registro Diario */
+        .card {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .header-section {
+            margin-bottom: 32px;
+        }
+
+        .header-section h1 {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0 0 4px 0;
+            color: #1e293b;
+        }
+
+        .header-section p {
+            font-size: 14px;
+            color: #64748b;
+            margin: 0;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+
+        .select-wrapper, .date-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .custom-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid transparent;
+            background-color: transparent;
+            font-size: 14px;
+            color: #1e293b;
+            border-radius: 8px;
+            appearance: none;
+            cursor: pointer;
+        }
+
+        .select-wrapper::after {
+            content: '\f078';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 12px;
+            color: #94a3b8;
+            pointer-events: none;
+        }
+
+        .date-wrapper i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #64748b;
+            font-size: 16px;
+        }
+
+        .date-wrapper input {
+            padding-left: 36px;
+            border: none;
+            font-family: inherit;
+            font-size: 14px;
+            color: #1e293b;
+            outline: none;
+        }
+
+        /* Tabla para Registro Diario */
+        .table-container {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f8fafc;
+            padding: 12px 16px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #64748b;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        td {
+            padding: 12px 16px;
+            font-size: 14px;
+            color: #1e293b;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .student-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: #e0e7ff;
+            color: #4338ca;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .matricula {
+            color: #64748b;
+        }
+
+        .status-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+
+        .btn-status {
+            width: 44px;
+            height: 32px;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+            background-color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+
+        .btn-status.active-check {
+            background-color: #dcfce7;
+            border-color: #bbf7d0;
+            color: #16a34a;
+        }
+
+        .btn-status.active-late {
+            background-color: #fef3c7;
+            border-color: #fde68a;
+            color: #d97706;
+        }
+
+        .btn-status.active-absent {
+            background-color: #fee2e2;
+            border-color: #fecaca;
+            color: #dc2626;
+        }
+
+        .btn-status i {
+            pointer-events: none;
+        }
+
+        .btn-status.inactive {
+            color: #64748b;
+        }
+
+        /* Summary Bar para Registro Diario */
+        .summary-bar {
+            background-color: #f8fafc;
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            justify-content: space-around;
+            margin-top: 24px;
+        }
+
+        .summary-item {
+            text-align: center;
+        }
+
+        .summary-value {
+            font-size: 24px;
+            font-weight: 600;
+            display: block;
+        }
+
+        .summary-label {
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .val-asistencias { color: #16a34a; }
+        .val-retardos { color: #b45309; }
+        .val-faltas { color: #dc2626; }
+
+        /* Footer Button para Registro Diario */
+        .footer-action {
+            margin-top: 24px;
+        }
+
+        .btn-save {
+            width: 100%;
+            background-color: #1d4ed8;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-save:hover {
+            background-color: #1e40af;
+        }
+
+        /* Estilos para la vista de Historial */
+        .historial-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 30px;
+        }
+
+        .historial-title-area h1 {
+            margin: 0;
+            font-size: 18px;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .historial-title-area p {
+            margin: 5px 0 0 0;
+            font-size: 14px;
+            color: #95a5a6;
+        }
+
+        .dropdown {
+            font-size: 13px;
+            color: #7f8c8d;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Tabla para Historial */
+        .historial-table th {
+            background-color: #f8fafc;
+            text-align: left;
+            padding: 15px 30px;
+            font-size: 12px;
+            text-transform: capitalize;
+            color: #2c3e50;
+            font-weight: 700;
+            border-bottom: 1px solid #edf2f7;
+        }
+
+        .historial-table td {
+            padding: 15px 30px;
+            font-size: 14px;
+            border-bottom: 1px solid #edf2f7;
+            vertical-align: middle;
+        }
+
+        .student-name {
+            font-weight: 500;
+            color: #34495e;
+            display: block;
+        }
+
+        .student-id {
+            font-size: 12px;
+            color: #95a5a6;
+            display: block;
+            margin-top: 2px;
+        }
+
+        .stat-box {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 32px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        .bg-green-light { background-color: #e8f5e9; color: #2e7d32; }
+        .bg-red-light { background-color: #ffebee; color: #c62828; }
+        .bg-yellow-light { background-color: #fffde7; color: #f9a825; }
+        
+        .progress-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .progress-bar {
+            width: 60px;
+            height: 6px;
+            background-color: #f1f5f9;
+            border-radius: 3px;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 3px;
+        }
+
+        .progress-fill.green { background-color: #10b981; }
+        .progress-fill.orange { background-color: #f59e0b; }
+        
+        .percentage-text {
+            font-size: 13px;
+            color: #64748b;
+            min-width: 35px;
+        }
+
+        .badge {
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: capitalize;
+        }
+
+        .badge-blue { background-color: #2563eb; color: #fff; }
+        .badge-gray { background-color: #e2e8f0; color: #475569; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .status-actions {
+                justify-content: flex-start;
+            }
+            
+            .historial-header {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .historial-table th, 
+            .historial-table td {
+                padding: 10px 15px;
+            }
+            
+            .progress-bar {
+                display: none;
+            }
+            
+            .tabs {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .tab {
+                padding: 8px 16px;
+                flex: 1;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Menú de pestañas -->
+    <div class="tabs">
+        <div class="tab active" onclick="showTab('registro')">Registro Diario</div>
+        <div class="tab" onclick="showTab('historial')">Historial</div>
+    </div>
+
+    <!-- Contenido de Registro Diario -->
+    <div id="registro-tab" class="tab-content active">
+        <div class="card">
+            <div class="header-section">
+                <h1>Registro de Asistencia</h1>
+                <p>Marca la asistencia de tus alumnos</p>
+            </div>
+
+            <!-- Form Controls -->
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Grupo</label>
+                    <div class="select-wrapper">
+                        <select class="custom-input" id="grupoSelect">
+                            <option>Ingeniería en Software - 5A</option>
+                            <option>Ingeniería en Sistemas - 5B</option>
+                            <option>Ingeniería Civil - 4A</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Fecha</label>
+                    <div class="date-wrapper">
+                        <i class="fa-regular fa-calendar"></i>
+                        <input type="date" class="custom-input" id="fechaInput" value="2026-02-05">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Student Table -->
+            <div class="table-container">
+                <table id="tablaAsistencia">
+                    <thead>
+                        <tr>
+                            <th>Alumno</th>
+                            <th>Matrícula</th>
+                            <th style="text-align: right; padding-right: 40px;">Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaBody">
+                        <!-- Las filas se generarán dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Summary Bar -->
+            <div class="summary-bar">
+                <div class="summary-item">
+                    <span class="summary-value val-asistencias" id="totalAsistencias">0</span>
+                    <span class="summary-label">Asistencias</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-value val-retardos" id="totalRetardos">0</span>
+                    <span class="summary-label">Retardos</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-value val-faltas" id="totalFaltas">0</span>
+                    <span class="summary-label">Faltas</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Action -->
+        <div class="footer-action">
+            <button class="btn-save" onclick="guardarAsistencia()">Guardar Asistencia</button>
+        </div>
+    </div>
+
+    <!-- Contenido de Historial -->
+    <div id="historial-tab" class="tab-content">
+        <div class="card">
+            <div class="historial-header">
+                <div class="historial-title-area">
+                    <h1>Historial de Asistencia</h1>
+                    <p>Resumen acumulado por alumno</p>
+                </div>
+                <div class="dropdown">
+                    <select id="historialGrupo" class="custom-input" style="border: 1px solid #e2e8f0; padding: 8px 12px; border-radius: 8px;">
+                        <option>Ingeniería en Software - 5A</option>
+                        <option>Ingeniería en Sistemas - 5B</option>
+                        <option>Ingeniería Civil - 4A</option>
+                    </select>
+                </div>
+            </div>
+
+            <table class="historial-table">
+                <thead>
+                    <tr>
+                        <th>Alumno</th>
+                        <th>Asistencias</th>
+                        <th>Faltas</th>
+                        <th>Retardos</th>
+                        <th>Porcentaje</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody id="historialBody">
+                    <!-- Las filas se generarán dinámicamente -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Datos de ejemplo para estudiantes
+    const estudiantes = [
+        { id: 1, nombre: "Juan Pérez García", matricula: "A01234567", inicial: "J" },
+        { id: 2, nombre: "María López Hernández", matricula: "A01234568", inicial: "M" },
+        { id: 3, nombre: "Carlos Ramírez Torres", matricula: "A01234569", inicial: "C" },
+        { id: 4, nombre: "Ana Martínez Ruiz", matricula: "A01234570", inicial: "A" },
+        { id: 5, nombre: "Luis González Flores", matricula: "A01234571", inicial: "L" },
+        { id: 6, nombre: "Sofia Hernández Castro", matricula: "A01234572", inicial: "S" }
+    ];
+
+    // Datos de historial (simulación)
+    const historialData = [
+        { asistencias: 35, faltas: 8, retardos: 2, porcentaje: 81, estado: "Bueno" },
+        { asistencias: 30, faltas: 12, retardos: 3, porcentaje: 71, estado: "Regular" },
+        { asistencias: 38, faltas: 5, retardos: 2, porcentaje: 88, estado: "Bueno" },
+        { asistencias: 42, faltas: 2, retardos: 1, porcentaje: 95, estado: "Bueno" },
+        { asistencias: 39, faltas: 4, retardos: 2, porcentaje: 91, estado: "Bueno" },
+        { asistencias: 37, faltas: 6, retardos: 2, porcentaje: 86, estado: "Bueno" }
+    ];
+
+    // Estado actual de asistencias
+    let asistenciasActuales = {};
+
+    // Inicializar estado
+    function inicializarEstado() {
+        estudiantes.forEach(est => {
+            asistenciasActuales[est.id] = 'asistencia'; // valor por defecto
+        });
+        actualizarTablaAsistencia();
+        actualizarHistorial();
+    }
+
+    // Mostrar pestaña seleccionada
+    function showTab(tabName) {
+        // Actualizar pestañas
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        
+        // Activar pestaña clickeada
+        event.target.classList.add('active');
+        
+        // Mostrar contenido correspondiente
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.remove('active');
+        });
+        
+        document.getElementById(`${tabName}-tab`).classList.add('active');
+    }
+
+    // Actualizar tabla de asistencia
+    function actualizarTablaAsistencia() {
+        const tablaBody = document.getElementById('tablaBody');
+        tablaBody.innerHTML = '';
+        
+        estudiantes.forEach((est, index) => {
+            const estado = asistenciasActuales[est.id];
+            const row = document.createElement('tr');
+            
+            row.innerHTML = `
+                <td>
+                    <div class="student-info">
+                        <div class="avatar" style="background-color: ${getAvatarColor(index)}; color: ${getAvatarTextColor(index)};">${est.inicial}</div>
+                        <span>${est.nombre}</span>
+                    </div>
+                </td>
+                <td><span class="matricula">${est.matricula}</span></td>
+                <td>
+                    <div class="status-actions">
+                        <div class="btn-status ${estado === 'asistencia' ? 'active-check' : 'inactive'}" onclick="cambiarEstado(${est.id}, 'asistencia')">
+                            <i class="fa-solid fa-check"></i>
+                        </div>
+                        <div class="btn-status ${estado === 'retardo' ? 'active-late' : 'inactive'}" onclick="cambiarEstado(${est.id}, 'retardo')">
+                            <i class="fa-solid fa-minus"></i>
+                        </div>
+                        <div class="btn-status ${estado === 'falta' ? 'active-absent' : 'inactive'}" onclick="cambiarEstado(${est.id}, 'falta')">
+                            <i class="fa-solid fa-xmark"></i>
+                        </div>
+                    </div>
+                </td>
+            `;
+            
+            tablaBody.appendChild(row);
+        });
+        
+        actualizarResumen();
+    }
+
+    // Cambiar estado de asistencia
+    function cambiarEstado(id, nuevoEstado) {
+        asistenciasActuales[id] = nuevoEstado;
+        actualizarTablaAsistencia();
+    }
+
+    // Actualizar resumen de asistencias
+    function actualizarResumen() {
+        let asistencias = 0;
+        let retardos = 0;
+        let faltas = 0;
+        
+        Object.values(asistenciasActuales).forEach(estado => {
+            if (estado === 'asistencia') asistencias++;
+            else if (estado === 'retardo') retardos++;
+            else if (estado === 'falta') faltas++;
+        });
+        
+        document.getElementById('totalAsistencias').textContent = asistencias;
+        document.getElementById('totalRetardos').textContent = retardos;
+        document.getElementById('totalFaltas').textContent = faltas;
+    }
+
+    // Actualizar tabla de historial
+    function actualizarHistorial() {
+        const historialBody = document.getElementById('historialBody');
+        historialBody.innerHTML = '';
+        
+        estudiantes.forEach((est, index) => {
+            const datos = historialData[index];
+            const row = document.createElement('tr');
+            
+            row.innerHTML = `
+                <td>
+                    <span class="student-name">${est.nombre}</span>
+                    <span class="student-id">${est.matricula}</span>
+                </td>
+                <td><div class="stat-box bg-green-light">${datos.asistencias}</div></td>
+                <td><div class="stat-box bg-red-light">${datos.faltas}</div></td>
+                <td><div class="stat-box bg-yellow-light">${datos.retardos}</div></td>
+                <td>
+                    <div class="progress-container">
+                        <div class="progress-bar">
+                            <div class="progress-fill ${datos.porcentaje >= 80 ? 'green' : 'orange'}" style="width: ${datos.porcentaje}%;"></div>
+                        </div>
+                        <span class="percentage-text">${datos.porcentaje}%</span>
+                    </div>
+                </td>
+                <td><span class="badge ${datos.estado === 'Bueno' ? 'badge-blue' : 'badge-gray'}">${datos.estado}</span></td>
+            `;
+            
+            historialBody.appendChild(row);
+        });
+    }
+
+    // Guardar asistencia (simulación)
+    function guardarAsistencia() {
+        const fecha = document.getElementById('fechaInput').value;
+        const grupo = document.getElementById('grupoSelect').value;
+        
+        // Aquí normalmente enviarías los datos al servidor
+        console.log('Guardando asistencia:', {
+            fecha,
+            grupo,
+            asistencias: asistenciasActuales
+        });
+        
+        // Mostrar confirmación
+        alert(`Asistencia guardada exitosamente para ${grupo} - ${fecha}`);
+        
+        // Actualizar historial después de guardar
+        actualizarHistorial();
+    }
+
+    // Funciones auxiliares para colores de avatar
+    function getAvatarColor(index) {
+        const colors = ['#e0e7ff', '#fef3c7', '#d1fae5', '#fee2e2', '#ede9fe', '#fae8ff'];
+        return colors[index % colors.length];
+    }
+
+    function getAvatarTextColor(index) {
+        const colors = ['#4338ca', '#92400e', '#065f46', '#991b1b', '#5b21b6', '#86198f'];
+        return colors[index % colors.length];
+    }
+
+    // Inicializar al cargar la página
+    document.addEventListener('DOMContentLoaded', () => {
+        // Configurar fecha actual por defecto
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('fechaInput').value = today;
+        
+        // Inicializar estado
+        inicializarEstado();
+        
+        // Configurar eventos para cambios de grupo
+        document.getElementById('grupoSelect').addEventListener('change', actualizarTablaAsistencia);
+        document.getElementById('historialGrupo').addEventListener('change', actualizarHistorial);
+    });
+</script>
+
+</body>
+</html>
 {% endblock %}
+
