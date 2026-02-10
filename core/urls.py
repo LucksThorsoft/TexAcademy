@@ -15,5 +15,8 @@ urlpatterns = [
     path('tutor', views.tutor),
     path('pedagogia', views.pedagogia),
     path('director/new_user', views.new_user, name='new_user'),
+    path("grupo/nuevo/", views.new_group, name="new_group"),
+    path('materia/nueva/', views.new_materia, name='new_materia'),
+
     
 ]

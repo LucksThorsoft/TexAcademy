@@ -41,3 +41,55 @@ class DocenteForm(forms.ModelForm):
         if commit:
             usuario.save()
         return usuario
+    
+# forms.py
+class GrupoForm(forms.ModelForm):
+    archivo_alumnos = forms.FileField(
+        required=False,
+        label="Lista de alumnos (CSV)",
+        widget=forms.ClearableFileInput(attrs={
+            "accept": ".csv"
+        })
+    )
+
+    class Meta:
+        model = Grupo
+        fields = ["clave", "tutor"]
+        widgets = {
+            "clave": forms.TextInput(attrs={
+                "placeholder": "Clave del grupo"
+            }),
+            "tutor": forms.Select(attrs={
+                "class": "form-control"
+            })
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['tutor'].empty_label = "Selecciona un tutor"  # 👈 AQUÍ
+
+class GrupoDocenteMateriaForm(forms.Form):
+    nombre_materia = forms.CharField(
+        max_length=100,
+        widget=forms.TextInput(attrs={
+            'placeholder': 'Nombre de la materia',
+            'class': 'form-control'
+        })
+    )
+
+    grupo = forms.ModelChoiceField(
+        queryset=Grupo.objects.all(),
+        empty_label="Selecciona un grupo",  # 👈 AQUÍ
+        widget=forms.Select(attrs={
+            'class': 'form-control'
+        })
+    )
+
+    docente = forms.ModelChoiceField(
+        queryset=Usuario.objects.all(),
+        empty_label="Selecciona un docente",  # 👈 AQUÍ
+        widget=forms.Select(attrs={
+            'class': 'form-control'
+        })
+    )
+

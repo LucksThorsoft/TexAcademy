@@ -12,7 +12,13 @@
     </div>
 
     <div class="botons-header">
-        <button class="btn-secondary">
+
+        <button class="btn-secondary" id="btnNuevaMateria">
+            <span class="mdi mdi-plus"></span>
+            Nueva Materia
+        </button>
+
+        <button class="btn-tercerio" id="btnNuevoGrupo">
             <span class="mdi mdi-plus"></span>
             Nuevo Grupo
         </button>
@@ -22,49 +28,149 @@
             Nuevo Docente
         </button>
     </div>
+
 </div>
 
 <div class="modal" id="modalDocente">
     <div class="modal-content">
 
         <form method="POST" action="{% url 'new_user' %}">
-    {% csrf_token %}
+            {% csrf_token %}
 
-    <div class="modal-header">
-        <h3>Agregar Docente</h3>
-        <span class="modal-close" id="closeModal">&times;</span>
-    </div>
+            <div class="modal-header">
+                <h3>Agregar Docente</h3>
+                <span class="modal-close" id="closeModal">&times;</span>
+            </div>
 
-    <div class="modal-body">
-        <div class="form-group">
-            <label>Nombre completo</label>
-            {{ form.nombre }}
-        </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Nombre completo</label>
+                    {{ form.nombre }}
+                </div>
 
-        <div class="form-group">
-            <label>Correo electrónico</label>
-            {{ form.correo }}
-        </div>
+                <div class="form-group">
+                    <label>Correo electrónico</label>
+                    {{ form.correo }}
+                </div>
 
-        <div class="form-group">
-            <label>Contraseña</label>
-            {{ form.password }}
-        </div>
-    </div>
+                <div class="form-group">
+                    <label>Contraseña</label>
+                    {{ form.password }}
+                </div>
+            </div>
 
-    <div class="modal-footer">
-        <button type="button" class="btn-secondary" id="cancelarModal">
-            Cancelar
-        </button>
-        <button type="submit" class="btn-primary">
-            Guardar
-        </button>
-    </div>
-</form>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" id="cancelarModal">
+                    Cancelar
+                </button>
+                <button type="submit" class="btn-primary">
+                    Guardar
+                </button>
+            </div>
+        </form>
 
 
     </div>
 </div>
+
+<div class="modal" id="modalGrupo">
+    <div class="modal-content">
+
+        <form method="POST" action="{% url 'new_group' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="modal-header">
+                <h3>Agregar Grupo</h3>
+                <span class="modal-close" id="closeModalGrupo">&times;</span>
+            </div>
+
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Clave de Grupo</label>
+                    {{ grupo_form.clave }}
+                </div>
+
+                <div class="form-group">
+                    <label>Tutor</label>
+                    {{ grupo_form.tutor }}
+                </div>
+
+                <div class="form-group">
+            <label>Lista de alumnos (CSV)</label>
+
+            <label class="file-input-wrapper">
+                <span class="file-btn">
+                    <span class="mdi mdi-upload"></span>
+                    Seleccionar archivo
+                </span>
+                {{ grupo_form.archivo_alumnos }}
+                <span class="file-name" id="fileName">Ningún archivo seleccionado</span>
+            </label>
+
+            <small>Solo se permiten formatos CSV</small>
+        </div>
+
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" id="cancelarModalGrupo">
+                    Cancelar
+                </button>
+                <button type="submit" class="btn-primary">
+                    Guardar
+                </button>
+            </div>
+        </form>
+
+
+    </div>
+</div>
+
+<div class="modal" id="modalMateria">
+    <div class="modal-content">
+
+        <form method="POST" action="{% url 'new_materia' %}">
+            {% csrf_token %}
+
+            <div class="modal-header">
+                <h3>Agregar Materia</h3>
+                <span class="modal-close" id="closeModalMateria">&times;</span>
+            </div>
+
+            <div class="modal-body">
+
+                <div class="form-group">
+                    <label>Nombre de la materia</label>
+                    {{ materia_form.nombre_materia }}
+                </div>
+
+                <div class="form-group">
+                    <label>Grupo</label>
+                    {{ materia_form.grupo }}
+                </div>
+
+                <div class="form-group">
+                    <label>Docente</label>
+                    {{ materia_form.docente }}
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" id="cancelarModalMateria">
+                    Cancelar
+                </button>
+                <button type="submit" class="btn-primary">
+                    Guardar
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+
 
 
 
@@ -166,7 +272,54 @@ document.addEventListener("DOMContentLoaded", () => {
     function cerrarModal() {
         modalDocente.style.display = "none";
     }
+
+    // ===== MODAL GRUPO =====
+    const btnNuevoGrupo = document.getElementById("btnNuevoGrupo");
+    const modalGrupo = document.getElementById("modalGrupo");
+    const closeModalGrupo = document.getElementById("closeModalGrupo");
+    const cancelarModalGrupo = document.getElementById("cancelarModalGrupo");
+
+    btnNuevoGrupo.addEventListener("click", () => {
+        modalGrupo.style.display = "flex";
+    });
+
+    closeModalGrupo.addEventListener("click", cerrarModalGrupo);
+    cancelarModalGrupo.addEventListener("click", cerrarModalGrupo);
+
+    modalGrupo.addEventListener("click", (e) => {
+        if (e.target === modalGrupo) {
+            cerrarModalGrupo();
+        }
+    });
+
+    function cerrarModalGrupo() {
+        modalGrupo.style.display = "none";
+    }
 });
+
+// ===== MODAL MATERIA =====
+const btnNuevaMateria = document.getElementById("btnNuevaMateria");
+const modalMateria = document.getElementById("modalMateria");
+const closeModalMateria = document.getElementById("closeModalMateria");
+const cancelarModalMateria = document.getElementById("cancelarModalMateria");
+
+btnNuevaMateria.addEventListener("click", () => {
+    modalMateria.style.display = "flex";
+});
+
+closeModalMateria.addEventListener("click", cerrarModalMateria);
+cancelarModalMateria.addEventListener("click", cerrarModalMateria);
+
+modalMateria.addEventListener("click", (e) => {
+    if (e.target === modalMateria) {
+        cerrarModalMateria();
+    }
+});
+
+function cerrarModalMateria() {
+    modalMateria.style.display = "none";
+}
+
 
 document.addEventListener('DOMContentLoaded', function() {
     const viewSwitch = document.getElementById('viewSwitch');
@@ -191,6 +344,19 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+    const fileInput = document.querySelector('input[type="file"]');
+    const fileName = document.getElementById('fileName');
+
+    if (fileInput) {
+        fileInput.addEventListener('change', () => {
+            fileName.textContent = fileInput.files.length
+                ? fileInput.files[0].name
+                : 'Ningún archivo seleccionado';
+        });
+    }
 });
 </script>
 
@@ -547,6 +713,68 @@ document.addEventListener('DOMContentLoaded', function() {
     font-size: 13px;
     border-radius: 10px;
 }
+
+.form-group select {
+    height: 38px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+    font-size: 14px;
+    color: #111827;
+    background: #fff;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.form-group select:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+}
+
+/* ===== FILE INPUT CUSTOM ===== */
+
+.file-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 38px;
+    padding: 0 12px;
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+    cursor: pointer;
+    background: #fff;
+    transition: all 0.2s ease;
+}
+
+.file-input-wrapper:hover {
+    border-color: #2563eb;
+}
+
+.file-input-wrapper input[type="file"] {
+    display: none;
+}
+
+.file-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #2563eb;
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.file-name {
+    font-size: 13px;
+    color: #6b7280;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 
 </style>
 {% endblock %}
