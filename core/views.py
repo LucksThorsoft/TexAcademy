@@ -1,6 +1,9 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.hashers import check_password
+from django.views.decorators.http import require_POST
+import csv
+from io import TextIOWrapper
 from .forms import *
 from .models import *
 
@@ -79,7 +82,66 @@ def sidebar(request):
     return render(request, "sidebar.html")
 
 def director(request):
-    return render(request, "director.html")
+    if not request.session.get('usuario_id'):
+        return redirect('login')
+
+    roles = request.session.get('usuario_roles', [])
+    if 'Director' not in roles:
+        return redirect('dashboard')
+
+    form = DocenteForm()
+    grupo_form = GrupoForm()
+    materia_form = GrupoDocenteMateriaForm()  # 👈 ESTO FALTABA
+
+    relaciones = GrupoDocenteMateria.objects.select_related(
+        'grupo', 'materia', 'docente'
+    ).order_by('grupo__clave', 'materia__nombre')
+
+    grupos_data = []
+
+    for rel in relaciones:
+        grupo = rel.grupo
+        num_alumnos = Alumno.objects.filter(grupo=grupo).count()
+
+        grupos_data.append({
+            'clave': grupo.clave,
+            'materia': rel.materia.nombre,
+            'docente': rel.docente.nombre,
+            'num_alumnos': num_alumnos,
+            'tutor': grupo.tutor.nombre if grupo.tutor else 'Sin tutor',
+        })
+
+    return render(request, "director.html", {
+        "form": form,
+        "grupo_form": grupo_form,
+        "materia_form": materia_form,  # 👈 Y PASARLO
+        "grupos": grupos_data
+    })
+
+
+
+    
+@require_POST
+def new_user(request):
+    if not request.session.get('usuario_id'):
+        return redirect('login')
+
+    roles = request.session.get('usuario_roles', [])
+    if 'Director' not in roles:
+        return redirect('dashboard')
+
+    form = DocenteForm(request.POST)
+
+    if form.is_valid():
+        usuario = form.save()
+
+        rol_docente, _ = Rol.objects.get_or_create(nombre="Docente")
+        UsuarioRol.objects.create(
+            usuario=usuario,
+            rol=rol_docente
+        )
+
+    return redirect('director')
 
 def tutor(request):
     return render(request, "tutor.html")
@@ -109,7 +171,6 @@ def login_view(request):
     if request.method == 'POST':
         correo = request.POST.get('correo')
         password = request.POST.get('password')
-        # ... validaciones de campos vacíos ...
 
         try:
             usuario = Usuario.objects.get(correo=correo)
@@ -147,5 +208,69 @@ def login_view(request):
     return render(request, "login.html")
 
 def logout_view(request):
-    request.session.flush() # Borra toda la sesión
+    request.session.flush()
     return redirect('login')
+
+def new_group(request):
+    if request.method == "POST":
+        form = GrupoForm(request.POST, request.FILES)
+
+        if form.is_valid():
+            grupo = form.save(commit=False)
+
+            cuatrimestre_activo = Cuatrimestre.objects.filter(activo=True).first()
+            if not cuatrimestre_activo:
+                messages.error(request, "No hay cuatrimestre activo")
+                return redirect("director")
+
+            grupo.cuatrimestre = cuatrimestre_activo
+            grupo.save()
+
+            archivo = request.FILES.get("archivo_alumnos")
+
+            if archivo:
+                archivo_texto = TextIOWrapper(archivo, encoding="utf-8-sig")
+                reader = csv.DictReader(archivo_texto)
+
+                for fila in reader:
+                    nombre = fila.get("nombre")
+                    matricula = fila.get("matricula")
+
+                    if not nombre or not matricula:
+                        continue
+
+                    Alumno.objects.get_or_create(
+                        matricula=matricula.strip(),
+                        defaults={
+                            "nombre": nombre.strip(),
+                            "grupo": grupo
+                        }
+                    )
+
+            messages.success(request, "Grupo y alumnos creados correctamente")
+
+    return redirect("director")
+
+
+def new_materia(request):
+    if request.method == "POST":
+        form = GrupoDocenteMateriaForm(request.POST)
+
+        if form.is_valid():
+            nombre = form.cleaned_data['nombre_materia']
+            grupo = form.cleaned_data['grupo']
+            docente = form.cleaned_data['docente']
+
+            # Crear o reutilizar materia
+            materia, created = Materia.objects.get_or_create(
+                nombre=nombre
+            )
+
+            # Crear relación grupo-materia-docente
+            GrupoDocenteMateria.objects.create(
+                grupo=grupo,
+                materia=materia,
+                docente=docente
+            )
+
+    return redirect('director')

@@ -1,4 +1,6 @@
 from django import forms
+from .models import *
+from django.contrib.auth.hashers import make_password
 
 class LoginForm(forms.Form):
     correo = forms.EmailField(widget=forms.EmailInput(attrs={
@@ -10,3 +12,84 @@ class LoginForm(forms.Form):
         'placeholder': 'Ingresa tu contraseña',
         'id': 'passwordInput' 
     }))
+
+class DocenteForm(forms.ModelForm):
+    password = forms.CharField(
+        widget=forms.PasswordInput(attrs={
+            "class": "form-control",
+            "placeholder": "Contraseña"
+        })
+    )
+
+    class Meta:
+        model = Usuario
+        fields = ["nombre", "correo", "password"]
+        widgets = {
+            "nombre": forms.TextInput(attrs={
+                "class": "form-control",
+                "placeholder": "Nombre completo"
+            }),
+            "correo": forms.EmailInput(attrs={
+                "class": "form-control",
+                "placeholder": "Correo electrónico"
+            }),
+        }
+
+    def save(self, commit=True):
+        usuario = super().save(commit=False)
+        usuario.password = make_password(self.cleaned_data["password"])
+        if commit:
+            usuario.save()
+        return usuario
+    
+# forms.py
+class GrupoForm(forms.ModelForm):
+    archivo_alumnos = forms.FileField(
+        required=False,
+        label="Lista de alumnos (CSV)",
+        widget=forms.ClearableFileInput(attrs={
+            "accept": ".csv"
+        })
+    )
+
+    class Meta:
+        model = Grupo
+        fields = ["clave", "tutor"]
+        widgets = {
+            "clave": forms.TextInput(attrs={
+                "placeholder": "Clave del grupo"
+            }),
+            "tutor": forms.Select(attrs={
+                "class": "form-control"
+            })
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['tutor'].empty_label = "Selecciona un tutor"  # 👈 AQUÍ
+
+class GrupoDocenteMateriaForm(forms.Form):
+    nombre_materia = forms.CharField(
+        max_length=100,
+        widget=forms.TextInput(attrs={
+            'placeholder': 'Nombre de la materia',
+            'class': 'form-control'
+        })
+    )
+
+    grupo = forms.ModelChoiceField(
+        queryset=Grupo.objects.all(),
+        empty_label="Selecciona un grupo",  # 👈 AQUÍ
+        widget=forms.Select(attrs={
+            'class': 'form-control'
+        })
+    )
+
+    docente = forms.ModelChoiceField(
+        queryset=Usuario.objects.all(),
+        empty_label="Selecciona un docente",  # 👈 AQUÍ
+        widget=forms.Select(attrs={
+            'class': 'form-control'
+        })
+    )
+
