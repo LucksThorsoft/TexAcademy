@@ -3,9 +3,9 @@ from django.contrib import messages
 from django.contrib.auth.hashers import check_password
 from .forms import *
 from .models import *
+import json
 
 # Create your views here.
-
 
 def dashboard(request):
     return render(request, "dashboard.html")
@@ -39,15 +39,54 @@ def gruposAlumnos(request):
                 # Contar alumnos en este grupo
                 num_alumnos = Alumno.objects.filter(grupo=grupo).count()
                 
+                # Obtener todos los alumnos del grupo y ordenar correctamente
+                alumnos_grupo = Alumno.objects.filter(grupo=grupo)
+                
+                # Convertir a lista para ordenar manualmente
+                alumnos_list = list(alumnos_grupo)
+                
+                # Función para extraer el número de la matrícula
+                def extract_matricula_number(matricula):
+                    try:
+                        # Extraer solo los dígitos de la matrícula
+                        import re
+                        numbers = re.findall(r'\d+', matricula)
+                        if numbers:
+                            return int(numbers[0])
+                        return 0
+                    except:
+                        return 0
+                
+                # Ordenar por: 1) Número de matrícula, 2) Nombre
+                alumnos_list.sort(key=lambda x: (
+                    extract_matricula_number(x.matricula),
+                    x.nombre.lower()
+                ))
+                
+                # Crear lista de alumnos con sus datos
+                alumnos_data = []
+                for alumno in alumnos_list:
+                    alumnos_data.append({
+                        'id': alumno.id,
+                        'nombre': alumno.nombre,
+                        'matricula': alumno.matricula,
+                        'promedio': None,
+                        'asistencia': None,
+                        'estado': None,
+                    })
+                
                 grupos_dict[grupo.clave] = {
                     'clave': grupo.clave,
-                    'materias': [],  # Lista de materias que imparte este docente
+                    'materias': [],
                     'num_alumnos': num_alumnos,
-                    'grupo_id': grupo.id,  # Para posibles enlaces futuros
+                    'grupo_id': grupo.id,
+                    'alumnos': alumnos_data,
+                    'alumnos_json': json.dumps(alumnos_data, ensure_ascii=False),
                 }
             
             # Agregar la materia a la lista de materias del grupo
-            grupos_dict[grupo.clave]['materias'].append(materia.nombre)
+            if materia.nombre not in grupos_dict[grupo.clave]['materias']:
+                grupos_dict[grupo.clave]['materias'].append(materia.nombre)
         
         # Convertir el diccionario a lista
         grupos_data = list(grupos_dict.values())
@@ -58,7 +97,6 @@ def gruposAlumnos(request):
         }
         
     except Usuario.DoesNotExist:
-        # Si el usuario no existe, redirigir al login
         return redirect('login')
     
     return render(request, "gruposAlumnos.html", context)
