@@ -1,6 +1,9 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.hashers import check_password
+from django.views.decorators.http import require_POST
+import csv
+from io import TextIOWrapper
 from .forms import *
 from .models import *
 from django.http import JsonResponse
@@ -146,7 +149,66 @@ def sidebar(request):
     return render(request, "sidebar.html")
 
 def director(request):
-    return render(request, "director.html")
+    if not request.session.get('usuario_id'):
+        return redirect('login')
+
+    roles = request.session.get('usuario_roles', [])
+    if 'Director' not in roles:
+        return redirect('dashboard')
+
+    form = DocenteForm()
+    grupo_form = GrupoForm()
+    materia_form = GrupoDocenteMateriaForm()  # 👈 ESTO FALTABA
+
+    relaciones = GrupoDocenteMateria.objects.select_related(
+        'grupo', 'materia', 'docente'
+    ).order_by('grupo__clave', 'materia__nombre')
+
+    grupos_data = []
+
+    for rel in relaciones:
+        grupo = rel.grupo
+        num_alumnos = Alumno.objects.filter(grupo=grupo).count()
+
+        grupos_data.append({
+            'clave': grupo.clave,
+            'materia': rel.materia.nombre,
+            'docente': rel.docente.nombre,
+            'num_alumnos': num_alumnos,
+            'tutor': grupo.tutor.nombre if grupo.tutor else 'Sin tutor',
+        })
+
+    return render(request, "director.html", {
+        "form": form,
+        "grupo_form": grupo_form,
+        "materia_form": materia_form,  # 👈 Y PASARLO
+        "grupos": grupos_data
+    })
+
+
+
+    
+@require_POST
+def new_user(request):
+    if not request.session.get('usuario_id'):
+        return redirect('login')
+
+    roles = request.session.get('usuario_roles', [])
+    if 'Director' not in roles:
+        return redirect('dashboard')
+
+    form = DocenteForm(request.POST)
+
+    if form.is_valid():
+        usuario = form.save()
+
+        rol_docente, _ = Rol.objects.get_or_create(nombre="Docente")
+        UsuarioRol.objects.create(
+            usuario=usuario,
+            rol=rol_docente
+        )
+
+    return redirect('director')
 
 def tutor(request):
     return render(request, "tutor.html")
@@ -176,7 +238,6 @@ def login_view(request):
     if request.method == 'POST':
         correo = request.POST.get('correo')
         password = request.POST.get('password')
-        # ... validaciones de campos vacíos ...
 
         try:
             usuario = Usuario.objects.get(correo=correo)
@@ -214,183 +275,5 @@ def login_view(request):
     return render(request, "login.html")
 
 def logout_view(request):
-    request.session.flush() # Borra toda la sesión
+    request.session.flush()
     return redirect('login')
-
-# API endpoints para AJAX
-@csrf_exempt
-def obtener_alumnos_por_grupo(request):
-    """Endpoint AJAX para obtener alumnos de un grupo específico"""
-    if request.method == 'GET':
-        grupo_id = request.GET.get('grupo_id')
-        if grupo_id:
-            alumnos = Alumno.objects.filter(grupo_id=grupo_id).order_by('nombre')
-            alumnos_data = [{'id': a.id, 'nombre': a.nombre, 'matricula': a.matricula} for a in alumnos]
-            return JsonResponse({'alumnos': alumnos_data, 'total': len(alumnos_data)})
-    return JsonResponse({'error': 'Método no permitido'}, status=405)
-
-@csrf_exempt
-def guardar_asistencia(request):
-    """Endpoint AJAX para guardar la asistencia"""
-    if request.method == 'POST':
-        try:
-            data = json.loads(request.body)
-            fecha = data.get('fecha')
-            grupo_id = data.get('grupo_id')
-            asistencias = data.get('asistencias', {})
-            
-            print(f"Guardando asistencia - Fecha: {fecha}, Grupo ID: {grupo_id}")
-            print(f"Asistencias recibidas: {asistencias}")
-            
-            # Validar datos requeridos
-            if not all([fecha, grupo_id]):
-                return JsonResponse({'error': 'Faltan datos requeridos'}, status=400)
-            
-            # Obtener el grupo y el docente
-            grupo = Grupo.objects.get(id=grupo_id)
-            docente = Usuario.objects.get(id=request.session.get('usuario_id'))
-            
-            # Verificar que el docente tenga al menos una materia en este grupo
-            gdm = GrupoDocenteMateria.objects.filter(
-                grupo=grupo,
-                docente=docente
-            ).first()
-            
-            if not gdm:
-                return JsonResponse({'error': 'No tienes materias asignadas en este grupo'}, status=400)
-            
-            # Guardar cada asistencia
-            asistencias_guardadas = 0
-            for alumno_id, estado_nombre in asistencias.items():
-                try:
-                    alumno = Alumno.objects.get(id=alumno_id)
-                    estado = EstadoAsistencia.objects.get(nombre=estado_nombre)
-                    
-                    # Crear o actualizar la asistencia
-                    asistencia, created = Asistencia.objects.update_or_create(
-                        alumno=alumno,
-                        grupo_docente_materia=gdm,
-                        fecha=fecha,
-                        defaults={
-                            'estado': estado,
-                            'comentario': ''  # Puedes agregar un campo para comentarios si lo deseas
-                        }
-                    )
-                    
-                    asistencias_guardadas += 1
-                    print(f"Asistencia {'creada' if created else 'actualizada'} para {alumno.nombre}: {estado_nombre}")
-                    
-                except Alumno.DoesNotExist:
-                    print(f"Error: Alumno con ID {alumno_id} no encontrado")
-                except EstadoAsistencia.DoesNotExist:
-                    print(f"Error: Estado '{estado_nombre}' no encontrado")
-            
-            return JsonResponse({
-                'success': True, 
-                'message': f'Asistencia guardada correctamente para {asistencias_guardadas} alumnos',
-                'guardadas': asistencias_guardadas
-            })
-            
-        except Grupo.DoesNotExist:
-            return JsonResponse({'error': 'Grupo no encontrado'}, status=404)
-        except Usuario.DoesNotExist:
-            return JsonResponse({'error': 'Usuario no encontrado'}, status=404)
-        except json.JSONDecodeError:
-            return JsonResponse({'error': 'Datos JSON inválidos'}, status=400)
-        except Exception as e:
-            print(f"Error inesperado: {str(e)}")
-            return JsonResponse({'error': str(e)}, status=500)
-    
-    return JsonResponse({'error': 'Método no permitido'}, status=405)
-
-@csrf_exempt
-def obtener_historial_asistencia(request):
-    """Endpoint AJAX para obtener el historial de asistencia de un grupo"""
-    if request.method == 'GET':
-        grupo_id = request.GET.get('grupo_id')
-        docente_id = request.session.get('usuario_id')
-        
-        print(f"Obteniendo historial - Grupo ID: {grupo_id}, Docente ID: {docente_id}")
-        
-        if not grupo_id:
-            return JsonResponse({'error': 'ID de grupo no proporcionado'}, status=400)
-        
-        if not docente_id:
-            return JsonResponse({'error': 'Usuario no autenticado'}, status=401)
-        
-        try:
-            # Obtener el grupo y el docente
-            grupo = Grupo.objects.get(id=grupo_id)
-            docente = Usuario.objects.get(id=docente_id)
-            
-            # Obtener el GDM (relación grupo-docente-materia)
-            gdm = GrupoDocenteMateria.objects.filter(
-                grupo=grupo,
-                docente=docente
-            ).first()
-            
-            if not gdm:
-                return JsonResponse({'error': 'No tienes materias asignadas en este grupo'}, status=400)
-            
-            # Obtener todos los alumnos del grupo
-            alumnos = Alumno.objects.filter(grupo=grupo).order_by('nombre')
-            
-            if not alumnos.exists():
-                return JsonResponse({'historial': [], 'message': 'No hay alumnos en este grupo'})
-            
-            historial = []
-            for alumno in alumnos:
-                # Obtener asistencias de este alumno
-                asistencias = Asistencia.objects.filter(
-                    alumno=alumno,
-                    grupo_docente_materia=gdm
-                )
-                
-                total_clases = asistencias.count()
-                
-                if total_clases > 0:
-                    total_asistencias = asistencias.filter(estado__nombre='Asistió').count()
-                    total_retardos = asistencias.filter(estado__nombre='Retardo').count()
-                    total_faltas = asistencias.filter(estado__nombre='No asistió').count()
-                    
-                    # Calcular porcentaje (los retardos cuentan como 0.5)
-                    porcentaje = int(((total_asistencias + total_retardos * 0.5) / total_clases) * 100)
-                    
-                    # Determinar estado basado en porcentaje
-                    if porcentaje >= 80:
-                        estado_alumno = "Bueno"
-                    elif porcentaje >= 60:
-                        estado_alumno = "Regular"
-                    else:
-                        estado_alumno = "Crítico"
-                else:
-                    total_asistencias = 0
-                    total_retardos = 0
-                    total_faltas = 0
-                    porcentaje = 0
-                    estado_alumno = "Sin datos"
-                
-                historial.append({
-                    'alumno_id': alumno.id,
-                    'nombre': alumno.nombre,
-                    'matricula': alumno.matricula,
-                    'asistencias': total_asistencias,
-                    'retardos': total_retardos,
-                    'faltas': total_faltas,
-                    'total_clases': total_clases,
-                    'porcentaje': porcentaje,
-                    'estado': estado_alumno
-                })
-            
-            print(f"Historial generado para {len(historial)} alumnos")
-            return JsonResponse({'historial': historial})
-                
-        except Grupo.DoesNotExist:
-            return JsonResponse({'error': 'Grupo no encontrado'}, status=404)
-        except Usuario.DoesNotExist:
-            return JsonResponse({'error': 'Usuario no encontrado'}, status=404)
-        except Exception as e:
-            print(f"Error al obtener historial: {str(e)}")
-            return JsonResponse({'error': str(e)}, status=500)
-    
-    return JsonResponse({'error': 'Método no permitido'}, status=405)

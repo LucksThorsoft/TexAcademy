@@ -11,9 +11,13 @@ urlpatterns = [
     path('estadisticas', views.estadisticas),
     path('alertas', views.alertas),
     path('sidebar', views.sidebar),
-    path('director', views.director),
+    path('director', views.director, name='director'),
     path('tutor', views.tutor),
     path('pedagogia', views.pedagogia),
+    path('director/new_user', views.new_user, name='new_user'),
+    path("grupo/nuevo/", views.new_group, name="new_group"),
+    path('materia/nueva/', views.new_materia, name='new_materia'),
+
     
     # API endpoints para AJAX
     path('obtener-alumnos-por-grupo/', views.obtener_alumnos_por_grupo, name='obtener_alumnos_por_grupo'),
