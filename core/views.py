@@ -6,12 +6,9 @@ import csv
 from io import TextIOWrapper
 from .forms import *
 from .models import *
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-import json
-from django.utils import timezone
 
 # Create your views here.
+
 
 def dashboard(request):
     return render(request, "dashboard.html")
@@ -45,15 +42,54 @@ def gruposAlumnos(request):
                 # Contar alumnos en este grupo
                 num_alumnos = Alumno.objects.filter(grupo=grupo).count()
                 
+                # Obtener todos los alumnos del grupo y ordenar correctamente
+                alumnos_grupo = Alumno.objects.filter(grupo=grupo)
+                
+                # Convertir a lista para ordenar manualmente
+                alumnos_list = list(alumnos_grupo)
+                
+                # Función para extraer el número de la matrícula
+                def extract_matricula_number(matricula):
+                    try:
+                        # Extraer solo los dígitos de la matrícula
+                        import re
+                        numbers = re.findall(r'\d+', matricula)
+                        if numbers:
+                            return int(numbers[0])
+                        return 0
+                    except:
+                        return 0
+                
+                # Ordenar por: 1) Número de matrícula, 2) Nombre
+                alumnos_list.sort(key=lambda x: (
+                    extract_matricula_number(x.matricula),
+                    x.nombre.lower()
+                ))
+                
+                # Crear lista de alumnos con sus datos
+                alumnos_data = []
+                for alumno in alumnos_list:
+                    alumnos_data.append({
+                        'id': alumno.id,
+                        'nombre': alumno.nombre,
+                        'matricula': alumno.matricula,
+                        'promedio': None,
+                        'asistencia': None,
+                        'estado': None,
+                    })
+                
                 grupos_dict[grupo.clave] = {
                     'clave': grupo.clave,
-                    'materias': [],  # Lista de materias que imparte este docente
+                    'materias': [],
                     'num_alumnos': num_alumnos,
-                    'grupo_id': grupo.id,  # Para posibles enlaces futuros
+                    'grupo_id': grupo.id,
+                    'alumnos': alumnos_data,
+                    'alumnos_json': json.dumps(alumnos_data, ensure_ascii=False),
                 }
             
             # Agregar la materia a la lista de materias del grupo
-            grupos_dict[grupo.clave]['materias'].append(materia.nombre)
+            if materia.nombre not in grupos_dict[grupo.clave]['materias']:
+                grupos_dict[grupo.clave]['materias'].append(materia.nombre)
         
         # Convertir el diccionario a lista
         grupos_data = list(grupos_dict.values())
@@ -64,80 +100,122 @@ def gruposAlumnos(request):
         }
         
     except Usuario.DoesNotExist:
-        # Si el usuario no existe, redirigir al login
         return redirect('login')
     
     return render(request, "gruposAlumnos.html", context)
 
-def asistencia(request):
-    # Verificar si el usuario está autenticado
-    if not request.session.get('usuario_id'):
-        return redirect('login')
-    
-    # Obtener el usuario actual desde la sesión
-    usuario_id = request.session.get('usuario_id')
-    
-    try:
-        # Obtener el usuario
-        usuario = Usuario.objects.get(id=usuario_id)
-        
-        # Obtener todos los grupos donde este docente imparte alguna materia
-        grupos_docente = GrupoDocenteMateria.objects.filter(
-            docente=usuario
-        ).select_related('grupo', 'materia').values('grupo').distinct()
-        
-        # Obtener los IDs de los grupos
-        grupo_ids = [g['grupo'] for g in grupos_docente]
-        
-        # Obtener los grupos completos
-        grupos = Grupo.objects.filter(id__in=grupo_ids)
-        
-        # Preparar datos de grupos para el template
-        grupos_data = []
-        for grupo in grupos:
-            # Obtener los alumnos de este grupo
-            alumnos = Alumno.objects.filter(grupo=grupo).order_by('nombre')
-            
-            # Obtener materias que el docente imparte en este grupo
-            materias = GrupoDocenteMateria.objects.filter(
-                docente=usuario,
-                grupo=grupo
-            ).select_related('materia')
-            
-            materias_list = [{'id': m.materia.id, 'nombre': m.materia.nombre} for m in materias]
-            
-            grupos_data.append({
-                'id': grupo.id,
-                'clave': grupo.clave,
-                'alumnos': [{'id': a.id, 'nombre': a.nombre, 'matricula': a.matricula} for a in alumnos],
-                'materias': materias_list,
-                'total_alumnos': alumnos.count()
-            })
-        
-        # También obtener estados de asistencia disponibles
-        estados_asistencia = EstadoAsistencia.objects.all()
-        estados_data = [{'id': e.id, 'nombre': e.nombre} for e in estados_asistencia]
-        
-        context = {
-            'docente': usuario,
-            'grupos': grupos_data,
-            'estados_asistencia': estados_data,
-            'hoy': timezone.now().date()
-        }
-        
-        return render(request, "asistencia.html", context)
-
-    except Usuario.DoesNotExist:
-        return redirect('login')   
-          
-
-    except Usuario.DoesNotExist:
-        return redirect('login')
-    
-    return render(request, "asistencia.html", context)
-
 def actividades(request):
-    return render(request, "actividades.html")
+
+    if request.method == "POST":
+        titulo = request.POST.get("titulo")
+        descripcion = request.POST.get("descripcion")
+        grupo_id = request.POST.get("grupo")
+        fecha_entrega = request.POST.get("fecha_entrega")
+
+        grupo_docente = GrupoDocenteMateria.objects.filter(
+            grupo_id=grupo_id
+        ).first()
+
+        parcial = Parcial.objects.filter(
+            grupo_docente_materia=grupo_docente,
+            cerrado=False
+        ).first()
+
+        if parcial:
+            actividad = Actividad.objects.create(
+                titulo=titulo,
+                descripcion=descripcion,
+                parcial=parcial,
+                fecha_entrega=fecha_entrega
+            )
+
+            return JsonResponse({
+                "id": actividad.id,
+                "titulo": actividad.titulo,
+                "descripcion": actividad.descripcion,
+                "grupo": actividad.parcial.grupo_docente_materia.grupo.clave,
+                "fecha": actividad.fecha_entrega,
+                "cerrado": actividad.parcial.cerrado
+            })
+
+        return JsonResponse({"error": "No hay parcial activo"}, status=400)
+
+    grupos = Grupo.objects.all()
+    actividades = Actividad.objects.select_related(
+        'parcial',
+        'parcial__grupo_docente_materia',
+        'parcial__grupo_docente_materia__grupo'
+    )
+
+    return render(request, "actividades.html", {
+        "grupos": grupos,
+        "actividades": actividades
+    })
+
+
+def detalleActividad(request, id):
+    actividad = Actividad.objects.select_related(
+        'parcial',
+        'parcial__grupo_docente_materia',
+        'parcial__grupo_docente_materia__grupo'
+    ).get(id=id)
+
+    grupo = actividad.parcial.grupo_docente_materia.grupo
+    alumnos = grupo.alumno_set.all()
+
+    lista_alumnos = []
+    entregadas = 0
+
+    for alumno in alumnos:
+        entrega = Entrega.objects.filter(
+            actividad=actividad,
+            alumno=alumno
+        ).first()
+
+        if not entrega:
+            entrega = Entrega.objects.create(
+                actividad=actividad,
+                alumno=alumno,
+                entregado=False
+            )
+
+        if entrega.entregado:
+            entregadas += 1
+
+        lista_alumnos.append({
+            "id": entrega.id,
+            "nombre": alumno.nombre,
+            "matricula": alumno.matricula,
+            "entregado": entrega.entregado
+        })
+
+    data = {
+        "titulo": actividad.titulo,
+        "grupo": grupo.clave,
+        "fecha_entrega": actividad.fecha_entrega.strftime("%d/%m/%Y"),
+        "entregadas": entregadas,
+        "total": alumnos.count(),
+        "alumnos": lista_alumnos
+    }
+
+    return JsonResponse(data)
+
+
+def guardar_entregas(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        entregas = data.get("entregas", [])
+
+        for item in entregas:
+            Entrega.objects.filter(id=item["id"]).update(
+                entregado=item["entregado"]
+            )
+
+        return JsonResponse({"success": True})
+
+    return JsonResponse({"error": "Método no permitido"}, status=405)
+
+
 
 def estadisticas(request):
     return render(request, "estadisticas.html")
