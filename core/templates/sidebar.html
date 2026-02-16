@@ -7,6 +7,8 @@
     <title>{% block title %}TexAcademy{% endblock %}</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" rel="stylesheet">
+    {% block extra_css %}{% endblock %}
+    {% block extra_js %}{% endblock %}
 </head>
 
 <body>
@@ -19,6 +21,31 @@
             <i class='mdi mdi-menu' id="btn"></i>
         </div>
         <ul class="nav-list">
+            {% if 'Director' in request.session.usuario_roles %}
+            <li>
+                <a href="/director">
+                    <i class="mdi mdi-crown"></i>
+                    <span class="links_name">Director de Carrera</span>
+                </a>
+            </li>
+            {% endif %}
+            {% if 'Tutor' in request.session.usuario_roles %}
+            <li>
+                <a href="/tutor">
+                    <i class="mdi mdi-police-badge-outline"></i>
+                    <span class="links_name">Tutor</span>
+                </a>
+            </li>
+            {% endif %}
+            {% if 'Pedagogia' in request.session.usuario_roles %}
+            <li>
+                <a href="/pedagogia">
+                    <i class="mdi mdi-human-male-board"></i>
+                    <span class="links_name">Pedagogia</span>
+                </a>
+            </li>
+            {% endif %}
+            {% if 'Docente' in request.session.usuario_roles %}
             <li>
                 <a href="/dashboard">
                     <i class='mdi mdi-view-dashboard-outline'></i>
@@ -61,15 +88,16 @@
                 </a>
                 <span class="tooltip">Alertas</span>
             </li>
+            {% endif %}
             <li class="profile">
                 <div class="profile-details">
                     <i class="mdi mdi-account"></i>
                     <div class="name_job">
-                        <div class="name">Juan Pilingas</div>
-                        <div class="job">Docente</div>
+                        <div class="name">{{ request.session.usuario_nombre|default:"Usuario" }}</div>
+                        <div class="job">{{ request.session.usuario_roles|join:", "|default:"Sin Rol" }}</div>
                     </div>
                 </div>
-                <i class='mdi mdi-logout' id="log_out"></i>
+                <i class='mdi mdi-logout' id="log_out" onclick="window.location.href='/logout/'" style="cursor: pointer;"></i>
             </li>
         </ul>
     </div>
@@ -141,7 +169,7 @@
             height: 60px;
             display: flex;
             align-items: center;
-            /* justify-content: space-between;  <-- ELIMINADO para manejar mejor el espaciado manual */
+            /* justify-content: space-between; */
             position: relative;
             background-color: #1d1b31;
             overflow: hidden;
@@ -153,27 +181,23 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        /* ----- ESTILOS NUEVOS PARA EL LOGO ----- */
+        /* LOGO */
         .sidebar .logo-details .logo_icon_box {
             min-width: 40px;
             height: 40px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); /* Color resaltado */
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             margin-right: 12px;
             transition: all 0.5s ease;
-            opacity: 0; /* Oculto por defecto cuando está cerrado para no chocar con el icono menú */
+            opacity: 0;
         }
         
         .sidebar.open .logo-details .logo_icon_box {
-            opacity: 1; /* Visible solo al abrir */
+            opacity: 1;
         }
-
-        /* Si prefieres que el logo se vea SIEMPRE (incluso cerrado), 
-           cambia opacity: 0 a opacity: 1 en la clase de arriba 
-           y ajusta el padding de .logo-details */
         
         .sidebar .logo-details .logo_icon_box i {
             color: #fff;
@@ -182,7 +206,6 @@
             min-width: auto;
             line-height: normal;
         }
-        /* --------------------------------------- */
 
         .sidebar .logo-details .logo_name {
             color: #fff;
@@ -380,7 +403,6 @@
             width: calc(100% - 250px);
         }
 
-        /* HEADER */
         .top-header {
             background-color: #ffffff;
             height: 70px;

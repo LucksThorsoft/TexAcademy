@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 
 
 # -------------------------
@@ -74,11 +75,15 @@ class Materia(models.Model):
 
 class GrupoDocenteMateria(models.Model):
     grupo = models.ForeignKey(Grupo, on_delete=models.CASCADE)
-    docente = models.ForeignKey(Usuario, on_delete=models.CASCADE)
     materia = models.ForeignKey(Materia, on_delete=models.CASCADE)
+    docente = models.ForeignKey(Usuario, on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = ('grupo', 'docente', 'materia')
+        unique_together = ('grupo', 'materia')
+
+    def __str__(self):
+        return f"{self.materia} - {self.grupo} ({self.docente})"
+
 
 
 # -------------------------
@@ -99,6 +104,7 @@ class Actividad(models.Model):
     descripcion = models.TextField()
     parcial = models.ForeignKey(Parcial, on_delete=models.CASCADE)
     fecha_entrega = models.DateField()
+    hora_entrega = models.TimeField(default=timezone.now)
 
 
 class Entrega(models.Model):

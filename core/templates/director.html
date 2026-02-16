@@ -1,0 +1,780 @@
+
+{% extends 'sidebar.html' %}
+
+{% block header_title %}Direccion{% endblock %}
+
+{% block content %}
+ 
+<div class="header-actions">
+    <div class="view-switch" id="viewSwitch">
+        <button class="view-option active" data-view="groups">Grupos</button>
+        <button class="view-option" data-view="students">Todos los Alumnos</button>
+    </div>
+
+    <div class="botons-header">
+
+        <button class="btn-secondary" id="btnNuevaMateria">
+            <span class="mdi mdi-plus"></span>
+            Nueva Materia
+        </button>
+
+        <button class="btn-tercerio" id="btnNuevoGrupo">
+            <span class="mdi mdi-plus"></span>
+            Nuevo Grupo
+        </button>
+
+        <button class="btn-primary" id="btnNuevoDocente">
+            <span class="mdi mdi-plus"></span>
+            Nuevo Docente
+        </button>
+    </div>
+
+</div>
+
+<div class="modal" id="modalDocente">
+    <div class="modal-content">
+
+        <form method="POST" action="{% url 'new_user' %}">
+            {% csrf_token %}
+
+            <div class="modal-header">
+                <h3>Agregar Docente</h3>
+                <span class="modal-close" id="closeModal">&times;</span>
+            </div>
+
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Nombre completo</label>
+                    {{ form.nombre }}
+                </div>
+
+                <div class="form-group">
+                    <label>Correo electrónico</label>
+                    {{ form.correo }}
+                </div>
+
+                <div class="form-group">
+                    <label>Contraseña</label>
+                    {{ form.password }}
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" id="cancelarModal">
+                    Cancelar
+                </button>
+                <button type="submit" class="btn-primary">
+                    Guardar
+                </button>
+            </div>
+        </form>
+
+
+    </div>
+</div>
+
+<div class="modal" id="modalGrupo">
+    <div class="modal-content">
+
+        <form method="POST" action="{% url 'new_group' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="modal-header">
+                <h3>Agregar Grupo</h3>
+                <span class="modal-close" id="closeModalGrupo">&times;</span>
+            </div>
+
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Clave de Grupo</label>
+                    {{ grupo_form.clave }}
+                </div>
+
+                <div class="form-group">
+                    <label>Tutor</label>
+                    {{ grupo_form.tutor }}
+                </div>
+
+                <div class="form-group">
+            <label>Lista de alumnos (CSV)</label>
+
+            <label class="file-input-wrapper">
+                <span class="file-btn">
+                    <span class="mdi mdi-upload"></span>
+                    Seleccionar archivo
+                </span>
+                {{ grupo_form.archivo_alumnos }}
+                <span class="file-name" id="fileName">Ningún archivo seleccionado</span>
+            </label>
+
+            <small>Solo se permiten formatos CSV</small>
+        </div>
+
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" id="cancelarModalGrupo">
+                    Cancelar
+                </button>
+                <button type="submit" class="btn-primary">
+                    Guardar
+                </button>
+            </div>
+        </form>
+
+
+    </div>
+</div>
+
+<div class="modal" id="modalMateria">
+    <div class="modal-content">
+
+        <form method="POST" action="{% url 'new_materia' %}">
+            {% csrf_token %}
+
+            <div class="modal-header">
+                <h3>Agregar Materia</h3>
+                <span class="modal-close" id="closeModalMateria">&times;</span>
+            </div>
+
+            <div class="modal-body">
+
+                <div class="form-group">
+                    <label>Nombre de la materia</label>
+                    {{ materia_form.nombre_materia }}
+                </div>
+
+                <div class="form-group">
+                    <label>Grupo</label>
+                    {{ materia_form.grupo }}
+                </div>
+
+                <div class="form-group">
+                    <label>Docente</label>
+                    {{ materia_form.docente }}
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" id="cancelarModalMateria">
+                    Cancelar
+                </button>
+                <button type="submit" class="btn-primary">
+                    Guardar
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+
+
+
+
+<div id="groupsView" class="view-content">
+    <div class="groups-grid">
+        {% for grupo in grupos %}
+        <div class="group-card">
+            <div class="group-header">
+                <div class="group-header-main">
+                    <span class="materia-principal">{{ grupo.materia }}</span>
+                    <span class="group-separator">|</span>
+                    <span class="group-clave">{{ grupo.clave }}</span>
+
+                </div>
+                
+                <div class="group-meta">
+                    <span>{{ grupo.num_alumnos }} alumnos</span>
+
+                </div>
+                <div class="group-meta" >
+                    <strong>Docente:</strong> {{ grupo.docente }}
+                </div>
+
+                <div class="group-meta">
+                    <strong>Tutor:</strong> {{ grupo.tutor }}
+                </div>
+            </div>
+            
+            <div class="group-stats">
+                <div class="stat-item promedio">
+                    <div class="stat-label">Promedio Grupal</div>
+                    <div class="stat-value">--</div>
+                </div>
+                
+                <div class="stat-item riesgo">
+                    <div class="stat-label">En Riesgo</div>
+                    <div class="stat-value">--</div>
+                </div>
+            </div>
+            
+            <div class="attention-btn">
+                <span>-- alumnos requieren atención</span>
+            </div>
+        </div>
+        {% empty %}
+        <div class="no-groups">
+            <div style="text-align: center; padding: 40px;">
+                <p style="color: #666; font-size: 16px; margin-bottom: 10px;">
+                    No tienes grupos asignados
+                </p>
+                <p style="color: #999; font-size: 14px;">
+                    Contacta con el administrador para que te asigne grupos y materias
+                </p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div id="studentsView" class="view-content" style="display: none;">
+    <div class="students-grid">
+        <div style="text-align: center; padding: 40px;">
+            <p style="color: #666; font-size: 16px;">
+                Vista de todos los alumnos (en desarrollo)
+            </p>
+            <p style="color: #999; font-size: 14px;">
+                Esta funcionalidad estará disponible próximamente
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+    const btnNuevoDocente = document.getElementById("btnNuevoDocente");
+    const modalDocente = document.getElementById("modalDocente");
+    const closeModal = document.getElementById("closeModal");
+    const cancelarModal = document.getElementById("cancelarModal");
+
+    btnNuevoDocente.addEventListener("click", () => {
+        modalDocente.style.display = "flex";
+    });
+
+    closeModal.addEventListener("click", () => {
+        cerrarModal();
+    });
+
+    cancelarModal.addEventListener("click", () => {
+        cerrarModal();
+    });
+
+    modalDocente.addEventListener("click", (e) => {
+        if (e.target === modalDocente) {
+            cerrarModal();
+        }
+    });
+
+    function cerrarModal() {
+        modalDocente.style.display = "none";
+    }
+
+    // ===== MODAL GRUPO =====
+    const btnNuevoGrupo = document.getElementById("btnNuevoGrupo");
+    const modalGrupo = document.getElementById("modalGrupo");
+    const closeModalGrupo = document.getElementById("closeModalGrupo");
+    const cancelarModalGrupo = document.getElementById("cancelarModalGrupo");
+
+    btnNuevoGrupo.addEventListener("click", () => {
+        modalGrupo.style.display = "flex";
+    });
+
+    closeModalGrupo.addEventListener("click", cerrarModalGrupo);
+    cancelarModalGrupo.addEventListener("click", cerrarModalGrupo);
+
+    modalGrupo.addEventListener("click", (e) => {
+        if (e.target === modalGrupo) {
+            cerrarModalGrupo();
+        }
+    });
+
+    function cerrarModalGrupo() {
+        modalGrupo.style.display = "none";
+    }
+});
+
+// ===== MODAL MATERIA =====
+const btnNuevaMateria = document.getElementById("btnNuevaMateria");
+const modalMateria = document.getElementById("modalMateria");
+const closeModalMateria = document.getElementById("closeModalMateria");
+const cancelarModalMateria = document.getElementById("cancelarModalMateria");
+
+btnNuevaMateria.addEventListener("click", () => {
+    modalMateria.style.display = "flex";
+});
+
+closeModalMateria.addEventListener("click", cerrarModalMateria);
+cancelarModalMateria.addEventListener("click", cerrarModalMateria);
+
+modalMateria.addEventListener("click", (e) => {
+    if (e.target === modalMateria) {
+        cerrarModalMateria();
+    }
+});
+
+function cerrarModalMateria() {
+    modalMateria.style.display = "none";
+}
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    const viewSwitch = document.getElementById('viewSwitch');
+    const viewOptions = viewSwitch.querySelectorAll('.view-option');
+    const groupsView = document.getElementById('groupsView');
+    const studentsView = document.getElementById('studentsView');
+
+    viewOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            viewOptions.forEach(opt => opt.classList.remove('active'));
+
+            this.classList.add('active');
+
+            groupsView.style.display = 'none';
+            studentsView.style.display = 'none';
+
+            const viewType = this.dataset.view;
+            if (viewType === 'groups') {
+                groupsView.style.display = 'block';
+            } else {
+                studentsView.style.display = 'block';
+            }
+        });
+    });
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+    const fileInput = document.querySelector('input[type="file"]');
+    const fileName = document.getElementById('fileName');
+
+    if (fileInput) {
+        fileInput.addEventListener('change', () => {
+            fileName.textContent = fileInput.files.length
+                ? fileInput.files[0].name
+                : 'Ningún archivo seleccionado';
+        });
+    }
+});
+</script>
+
+    
+{% endblock %}
+
+
+{% block extra_css %}
+<style>
+
+.header-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+
+
+.botons-header {
+    display: flex;
+    gap: 10px;
+    margin-left: auto;
+}
+
+
+.botons-header button {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    height: 34px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+
+.btn-primary {
+    background: #2563eb;
+    color: white;
+    border: 1px solid #2563eb;
+}
+
+.btn-primary:hover {
+    background: #1e40af;
+    border-color: #1e40af;
+}
+
+
+.btn-secondary {
+    background: #f5f5f5;
+    color: #333;
+    border: 1px solid #e0e0e0;
+}
+
+.btn-secondary:hover {
+    background: #eaeaea;
+}
+
+
+.mdi {
+    font-size: 16px;
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+}
+
+.modal-content {
+    background: #fff;
+    width: 400px;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    animation: fadeIn 0.25s ease;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 16px;
+    border-bottom: 1px solid #eee;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 18px;
+}
+
+.modal-close {
+    font-size: 22px;
+    cursor: pointer;
+}
+
+.modal-body {
+    padding: 16px;
+}
+
+.modal-footer {
+    padding: 14px 16px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    border-top: 1px solid #eee;
+}
+
+@keyframes fadeIn {
+    from {
+        transform: translateY(-10px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+    .page-title {
+        margin-bottom: 30px;
+    }
+    
+    .page-title h1 {
+        color: #333;
+        font-size: 24px;
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+    
+    .page-title .subtitle {
+        color: #666;
+        font-size: 14px;
+    }
+    
+    .view-switch {
+        display: inline-flex;
+        background: #f5f5f5;
+        border-radius: 12px;
+        padding: 4px;
+        margin-bottom: 25px;
+        border: 1px solid #e0e0e0;
+    }
+    
+    .view-option {
+        padding: 5px 60px;
+        border-radius: 10px;
+        font-weight: 500;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        color: #666;
+        border: none;
+        background: transparent;
+    }
+    
+    .view-option.active {
+        background: white;
+        color: #333;
+    }
+    
+    .groups-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        margin-bottom: 40px;
+        width: 100%;
+    }
+    
+    .students-grid {
+        display: none;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        margin-bottom: 40px;
+        width: 100%;
+    }
+    
+    .group-card, .student-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        border: 2px solid #e4e4e4;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        height: 100%;
+        box-sizing: border-box;
+    }
+    
+    .group-card:hover, .student-card:hover {
+        border: 2px solid rgb(0, 0, 180);
+        box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .group-header, .student-header {
+        border-bottom: 1px solid #eee;
+        padding-bottom: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .group-header-main {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-bottom: 8px;
+    }
+    
+    .materia-principal {
+        color: #333;
+        font-size: 16px;
+        font-weight: 600;
+        margin-right: 8px;
+    }
+    
+    .group-separator {
+        color: #666;
+        margin-right: 8px;
+        font-weight: 500;
+    }
+    
+    .group-clave {
+        color: #666;
+        font-size: 16px;
+        font-weight: 400;
+    }
+    
+    .group-meta {
+        display: flex;
+        justify-content: flex-start;
+        color: #666;
+        font-size: 14px;
+        margin-top: 6px
+    }
+    
+    .group-stats {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .stat-value {
+        font-size: 22px;
+        color: #333;
+        line-height: 1.2;
+        font-weight: 600;
+    }
+    
+    .stat-label {
+        font-size: 12px;
+        color: #666;
+        margin-bottom: 4px;
+    }
+    
+    .riesgo .stat-value {
+        color: #DC2626;
+    }
+    
+    .attention-btn {
+        display: flex;
+        align-items: center;
+        background: #dc26261a;
+        border-radius: 8px;
+        padding: 8px;
+        color: #DC2626;
+        font-size: 12px;
+    }
+    
+    @media (max-width: 768px) {
+        .groups-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .group-stats {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .view-option {
+            padding: 8px 40px;
+            font-size: 13px;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .view-option {
+            padding: 8px 20px;
+        }
+        
+        .group-header-main {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .materia-principal,
+        .group-separator,
+        .group-clave {
+            margin-bottom: 2px;
+        }
+    }
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 16px;
+}
+
+.form-group label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #374151;
+}
+
+.form-group input {
+    height: 38px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+    font-size: 14px;
+    color: #111827;
+    outline: none;
+    transition: all 0.2s ease;
+    background: #fff;
+}
+
+.form-group input::placeholder {
+    color: #9ca3af;
+}
+
+.form-group input:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+}
+
+.form-group input.error {
+    border-color: #dc2626;
+}
+
+.modal-footer .btn-primary,
+.modal-footer .btn-secondary {
+    height: 36px;
+    padding: 6px 18px;
+    font-size: 13px;
+    border-radius: 10px;
+}
+
+.form-group select {
+    height: 38px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+    font-size: 14px;
+    color: #111827;
+    background: #fff;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.form-group select:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+}
+
+/* ===== FILE INPUT CUSTOM ===== */
+
+.file-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 38px;
+    padding: 0 12px;
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+    cursor: pointer;
+    background: #fff;
+    transition: all 0.2s ease;
+}
+
+.file-input-wrapper:hover {
+    border-color: #2563eb;
+}
+
+.file-input-wrapper input[type="file"] {
+    display: none;
+}
+
+.file-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #2563eb;
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.file-name {
+    font-size: 13px;
+    color: #6b7280;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+</style>
+{% endblock %}
