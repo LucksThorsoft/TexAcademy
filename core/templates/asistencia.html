@@ -3,5 +3,1041 @@
 {% block header_title %}Asistencia{% endblock %}
 
 {% block content %}
-    <h1>Aqui va la seccion de Asistencia</h1>
+<script src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/js/all.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+    /* (Mantén todo el CSS que ya tienes) */
+    * {
+        box-sizing: border-box;
+        font-family: 'Inter', sans-serif;
+    }
+    
+    body {
+        background-color: #f1f5f9;
+        margin: 0;
+        color: #1e293b;
+        display: flex;
+        min-height: 100vh;
+    }
+
+    .container {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    /* Tabs */
+    .tabs {
+        display: flex;
+        background-color: #e2e8f0;
+        padding: 4px;
+        border-radius: 12px;
+        width: fit-content;
+        margin-bottom: 10px;
+    }
+
+    .tab {
+        padding: 8px 32px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        color: #64748b;
+        text-align: center;
+    }
+
+    .tab:hover {
+        background-color: rgba(255, 255, 255, 0.5);
+    }
+
+    .tab.active {
+        background-color: white;
+        color: #1e293b;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    /* Contenido de las pestañas */
+    .tab-content {
+        display: none;
+        animation: fadeIn 0.3s ease;
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Estilos para la vista de Registro Diario */
+    .card {
+        background-color: white;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        padding: 24px;
+        margin-bottom: 24px;
+    }
+
+    .header-section {
+        margin-bottom: 32px;
+    }
+
+    .header-section h1 {
+        font-size: 18px;
+        font-weight: 600;
+        margin: 0 0 4px 0;
+        color: #1e293b;
+    }
+
+    .header-section p {
+        font-size: 14px;
+        color: #64748b;
+        margin: 0;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+        margin-bottom: 32px;
+    }
+
+    .form-group label {
+        display: block;
+        font-size: 12px;
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 8px;
+    }
+
+    .select-wrapper, .date-wrapper {
+        position: relative;
+        width: 100%;
+    }
+
+    .custom-input {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid transparent;
+        background-color: transparent;
+        font-size: 14px;
+        color: #1e293b;
+        border-radius: 8px;
+        appearance: none;
+        cursor: pointer;
+    }
+
+    .select-wrapper::after {
+        content: '\f078';
+        font-family: 'Font Awesome 6 Free';
+        font-weight: 900;
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 12px;
+        color: #94a3b8;
+        pointer-events: none;
+    }
+
+    .date-wrapper i {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #64748b;
+        font-size: 16px;
+    }
+
+    .date-wrapper input {
+        padding-left: 36px;
+        border: none;
+        font-family: inherit;
+        font-size: 14px;
+        color: #1e293b;
+        outline: none;
+    }
+
+    /* Tabla para Registro Diario */
+    .table-container {
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+    }
+
+    th {
+        background-color: #f8fafc;
+        padding: 12px 16px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #64748b;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    td {
+        padding: 12px 16px;
+        font-size: 14px;
+        color: #1e293b;
+        border-bottom: 1px solid #f1f5f9;
+        vertical-align: middle;
+    }
+
+    tr:last-child td {
+        border-bottom: none;
+    }
+
+    .student-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background-color: #e0e7ff;
+        color: #4338ca;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .matricula {
+        color: #64748b;
+    }
+
+    .status-actions {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+    }
+
+    .btn-status {
+        width: 44px;
+        height: 32px;
+        border-radius: 6px;
+        border: 1px solid #e2e8f0;
+        background-color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 14px;
+    }
+
+    .btn-status.active-check {
+        background-color: #dcfce7;
+        border-color: #bbf7d0;
+        color: #16a34a;
+    }
+
+    .btn-status.active-late {
+        background-color: #fef3c7;
+        border-color: #fde68a;
+        color: #d97706;
+    }
+
+    .btn-status.active-absent {
+        background-color: #fee2e2;
+        border-color: #fecaca;
+        color: #dc2626;
+    }
+
+    .btn-status i {
+        pointer-events: none;
+    }
+
+    .btn-status.inactive {
+        color: #64748b;
+    }
+
+    /* Summary Bar para Registro Diario */
+    .summary-bar {
+        background-color: #f8fafc;
+        border-radius: 8px;
+        padding: 16px;
+        display: flex;
+        justify-content: space-around;
+        margin-top: 24px;
+    }
+
+    .summary-item {
+        text-align: center;
+    }
+
+    .summary-value {
+        font-size: 24px;
+        font-weight: 600;
+        display: block;
+    }
+
+    .summary-label {
+        font-size: 12px;
+        color: #64748b;
+    }
+
+    .val-asistencias { color: #16a34a; }
+    .val-retardos { color: #b45309; }
+    .val-faltas { color: #dc2626; }
+
+    /* Footer Button para Registro Diario */
+    .footer-action {
+        margin-top: 24px;
+    }
+
+    .btn-save {
+        width: 100%;
+        background-color: #1d4ed8;
+        color: white;
+        border: none;
+        padding: 14px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+    .btn-save:hover {
+        background-color: #1e40af;
+    }
+
+    .btn-save:disabled {
+        background-color: #94a3b8;
+        cursor: not-allowed;
+    }
+
+    /* Estilos para la vista de Historial */
+    .historial-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 30px;
+    }
+
+    .historial-title-area h1 {
+        margin: 0;
+        font-size: 18px;
+        color: #2c3e50;
+        font-weight: 600;
+    }
+
+    .historial-title-area p {
+        margin: 5px 0 0 0;
+        font-size: 14px;
+        color: #95a5a6;
+    }
+
+    .dropdown {
+        font-size: 13px;
+        color: #7f8c8d;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* Tabla para Historial */
+    .historial-table th {
+        background-color: #f8fafc;
+        text-align: left;
+        padding: 15px 30px;
+        font-size: 12px;
+        text-transform: capitalize;
+        color: #2c3e50;
+        font-weight: 700;
+        border-bottom: 1px solid #edf2f7;
+    }
+
+    .historial-table td {
+        padding: 15px 30px;
+        font-size: 14px;
+        border-bottom: 1px solid #edf2f7;
+        vertical-align: middle;
+    }
+
+    .student-name {
+        font-weight: 500;
+        color: #34495e;
+        display: block;
+    }
+
+    .student-id {
+        font-size: 12px;
+        color: #95a5a6;
+        display: block;
+        margin-top: 2px;
+    }
+
+    .stat-box {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 32px;
+        border-radius: 4px;
+        font-weight: 500;
+    }
+
+    .bg-green-light { background-color: #e8f5e9; color: #2e7d32; }
+    .bg-red-light { background-color: #ffebee; color: #c62828; }
+    .bg-yellow-light { background-color: #fffde7; color: #f9a825; }
+    
+    .progress-container {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .progress-bar {
+        width: 60px;
+        height: 6px;
+        background-color: #f1f5f9;
+        border-radius: 3px;
+        position: relative;
+    }
+
+    .progress-fill {
+        height: 100%;
+        border-radius: 3px;
+    }
+
+    .progress-fill.green { background-color: #10b981; }
+    .progress-fill.orange { background-color: #f59e0b; }
+    
+    .percentage-text {
+        font-size: 13px;
+        color: #64748b;
+        min-width: 35px;
+    }
+
+    .badge {
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: capitalize;
+    }
+
+    .badge-blue { background-color: #2563eb; color: #fff; }
+    .badge-gray { background-color: #e2e8f0; color: #475569; }
+
+    .alert-message {
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin-bottom: 16px;
+        font-size: 14px;
+        display: none;
+    }
+
+    .alert-success {
+        background-color: #dcfce7;
+        color: #16a34a;
+        border: 1px solid #bbf7d0;
+    }
+
+    .alert-error {
+        background-color: #fee2e2;
+        color: #dc2626;
+        border: 1px solid #fecaca;
+    }
+
+    .alert-warning {
+        background-color: #fef3c7;
+        color: #b45309;
+        border: 1px solid #fde68a;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .status-actions {
+            justify-content: flex-start;
+        }
+        
+        .historial-header {
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .historial-table th, 
+        .historial-table td {
+            padding: 10px 15px;
+        }
+        
+        .progress-bar {
+            display: none;
+        }
+        
+        .tabs {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .tab {
+            padding: 8px 16px;
+            flex: 1;
+            text-align: center;
+        }
+    }
+  
+    .badge-warning {
+    background-color: #f59e0b;
+    color: white;
+}
+
+.badge-danger {
+    background-color: #dc2626;
+    color: white;
+}
+
+.progress-fill.red {
+    background-color: #ef4444;
+}
+    
+    .loading-spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid rgba(255,255,255,.3);
+        border-radius: 50%;
+        border-top-color: #fff;
+        animation: spin 1s ease-in-out infinite;
+        margin-right: 8px;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+</style>
+
+<div class="container">
+    <!-- Mensaje de alerta -->
+    <div id="alertMessage" class="alert-message"></div>
+
+    <!-- Menú de pestañas -->
+    <div class="tabs">
+        <div class="tab active" onclick="showTab('registro', event)">Registro Diario</div>
+        <div class="tab" onclick="showTab('historial', event)">Historial</div>
+    </div>
+
+    <!-- Contenido de Registro Diario -->
+    <div id="registro-tab" class="tab-content active">
+        <div class="card">
+            <div class="header-section">
+                <h1>Registro de Asistencia</h1>
+                <p>Bienvenido, {{ docente.nombre }}. Marca la asistencia de tus alumnos</p>
+            </div>
+
+            <!-- Form Controls -->
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Grupo</label>
+                    <div class="select-wrapper">
+                        <select class="custom-input" id="grupoSelect" onchange="cargarAlumnos()">
+                            <option value="">Selecciona un grupo</option>
+                            {% for grupo in grupos %}
+                                <option value="{{ grupo.id }}">{{ grupo.clave }} ({{ grupo.total_alumnos }} alumnos)</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Fecha</label>
+                    <div class="date-wrapper">
+                        <i class="fa-regular fa-calendar"></i>
+                        <input type="date" class="custom-input" id="fechaInput" value="{{ hoy|date:'Y-m-d' }}">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Student Table -->
+            <div id="tablaAlumnosContainer" style="display: none;">
+                <div class="table-container">
+                    <table id="tablaAsistencia">
+                        <thead>
+                            <tr>
+                                <th>Alumno</th>
+                                <th>Matrícula</th>
+                                <th style="text-align: right; padding-right: 40px;">Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaBody">
+                            <!-- Las filas se generarán dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Summary Bar -->
+                <div class="summary-bar">
+                    <div class="summary-item">
+                        <span class="summary-value val-asistencias" id="totalAsistencias">0</span>
+                        <span class="summary-label">Asistencias</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-value val-retardos" id="totalRetardos">0</span>
+                        <span class="summary-label">Retardos</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-value val-faltas" id="totalFaltas">0</span>
+                        <span class="summary-label">Faltas</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="sinAlumnosMessage" style="display: none; text-align: center; padding: 40px; color: #64748b;">
+                <i class="fa-solid fa-users" style="font-size: 48px; margin-bottom: 16px; color: #94a3b8;"></i>
+                <h3 style="margin: 0 0 8px 0; font-weight: 500;">No hay alumnos en este grupo</h3>
+                <p style="margin: 0; font-size: 14px;">Selecciona otro grupo para ver sus alumnos</p>
+            </div>
+            
+            <div id="cargandoAlumnosMessage" style="display: none; text-align: center; padding: 40px; color: #64748b;">
+                <i class="fa-solid fa-spinner fa-spin" style="font-size: 48px; margin-bottom: 16px; color: #94a3b8;"></i>
+                <h3 style="margin: 0 0 8px 0; font-weight: 500;">Cargando alumnos...</h3>
+            </div>
+        </div>
+
+        <!-- Footer Action -->
+        <div class="footer-action">
+            <button class="btn-save" id="btnGuardar" onclick="guardarAsistencia()" disabled>Guardar Asistencia</button>
+        </div>
+    </div>
+
+    <!-- Contenido de Historial -->
+    <div id="historial-tab" class="tab-content">
+        <div class="card">
+            <div class="historial-header">
+                <div class="historial-title-area">
+                    <h1>Historial de Asistencia</h1>
+                    <p>Resumen acumulado por alumno</p>
+                </div>
+                <div class="dropdown">
+                    <select id="historialGrupo" class="custom-input" style="border: 1px solid #e2e8f0; padding: 8px 12px; border-radius: 8px;" onchange="cargarHistorial()">
+                        <option value="">Selecciona un grupo</option>
+                        {% for grupo in grupos %}
+                            <option value="{{ grupo.id }}">{{ grupo.clave }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div id="historialTableContainer" style="display: none;">
+                <table class="historial-table">
+                    <thead>
+                        <tr>
+                            <th>Alumno</th>
+                            <th>Asistencias</th>
+                            <th>Faltas</th>
+                            <th>Retardos</th>
+                            <th>Porcentaje</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historialBody">
+                        <!-- Las filas se generarán dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <div id="sinHistorialMessage" style="display: block; text-align: center; padding: 40px; color: #64748b;">
+                <i class="fa-solid fa-chart-line" style="font-size: 48px; margin-bottom: 16px; color: #94a3b8;"></i>
+                <h3 style="margin: 0 0 8px 0; font-weight: 500;">Selecciona un grupo para ver el historial</h3>
+                <p style="margin: 0; font-size: 14px;">Los datos de asistencia se mostrarán aquí</p>
+            </div>
+            
+            <div id="cargandoHistorialMessage" style="display: none; text-align: center; padding: 40px; color: #64748b;">
+                <i class="fa-solid fa-spinner fa-spin" style="font-size: 48px; margin-bottom: 16px; color: #94a3b8;"></i>
+                <h3 style="margin: 0 0 8px 0; font-weight: 500;">Cargando historial...</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Variables globales
+    let alumnosActuales = [];
+    let asistenciasActuales = {};
+
+    // Función para mostrar mensajes de alerta
+    function mostrarAlerta(mensaje, tipo) {
+        const alertDiv = document.getElementById('alertMessage');
+        alertDiv.textContent = mensaje;
+        alertDiv.className = `alert-message alert-${tipo}`;
+        alertDiv.style.display = 'block';
+        
+        setTimeout(() => {
+            alertDiv.style.display = 'none';
+        }, 5000);
+    }
+
+    // Mostrar pestaña seleccionada
+    function showTab(tabName, event) {
+        // Actualizar pestañas
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        
+        // Activar pestaña clickeada
+        event.target.classList.add('active');
+        
+        // Mostrar contenido correspondiente
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.remove('active');
+        });
+        
+        document.getElementById(`${tabName}-tab`).classList.add('active');
+    }
+
+    // Cargar alumnos del grupo seleccionado
+    function cargarAlumnos() {
+        const grupoId = document.getElementById('grupoSelect').value;
+        
+        if (!grupoId) {
+            document.getElementById('tablaAlumnosContainer').style.display = 'none';
+            document.getElementById('sinAlumnosMessage').style.display = 'block';
+            document.getElementById('cargandoAlumnosMessage').style.display = 'none';
+            document.getElementById('btnGuardar').disabled = true;
+            return;
+        }
+
+        // Mostrar mensaje de carga
+        document.getElementById('tablaAlumnosContainer').style.display = 'none';
+        document.getElementById('sinAlumnosMessage').style.display = 'none';
+        document.getElementById('cargandoAlumnosMessage').style.display = 'block';
+        document.getElementById('btnGuardar').disabled = true;
+
+        // Buscar el grupo en los datos del servidor
+        fetch(`/obtener-alumnos-por-grupo/?grupo_id=${grupoId}`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('cargandoAlumnosMessage').style.display = 'none';
+                
+                if (data.alumnos && data.alumnos.length > 0) {
+                    alumnosActuales = data.alumnos;
+                    // Inicializar asistencias (por defecto 'Asistió')
+                    asistenciasActuales = {};
+                    alumnosActuales.forEach(alumno => {
+                        asistenciasActuales[alumno.id] = 'Asistió';
+                    });
+                    
+                    actualizarTablaAsistencia();
+                    document.getElementById('tablaAlumnosContainer').style.display = 'block';
+                    document.getElementById('sinAlumnosMessage').style.display = 'none';
+                    document.getElementById('btnGuardar').disabled = false;
+                } else {
+                    document.getElementById('tablaAlumnosContainer').style.display = 'none';
+                    document.getElementById('sinAlumnosMessage').style.display = 'block';
+                    document.getElementById('btnGuardar').disabled = true;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('cargandoAlumnosMessage').style.display = 'none';
+                mostrarAlerta('Error al cargar los alumnos', 'error');
+                document.getElementById('sinAlumnosMessage').style.display = 'block';
+                document.getElementById('btnGuardar').disabled = true;
+            });
+    }
+
+    // Actualizar tabla de asistencia
+    function actualizarTablaAsistencia() {
+        const tablaBody = document.getElementById('tablaBody');
+        tablaBody.innerHTML = '';
+        
+        alumnosActuales.forEach((alumno, index) => {
+            const estado = asistenciasActuales[alumno.id] || 'Asistió';
+            const row = document.createElement('tr');
+            
+            // Obtener inicial del nombre
+            const inicial = alumno.nombre.charAt(0);
+            
+            row.innerHTML = `
+                <td>
+                    <div class="student-info">
+                        <div class="avatar" style="background-color: ${getAvatarColor(index)}; color: ${getAvatarTextColor(index)};">${inicial}</div>
+                        <span>${alumno.nombre}</span>
+                    </div>
+                </td>
+                <td><span class="matricula">${alumno.matricula}</span></td>
+                <td>
+                    <div class="status-actions">
+                        <div class="btn-status ${estado === 'Asistió' ? 'active-check' : 'inactive'}" onclick="cambiarEstado(${alumno.id}, 'Asistió')">
+                            <i class="fa-solid fa-check"></i>
+                        </div>
+                        <div class="btn-status ${estado === 'Retardo' ? 'active-late' : 'inactive'}" onclick="cambiarEstado(${alumno.id}, 'Retardo')">
+                            <i class="fa-solid fa-minus"></i>
+                        </div>
+                        <div class="btn-status ${estado === 'No asistió' ? 'active-absent' : 'inactive'}" onclick="cambiarEstado(${alumno.id}, 'No asistió')">
+                            <i class="fa-solid fa-xmark"></i>
+                        </div>
+                    </div>
+                </td>
+            `;
+            
+            tablaBody.appendChild(row);
+        });
+        
+        actualizarResumen();
+    }
+
+    // Cambiar estado de asistencia
+    function cambiarEstado(id, nuevoEstado) {
+        asistenciasActuales[id] = nuevoEstado;
+        actualizarTablaAsistencia();
+    }
+
+    // Actualizar resumen de asistencias
+    function actualizarResumen() {
+        let asistencias = 0;
+        let retardos = 0;
+        let faltas = 0;
+        
+        Object.values(asistenciasActuales).forEach(estado => {
+            if (estado === 'Asistió') asistencias++;
+            else if (estado === 'Retardo') retardos++;
+            else if (estado === 'No asistió') faltas++;
+        });
+        
+        document.getElementById('totalAsistencias').textContent = asistencias;
+        document.getElementById('totalRetardos').textContent = retardos;
+        document.getElementById('totalFaltas').textContent = faltas;
+    }
+
+// Guardar asistencia
+function guardarAsistencia() {
+    const grupoId = document.getElementById('grupoSelect').value;
+    const fecha = document.getElementById('fechaInput').value;
+    
+    if (!grupoId) {
+        mostrarAlerta('Selecciona un grupo', 'warning');
+        return;
+    }
+    
+    if (!fecha) {
+        mostrarAlerta('Selecciona una fecha', 'warning');
+        return;
+    }
+
+    // Verificar que hay alumnos
+    if (alumnosActuales.length === 0) {
+        mostrarAlerta('No hay alumnos en este grupo', 'warning');
+        return;
+    }
+
+    // Deshabilitar botón y mostrar carga
+    const btnGuardar = document.getElementById('btnGuardar');
+    const textoOriginal = btnGuardar.innerHTML;
+    btnGuardar.disabled = true;
+    btnGuardar.innerHTML = '<span class="loading-spinner"></span> Guardando...';
+
+    console.log('Guardando asistencia:', {
+        grupo_id: grupoId,
+        fecha: fecha,
+        asistencias: asistenciasActuales
+    });
+
+    fetch('/guardar-asistencia/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+            grupo_id: grupoId,
+            fecha: fecha,
+            asistencias: asistenciasActuales
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(err => { throw new Error(err.error || 'Error en el servidor'); });
+        }
+        return response.json();
+    })
+    .then(data => {
+        btnGuardar.disabled = false;
+        btnGuardar.innerHTML = textoOriginal;
+        
+        if (data.success) {
+            mostrarAlerta(data.message || 'Asistencia guardada correctamente', 'success');
+            
+            // Actualizar automáticamente el historial si estamos en esa pestaña
+            const historialTab = document.getElementById('historial-tab');
+            if (historialTab.classList.contains('active')) {
+                cargarHistorial();
+            } else {
+                // Opcional: cambiar a la pestaña de historial después de guardar
+                // document.querySelector('.tab[onclick="showTab(\'historial\', event)"]').click();
+            }
+        } else {
+            mostrarAlerta('Error: ' + (data.error || 'Error desconocido'), 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        btnGuardar.disabled = false;
+        btnGuardar.innerHTML = textoOriginal;
+        mostrarAlerta('Error al guardar la asistencia: ' + error.message, 'error');
+    });
+}
+    
+// Cargar historial de asistencia
+function cargarHistorial() {
+    const grupoId = document.getElementById('historialGrupo').value;
+    
+    if (!grupoId) {
+        document.getElementById('historialTableContainer').style.display = 'none';
+        document.getElementById('sinHistorialMessage').style.display = 'block';
+        document.getElementById('cargandoHistorialMessage').style.display = 'none';
+        return;
+    }
+
+    // Mostrar mensaje de carga
+    document.getElementById('historialTableContainer').style.display = 'none';
+    document.getElementById('sinHistorialMessage').style.display = 'none';
+    document.getElementById('cargandoHistorialMessage').style.display = 'block';
+
+    console.log('Cargando historial para grupo:', grupoId);
+
+    fetch(`/obtener-historial-asistencia/?grupo_id=${grupoId}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Datos de historial recibidos:', data);
+            document.getElementById('cargandoHistorialMessage').style.display = 'none';
+            
+            if (data.historial && data.historial.length > 0) {
+                actualizarTablaHistorial(data.historial);
+                document.getElementById('historialTableContainer').style.display = 'block';
+                document.getElementById('sinHistorialMessage').style.display = 'none';
+            } else {
+                document.getElementById('historialTableContainer').style.display = 'none';
+                document.getElementById('sinHistorialMessage').style.display = 'block';
+                
+                let mensaje = 'No hay datos de asistencia para este grupo';
+                if (data.message) {
+                    mensaje = data.message;
+                }
+                
+                document.getElementById('sinHistorialMessage').innerHTML = `
+                    <i class="fa-solid fa-chart-line" style="font-size: 48px; margin-bottom: 16px; color: #94a3b8;"></i>
+                    <h3 style="margin: 0 0 8px 0; font-weight: 500;">${mensaje}</h3>
+                    <p style="margin: 0; font-size: 14px;">Registra asistencias para ver el historial</p>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error detallado:', error);
+            document.getElementById('cargandoHistorialMessage').style.display = 'none';
+            mostrarAlerta('Error al cargar el historial: ' + error.message, 'error');
+            document.getElementById('sinHistorialMessage').style.display = 'block';
+            document.getElementById('sinHistorialMessage').innerHTML = `
+                <i class="fa-solid fa-exclamation-triangle" style="font-size: 48px; margin-bottom: 16px; color: #dc2626;"></i>
+                <h3 style="margin: 0 0 8px 0; font-weight: 500;">Error al cargar datos</h3>
+                <p style="margin: 0; font-size: 14px;">${error.message}</p>
+            `;
+        });
+}
+
+    
+// Actualizar tabla de historial
+function actualizarTablaHistorial(historial) {
+    const historialBody = document.getElementById('historialBody');
+    historialBody.innerHTML = '';
+    
+    historial.forEach((item, index) => {
+        const row = document.createElement('tr');
+        
+        // Determinar color del badge según el estado
+        let badgeClass = 'badge-gray';
+        if (item.estado === 'Bueno') badgeClass = 'badge-blue';
+        else if (item.estado === 'Regular') badgeClass = 'badge-warning';
+        else if (item.estado === 'Crítico') badgeClass = 'badge-danger';
+        else if (item.estado === 'Sin datos') badgeClass = 'badge-gray';
+        
+        row.innerHTML = `
+            <td>
+                <span class="student-name">${item.nombre}</span>
+                <span class="student-id">${item.matricula}</span>
+            </td>
+            <td><div class="stat-box bg-green-light">${item.asistencias}</div></td>
+            <td><div class="stat-box bg-red-light">${item.faltas}</div></td>
+            <td><div class="stat-box bg-yellow-light">${item.retardos}</div></td>
+            <td>
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill ${item.porcentaje >= 80 ? 'green' : item.porcentaje >= 60 ? 'orange' : 'red'}" 
+                             style="width: ${item.porcentaje}%; background-color: ${item.porcentaje >= 80 ? '#10b981' : item.porcentaje >= 60 ? '#f59e0b' : '#ef4444'};"></div>
+                    </div>
+                    <span class="percentage-text">${item.porcentaje}%</span>
+                </div>
+            </td>
+            <td>
+                <span class="badge ${badgeClass}" 
+                      style="background-color: ${item.estado === 'Bueno' ? '#2563eb' : item.estado === 'Regular' ? '#f59e0b' : item.estado === 'Crítico' ? '#dc2626' : '#e2e8f0'}; 
+                             color: white; padding: 4px 8px; border-radius: 4px;">
+                    ${item.estado}
+                </span>
+            </td>
+        `;
+        
+        historialBody.appendChild(row);
+    });
+}
+    // Funciones auxiliares para colores de avatar
+    function getAvatarColor(index) {
+        const colors = ['#e0e7ff', '#fef3c7', '#d1fae5', '#fee2e2', '#ede9fe', '#fae8ff'];
+        return colors[index % colors.length];
+    }
+
+    function getAvatarTextColor(index) {
+        const colors = ['#4338ca', '#92400e', '#065f46', '#991b1b', '#5b21b6', '#86198f'];
+        return colors[index % colors.length];
+    }
+
+    // Función para obtener el CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // Inicializar al cargar la página
+    document.addEventListener('DOMContentLoaded', function() {
+        // Si hay un grupo seleccionado por defecto, cargar sus alumnos
+        const grupoSelect = document.getElementById('grupoSelect');
+        if (grupoSelect.value) {
+            cargarAlumnos();
+        }
+    });
+</script>
 {% endblock %}
