@@ -4,7 +4,7 @@
 
 {% block content %}
 <style>
-    /* Estilos generales */
+    /* Estilos generales (manteniendo los tuyos) */
     .page-title {
         margin-bottom: 30px;
     }
@@ -75,11 +75,13 @@
         transition: transform 0.2s ease, box-shadow 0.2s ease;
         height: 100%;
         box-sizing: border-box;
+        cursor: pointer; /* Agregado: cursor pointer */
     }
     
     .group-card:hover, .student-card:hover {
         border: 2px solid rgb(0, 0, 180);
         box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px); /* Efecto adicional en hover */
     }
     
     .group-header, .student-header {
@@ -120,7 +122,7 @@
     /* Número de alumnos */
     .group-meta {
         display: flex;
-        justify-content: space-between;
+        gap: 5px;
         color: #666;
         font-size: 14px;
         margin-top: 5px;
@@ -151,7 +153,7 @@
         color: #DC2626;
     }
     
-    /* Botón de atención - Regresar al diseño original */
+    /* Botón de atención */
     .attention-btn {
         display: flex;
         align-items: center;
@@ -160,6 +162,235 @@
         padding: 8px;
         color: #DC2626;
         font-size: 12px;
+        gap: 8px;
+    }
+    
+    /* ===== ESTILOS PARA EL MODAL ===== */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .modal-overlay.active {
+        display: flex;
+    }
+    
+    .modal-container {
+        background: white;
+        border-radius: 16px;
+        width: 90%;
+        max-width: 850px; /* Ancho máximo reducido */
+        height: 70vh; /* Altura fija en 70% de la ventana */
+        max-height: 600px; /* Altura máxima */
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        display: flex;
+        flex-direction: column;
+    }
+    
+    /* Header del modal */
+    .modal-header {
+        padding: 20px 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #f8f9fa;
+        gap: 20px;
+        flex-shrink: 0; /* No se reduce */
+        border-bottom: 1px solid #eaeaea;
+    }
+    
+    .modal-title {
+        /* Ahora contiene la estructura group-header-main */
+        flex-grow: 1;
+        min-width: 0; /* Para que funcione el text-overflow */
+    }
+
+    /* Ajustes para el group-header-main dentro del modal */
+    .modal-title .group-header-main {
+        margin-bottom: 0;
+        align-items: center;
+        flex-wrap: nowrap; /* Para que no se rompa en múltiples líneas */
+    }
+
+    .modal-title .materia-principal {
+        color: #333;
+        font-size: 18px; /* Un poco más grande que en las tarjetas */
+        font-weight: 600;
+        margin-right: 8px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .modal-title .group-separator {
+        color: #666;
+        margin-right: 8px;
+        font-weight: 500;
+        font-size: 18px;
+    }
+
+    .modal-title .group-clave {
+        color: #666;
+        font-size: 18px; /* Un poco más grande que en las tarjetas */
+        font-weight: 400;
+        white-space: nowrap;
+    }
+    
+    .close-btn {
+        background: none;
+        border: none;
+        font-size: 24px;
+        color: #666;
+        cursor: pointer;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        flex-shrink: 0;
+    }
+    
+    .close-btn:hover {
+        background: #f0f0f0;
+        color: #333;
+    }
+
+    /* Switch interno del modal */
+    .modal-switch-container {
+        padding: 20px 24px;
+        flex-shrink: 0; /* No se reduce */
+    }
+    
+    /* Switch interno del modal */
+    .modal-switch {
+        display: inline-flex;
+        background: #f5f5f5;
+        border-radius: 12px;
+        padding: 4px;
+        border: 1px solid #e0e0e0;
+        width: fit-content;
+    }
+    
+    .modal-switch-option {
+        padding: 8px 40px;
+        border-radius: 10px;
+        font-weight: 500;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        color: #666;
+        border: none;
+        background: transparent;
+        white-space: nowrap;
+    }
+    
+    .modal-switch-option.active {
+        background: white;
+        color: #333;
+    }
+
+    /* Contenedor principal del contenido */
+    .modal-content-wrapper {
+        flex: 1; /* Ocupa el espacio restante */
+        display: flex;
+        flex-direction: column;
+        min-height: 0; /* Importante para el scroll interno */
+    }
+    
+    /* Contenido del modal - Área con scroll */
+    .modal-content {
+        padding: 0 24px 24px;
+        overflow-y: auto;
+        flex: 1; /* Ocupa todo el espacio disponible */
+        display: flex;
+        flex-direction: column;
+    }
+    
+    /* Vista dentro del contenido - Todas ocupan el mismo espacio */
+    .modal-view {
+        display: none;
+        flex: 1; /* Todas las vistas ocupan el mismo espacio */
+        min-height: 0; /* Importante para scroll interno */
+    }
+    
+    .modal-view.active {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    /* Estilos para las tablas/vistas internas */
+    .alumnos-table {
+        width: 100%;
+        border-collapse: collapse;
+        flex: 1;
+    }
+
+    .alumnos-table-wrapper {
+        flex: 1;
+        overflow-y: auto;
+        border: 1px solid #eaeaea;
+        border-radius: 8px;
+    }
+    
+    .alumnos-table th {
+        text-align: left;
+        padding: 12px 16px;
+        background: #f8f9fa;
+        color: #666;
+        font-weight: 600;
+        font-size: 14px;
+        border-bottom: 2px solid #eaeaea;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+    
+    .alumnos-table td {
+        padding: 12px 16px;
+        border-bottom: 1px solid #f0f0f0;
+        font-size: 14px;
+    }
+    
+    .alumnos-table tr:hover {
+        background: #f9f9f9;
+    }
+    
+    /* Contenedor para mensajes de contenido en desarrollo */
+    .dev-message-container {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 300px; /* Altura mínima para mantener tamaño */
+    }
+
+    .dev-message {
+        text-align: center;
+        padding: 40px;
+        color: #666;
+        width: 100%;
+    }
+    
+    .dev-message h3 {
+        font-size: 18px;
+        margin-bottom: 10px;
+        color: #333;
+    }
+    
+    .dev-message p {
+        font-size: 14px;
+        color: #999;
     }
     
     /* Responsive */
@@ -168,8 +399,44 @@
             grid-template-columns: 1fr;
         }
         
-        .group-stats {
-            grid-template-columns: repeat(2, 1fr);
+        .modal-container {
+            width: 95%;
+            height: 75vh; /* Un poco más alto en móviles */
+            max-height: none;
+        }
+        
+        .modal-header {
+            padding: 16px 20px;
+        }
+
+        .modal-switch-container {
+            padding: 0 20px;
+        }
+        
+        .modal-content {
+            padding: 0 20px 20px;
+        }
+        
+        .modal-switch {
+            margin-bottom: 15px;
+            overflow-x: auto;
+            white-space: nowrap;
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .modal-switch-option {
+            padding: 8px 20px;
+            font-size: 13px;
+            flex: 1;
+            text-align: center;
+            min-width: 100px;
+        }
+
+        .alumnos-table th,
+        .alumnos-table td {
+            padding: 10px 12px;
+            font-size: 13px;
         }
         
         .view-option {
@@ -179,6 +446,23 @@
     }
     
     @media (max-width: 480px) {
+        .modal-container {
+            height: 80vh;
+            border-radius: 12px;
+        }
+
+        .modal-title .materia-principal,
+        .modal-title .group-separator,
+        .modal-title .group-clave {
+            font-size: 16px;
+        }
+
+        .close-btn {
+            width: 32px;
+            height: 32px;
+            font-size: 20px;
+        }
+
         .view-option {
             padding: 8px 20px;
         }
@@ -193,38 +477,45 @@
         .group-clave {
             margin-bottom: 2px;
         }
+        
+        .modal-switch-option {
+            padding: 8px 12px;
+            font-size: 12px;
+            min-width: 80px;
+        }
     }
 </style>
 
-<!-- Switch de vista -->
+<!-- Switch de vista principal -->
 <div class="view-switch" id="viewSwitch">
     <button class="view-option active" data-view="groups">Mis Grupos</button>
-    <button class="view-option" data-view="students">Todos los Alumnos</button>
+    <button class="view-option" data-view="students">Todos mis Alumnos</button>
 </div>
 
 <!-- Vista de Mis Grupos (visible por defecto) -->
 <div id="groupsView" class="view-content">
     <div class="groups-grid">
         {% for grupo in grupos %}
-        <div class="group-card">
+        <div class="group-card" 
+            data-group-id="{{ grupo.grupo_id }}" 
+            data-materia="{{ grupo.materias.0 }}" 
+            data-clave="{{ grupo.clave }}"
+            data-alumnos="{{ grupo.alumnos_json }}">
             <div class="group-header">
-                <!-- Formato: [Materia en negritas] | [Grupo sin negritas] -->
                 <div class="group-header-main">
                     {% if grupo.materias %}
-                        <!-- Mostrar la PRIMERA materia en negritas -->
                         <span class="materia-principal">{{ grupo.materias.0 }}</span>
                         <span class="group-separator">|</span>
                         <span class="group-clave">{{ grupo.clave }}</span>
                     {% else %}
-                        <!-- Si no hay materias, mostrar solo el grupo -->
                         <span class="materia-principal">Sin materia</span>
                         <span class="group-separator">|</span>
                         <span class="group-clave">{{ grupo.clave }}</span>
                     {% endif %}
                 </div>
                 
-                <!-- Número de alumnos -->
                 <div class="group-meta">
+                    <span class="mdi mdi-account-multiple"></span>
                     <span>{{ grupo.num_alumnos }} alumnos</span>
                 </div>
             </div>
@@ -241,8 +532,8 @@
                 </div>
             </div>
             
-            <!-- Botón de atención rojo -->
             <div class="attention-btn">
+                <span class="mdi mdi-alert"></span>
                 <span>-- alumnos requieren atención</span>
             </div>
         </div>
@@ -264,7 +555,6 @@
 <!-- Vista de Todos los Alumnos (oculta por defecto) -->
 <div id="studentsView" class="view-content" style="display: none;">
     <div class="students-grid">
-        <!-- Contenido dinámico de alumnos -->
         <div style="text-align: center; padding: 40px;">
             <p style="color: #666; font-size: 16px;">
                 Vista de todos los alumnos (en desarrollo)
@@ -276,8 +566,80 @@
     </div>
 </div>
 
+<!-- ===== MODAL ===== -->
+<div class="modal-overlay" id="groupModal">
+    <div class="modal-container">
+        <!-- Header con título y botón de cerrar -->
+        <div class="modal-header">
+            <div class="modal-title">
+                <div class="group-header-main">
+                    <span class="materia-principal" id="modalMateria">Materia</span>
+                    <span class="group-separator">|</span>
+                    <span class="group-clave" id="modalClave">Grupo</span>
+                </div>
+            </div>
+            <button class="close-btn" id="closeModal">&times;</button>
+        </div>
+        
+        <!-- Switch interno con 3 opciones -->
+        <div class="modal-switch-container">
+            <div class="modal-switch" id="modalSwitch">
+                <button class="modal-switch-option active" data-modal-view="alumnos">Alumnos</button>
+                <button class="modal-switch-option" data-modal-view="calificaciones">Calificaciones</button>
+                <button class="modal-switch-option" data-modal-view="alertas">Alertas</button>
+            </div>
+        </div>
+        
+        <!-- Contenedor principal del contenido -->
+        <div class="modal-content-wrapper">
+            <!-- Contenido del modal -->
+            <div class="modal-content">
+                <!-- Vista de Alumnos -->
+                <div class="modal-view active" id="modalAlumnos">
+                    <div class="alumnos-table-wrapper">
+                        <table class="alumnos-table">
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Matrícula</th>
+                                    <th>Promedio</th>
+                                    <th>Asistencia</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="modalAlumnosBody">
+                                <!-- Los datos se cargarán aquí dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Vista de Calificaciones -->
+                <div class="modal-view" id="modalCalificaciones">
+                    <div class="dev-message-container">
+                        <div class="dev-message">
+                            <h3>Calificaciones</h3>
+                            <p>Esta sección estará disponible próximamente</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Vista de Alertas -->
+                <div class="modal-view" id="modalAlertas">
+                    <div class="dev-message-container">
+                        <div class="dev-message">
+                            <h3>Alertas</h3>
+                            <p>Esta sección estará disponible próximamente</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
-    // Script para manejar el cambio de vista
+    // Script para manejar el cambio de vista principal
     document.addEventListener('DOMContentLoaded', function() {
         const viewSwitch = document.getElementById('viewSwitch');
         const viewOptions = viewSwitch.querySelectorAll('.view-option');
@@ -303,6 +665,162 @@
                 } else if (viewType === 'students') {
                     studentsView.style.display = 'block';
                 }
+            });
+        });
+        
+        // ===== FUNCIONALIDAD DEL MODAL =====
+        const modal = document.getElementById('groupModal');
+        const closeModalBtn = document.getElementById('closeModal');
+        const modalSwitch = document.getElementById('modalSwitch');
+        const modalSwitchOptions = modalSwitch.querySelectorAll('.modal-switch-option');
+        const modalViews = document.querySelectorAll('.modal-view');
+        const modalMateria = document.getElementById('modalMateria');
+        const modalClave = document.getElementById('modalClave');
+        const modalAlumnosTable = document.getElementById('modalAlumnosBody');
+        
+        // Función para formatear datos
+        function formatValue(value) {
+            if (value === null || value === undefined || value === 'null') {
+                return 'No asignado';
+            }
+            return value;
+        }
+        
+        // Función para determinar el estado con color
+        function getEstadoHTML(estado) {
+            const estadoStr = String(estado || '');
+            
+            if (!estadoStr || estadoStr === 'null' || estadoStr === 'No asignado') {
+                return '<span style="color: #999;">No asignado</span>';
+            }
+            
+            if (estadoStr.toLowerCase().includes('estable') || estadoStr.toLowerCase().includes('excelente')) {
+                return '<span style="color: #4CAF50;">✓ ' + estadoStr + '</span>';
+            } else if (estadoStr.toLowerCase().includes('atención') || estadoStr.toLowerCase().includes('atencion')) {
+                return '<span style="color: #FF9800;">⚠ ' + estadoStr + '</span>';
+            } else if (estadoStr.toLowerCase().includes('riesgo')) {
+                return '<span style="color: #F44336;">⚠ ' + estadoStr + '</span>';
+            } else {
+                return '<span>' + estadoStr + '</span>';
+            }
+        }
+        
+        // Abrir modal al hacer click en una tarjeta de grupo
+        document.querySelectorAll('.group-card').forEach(card => {
+            card.addEventListener('click', function() {
+                const materia = this.getAttribute('data-materia');
+                const clave = this.getAttribute('data-clave');
+                const alumnosJSON = this.getAttribute('data-alumnos');
+                
+                // Actualizar título del modal con el mismo formato
+                modalMateria.textContent = materia || 'Sin materia';
+                modalClave.textContent = clave;
+                
+                // Limpiar tabla anterior
+                modalAlumnosTable.innerHTML = '';
+                
+                // Parsear datos JSON de alumnos
+                let alumnosData = [];
+                try {
+                    if (alumnosJSON && alumnosJSON !== 'null') {
+                        alumnosData = JSON.parse(alumnosJSON);
+                    }
+                } catch (error) {
+                    console.error('Error parsing JSON:', error);
+                    alumnosData = [];
+                }
+                
+                // Si hay alumnos, llenar la tabla
+                if (alumnosData.length > 0) {
+                    alumnosData.forEach(alumno => {
+                        const row = document.createElement('tr');
+                        
+                        // Formatear promedio
+                        let promedioDisplay = formatValue(alumno.promedio);
+                        if (alumno.promedio !== null && alumno.promedio !== undefined && alumno.promedio !== 'null') {
+                            // Si es número, mostrarlo sin decimales si es entero
+                            if (!isNaN(alumno.promedio)) {
+                                const num = parseFloat(alumno.promedio);
+                                promedioDisplay = num % 1 === 0 ? num.toString() : num.toFixed(1);
+                            }
+                        }
+                        
+                        // Formatear asistencia
+                        let asistenciaDisplay = formatValue(alumno.asistencia);
+                        if (alumno.asistencia !== null && alumno.asistencia !== undefined && alumno.asistencia !== 'null') {
+                            // Si es número, agregar %
+                            if (!isNaN(alumno.asistencia)) {
+                                const num = parseFloat(alumno.asistencia);
+                                asistenciaDisplay = (num % 1 === 0 ? num.toString() : num.toFixed(1)) + '%';
+                            } else if (typeof alumno.asistencia === 'string' && !alumno.asistencia.includes('%')) {
+                                asistenciaDisplay = alumno.asistencia + '%';
+                            }
+                        }
+                        
+                        row.innerHTML = `
+                            <td>${alumno.nombre || 'No asignado'}</td>
+                            <td>${alumno.matricula || 'No asignado'}</td>
+                            <td>${promedioDisplay}</td>
+                            <td>${asistenciaDisplay}</td>
+                            <td>${getEstadoHTML(alumno.estado)}</td>
+                        `;
+                        
+                        modalAlumnosTable.appendChild(row);
+                    });
+                } else {
+                    // Mostrar mensaje si no hay alumnos
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td colspan="5" style="text-align: center; padding: 40px; color: #666;">
+                            No hay alumnos registrados en este grupo
+                        </td>
+                    `;
+                    modalAlumnosTable.appendChild(row);
+                }
+                
+                // Mostrar modal
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            });
+        });
+        
+        // Cerrar modal
+        closeModalBtn.addEventListener('click', function() {
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        });
+        
+        // Cerrar modal al hacer click fuera del contenido
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            }
+        });
+        
+        // Cerrar modal con tecla ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && modal.classList.contains('active')) {
+                modal.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            }
+        });
+        
+        // Cambiar vista dentro del modal
+        modalSwitchOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                // Remover clase active de todos
+                modalSwitchOptions.forEach(opt => opt.classList.remove('active'));
+                
+                // Agregar clase active al botón clickeado
+                this.classList.add('active');
+                
+                // Ocultar todas las vistas
+                modalViews.forEach(view => view.classList.remove('active'));
+                
+                // Mostrar la vista correspondiente
+                const viewType = this.getAttribute('data-modal-view');
+                document.getElementById(`modal${viewType.charAt(0).toUpperCase() + viewType.slice(1)}`).classList.add('active');
             });
         });
     });
