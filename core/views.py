@@ -603,3 +603,48 @@ def asistencia(request):
         return redirect('login')
     
     return render(request, "asistencia.html", context)
+
+# Agrega esto en tu views.py
+
+@require_POST
+def new_group(request):
+    """Vista para crear un nuevo grupo"""
+    if not request.session.get('usuario_id'):
+        return redirect('login')
+    
+    roles = request.session.get('usuario_roles', [])
+    if 'Director' not in roles:
+        return redirect('dashboard')
+    
+    # Aquí procesas la creación del grupo
+    # Asumiendo que tienes un formulario para grupos
+    form = GrupoForm(request.POST)
+    
+    if form.is_valid():
+        grupo = form.save()
+        messages.success(request, f'Grupo {grupo.clave} creado correctamente')
+    else:
+        messages.error(request, 'Error al crear el grupo')
+    
+    return redirect('director')
+
+@require_POST
+def new_materia(request):
+    """Vista para asignar materia a un grupo con docente"""
+    if not request.session.get('usuario_id'):
+        return redirect('login')
+    
+    roles = request.session.get('usuario_roles', [])
+    if 'Director' not in roles:
+        return redirect('dashboard')
+    
+    # Procesar la asignación de materia
+    form = GrupoDocenteMateriaForm(request.POST)
+    
+    if form.is_valid():
+        form.save()
+        messages.success(request, 'Materia asignada correctamente')
+    else:
+        messages.error(request, 'Error al asignar la materia')
+    
+    return redirect('director')

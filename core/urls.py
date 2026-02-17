@@ -22,4 +22,8 @@ urlpatterns = [
     path('detalle-actividad/<int:id>/', views.detalleActividad, name='detalle_actividad'),
     path('guardar-entregas/', views.guardar_entregas, name='guardar_entregas'),
     path('new-user/', views.new_user, name='new_user'),
+    
+    # 👇 AGREGAR ESTAS NUEVAS URLs 👇
+    path('new-group/', views.new_group, name='new_group'),  # Para crear grupo
+    path('new-materia/', views.new_materia, name='new_materia'),  # Para asignar materia a grupo
 ]
