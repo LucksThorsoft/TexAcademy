@@ -19,6 +19,9 @@ urlpatterns = [
     path('director/new_user', views.new_user, name='new_user'),
     path("grupo/nuevo/", views.new_group, name="new_group"),
     path('materia/nueva/', views.new_materia, name='new_materia'),
+    path('obtener-alumnos-por-grupo/', views.obtener_alumnos_por_grupo, name='obtener_alumnos_por_grupo'),
+    path('guardar-asistencia/', views.guardar_asistencia, name='guardar_asistencia'),
+    path('obtener-historial-asistencia/', views.obtener_historial_asistencia, name='obtener_historial_asistencia'),
 
     
 ]
