@@ -2,15 +2,21 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.hashers import check_password
 from django.views.decorators.http import require_POST
-from django.http import JsonResponse
 import csv
-import json
-import re
 from io import TextIOWrapper
 from .forms import *
 from .models import *
+import json
 
 # Create your views here.
+from django.http import JsonResponse
+import json
+from .models import Grupo, Actividad, Entrega, Alumno, GrupoDocenteMateria, Parcial
+
+
+def home(request):
+    return render(request, "home.html")
+
 
 def dashboard(request):
     return render(request, "dashboard.html")
@@ -54,6 +60,7 @@ def gruposAlumnos(request):
                 def extract_matricula_number(matricula):
                     try:
                         # Extraer solo los dígitos de la matrícula
+                        import re
                         numbers = re.findall(r'\d+', matricula)
                         if numbers:
                             return int(numbers[0])
@@ -105,7 +112,9 @@ def gruposAlumnos(request):
     
     return render(request, "gruposAlumnos.html", context)
 
+
 def actividades(request):
+
     if request.method == "POST":
         titulo = request.POST.get("titulo")
         descripcion = request.POST.get("descripcion")
@@ -151,6 +160,7 @@ def actividades(request):
         "grupos": grupos,
         "actividades": actividades
     })
+
 
 def detalleActividad(request, id):
     actividad = Actividad.objects.select_related(
@@ -199,6 +209,7 @@ def detalleActividad(request, id):
 
     return JsonResponse(data)
 
+
 def guardar_entregas(request):
     if request.method == "POST":
         data = json.loads(request.body)
@@ -213,139 +224,7 @@ def guardar_entregas(request):
 
     return JsonResponse({"error": "Método no permitido"}, status=405)
 
-def estadisticas(request):
-    return render(request, "estadisticas.html")
 
-def alertas(request):
-    return render(request, "alertas.html")
-
-def sidebar(request):
-    return render(request, "sidebar.html")
-
-def director(request):
-    if not request.session.get('usuario_id'):
-        return redirect('login')
-
-    roles = request.session.get('usuario_roles', [])
-    if 'Director' not in roles:
-        return redirect('dashboard')
-
-    form = DocenteForm()
-    grupo_form = GrupoForm()
-    materia_form = GrupoDocenteMateriaForm()
-
-    relaciones = GrupoDocenteMateria.objects.select_related(
-        'grupo', 'materia', 'docente'
-    ).order_by('grupo__clave', 'materia__nombre')
-
-    grupos_data = []
-
-    for rel in relaciones:
-        grupo = rel.grupo
-        num_alumnos = Alumno.objects.filter(grupo=grupo).count()
-
-        grupos_data.append({
-            'clave': grupo.clave,
-            'materia': rel.materia.nombre,
-            'docente': rel.docente.nombre,
-            'num_alumnos': num_alumnos,
-            'tutor': grupo.tutor.nombre if grupo.tutor else 'Sin tutor',
-        })
-
-    return render(request, "director.html", {
-        "form": form,
-        "grupo_form": grupo_form,
-        "materia_form": materia_form,
-        "grupos": grupos_data
-    })
-
-@require_POST
-def new_user(request):
-    if not request.session.get('usuario_id'):
-        return redirect('login')
-
-    roles = request.session.get('usuario_roles', [])
-    if 'Director' not in roles:
-        return redirect('dashboard')
-
-    form = DocenteForm(request.POST)
-
-    if form.is_valid():
-        usuario = form.save()
-
-        rol_docente, _ = Rol.objects.get_or_create(nombre="Docente")
-        UsuarioRol.objects.create(
-            usuario=usuario,
-            rol=rol_docente
-        )
-
-    return redirect('director')
-
-def tutor(request):
-    return render(request, "tutor.html")
-
-def pedagogia(request):
-    return render(request, "pedagogia.html")
-
-def login_view(request):
-    # --- PARTE 1: Redirección si ya está logueado ---
-    if request.session.get('usuario_id'):
-        # Obtenemos la lista de roles (si no existe, devolvemos lista vacía)
-        roles = request.session.get('usuario_roles', [])
-        
-        # Jerarquía de redirección (Prioridad)
-        if 'Director' in roles:
-            return redirect('/director')
-        elif 'Docente' in roles:
-            return redirect('/grupos-alumnos')
-        elif 'Tutor' in roles:
-            return redirect('/tutor')
-        elif 'Pedagogia' in roles:
-            return redirect('/pedagogia')
-        else:
-            return redirect('/dashboard')
-
-    # --- PARTE 2: Login (POST) ---
-    if request.method == 'POST':
-        correo = request.POST.get('correo')
-        password = request.POST.get('password')
-
-        try:
-            usuario = Usuario.objects.get(correo=correo)
-            if password == usuario.password:
-                request.session['usuario_id'] = usuario.id
-                request.session['usuario_nombre'] = usuario.nombre
-
-                # Obtener TODOS los roles
-                relaciones = UsuarioRol.objects.filter(usuario=usuario)
-                
-                # Crear lista de nombres de roles
-                lista_roles = [r.rol.nombre for r in relaciones]
-                
-                # Guardar la lista en la sesión
-                request.session['usuario_roles'] = lista_roles
-
-                # Redirección basada en jerarquía
-                if 'Director' in lista_roles:
-                    return redirect('/director')
-                elif 'Docente' in lista_roles:
-                    return redirect('/grupos-alumnos')
-                elif 'Tutor' in lista_roles:
-                    return redirect('/tutor')
-                elif 'Pedagogia' in lista_roles:
-                    return redirect('/pedagogia')
-                else:
-                    return redirect('/dashboard')
-            else:
-                messages.error(request, 'Contraseña incorrecta.')
-        except Usuario.DoesNotExist:
-            messages.error(request, 'El correo no está registrado.')
-
-    return render(request, "login.html")
-
-def logout_view(request):
-    request.session.flush()
-    return redirect('login')
 
 def obtener_alumnos_por_grupo(request):
     """Endpoint AJAX para obtener los alumnos de un grupo específico"""
@@ -603,3 +482,206 @@ def asistencia(request):
         return redirect('login')
     
     return render(request, "asistencia.html", context)
+
+def estadisticas(request):
+    return render(request, "estadisticas.html")
+
+def alertas(request):
+    return render(request, "alertas.html")
+
+def sidebar(request):
+    return render(request, "sidebar.html")
+
+def director(request):
+    if not request.session.get('usuario_id'):
+        return redirect('login')
+
+    roles = request.session.get('usuario_roles', [])
+    if 'Director' not in roles:
+        return redirect('dashboard')
+
+    form = DocenteForm()
+    grupo_form = GrupoForm()
+    materia_form = GrupoDocenteMateriaForm()  # 👈 ESTO FALTABA
+
+    relaciones = GrupoDocenteMateria.objects.select_related(
+        'grupo', 'materia', 'docente'
+    ).order_by('grupo__clave', 'materia__nombre')
+
+    grupos_data = []
+
+    for rel in relaciones:
+        grupo = rel.grupo
+        num_alumnos = Alumno.objects.filter(grupo=grupo).count()
+
+        grupos_data.append({
+            'clave': grupo.clave,
+            'materia': rel.materia.nombre,
+            'docente': rel.docente.nombre,
+            'num_alumnos': num_alumnos,
+            'tutor': grupo.tutor.nombre if grupo.tutor else 'Sin tutor',
+        })
+
+    return render(request, "director.html", {
+        "form": form,
+        "grupo_form": grupo_form,
+        "materia_form": materia_form,  # 👈 Y PASARLO
+        "grupos": grupos_data
+    })
+
+
+
+    
+@require_POST
+def new_user(request):
+    if not request.session.get('usuario_id'):
+        return redirect('login')
+
+    roles = request.session.get('usuario_roles', [])
+    if 'Director' not in roles:
+        return redirect('dashboard')
+
+    form = DocenteForm(request.POST)
+
+    if form.is_valid():
+        usuario = form.save()
+
+        rol_docente, _ = Rol.objects.get_or_create(nombre="Docente")
+        UsuarioRol.objects.create(
+            usuario=usuario,
+            rol=rol_docente
+        )
+
+    return redirect('director')
+
+def tutor(request):
+    return render(request, "tutor.html")
+
+def pedagogia(request):
+    return render(request, "pedagogia.html")
+
+def login_view(request):
+    # --- PARTE 1: Redirección si ya está logueado ---
+    if request.session.get('usuario_id'):
+        # Obtenemos la lista de roles (si no existe, devolvemos lista vacía)
+        roles = request.session.get('usuario_roles', [])
+        
+        # Jerarquía de redirección (Prioridad)
+        if 'Director' in roles:
+            return redirect('/director')
+        elif 'Docente' in roles:
+            return redirect('/grupos-alumnos')
+        elif 'Tutor' in roles:
+            return redirect('/actividades')
+        elif 'Pedagogia' in roles:
+            return redirect('/pedagogia')
+        else:
+            return redirect('/dashboard')
+
+    # --- PARTE 2: Login (POST) ---
+    if request.method == 'POST':
+        correo = request.POST.get('correo')
+        password = request.POST.get('password')
+
+        try:
+            usuario = Usuario.objects.get(correo=correo)
+            if password == usuario.password:
+                request.session['usuario_id'] = usuario.id
+                request.session['usuario_nombre'] = usuario.nombre
+
+                # --- CAMBIO IMPORTANTE: Obtener TODOS los roles ---
+                # Buscamos todas las coincidencias en la tabla intermedia
+                relaciones = UsuarioRol.objects.filter(usuario=usuario)
+                
+                # Creamos una lista de python con los nombres: ['Docente', 'Administrador']
+                lista_roles = [r.rol.nombre for r in relaciones]
+                
+                # Guardamos la lista en la sesión
+                request.session['usuario_roles'] = lista_roles
+
+                # --- Redirección basada en jerarquía ---
+                # Aunque tenga 3 roles, decidimos a dónde mandarlo por prioridad
+                if 'Director' in lista_roles:
+                    return redirect('/director')
+                elif 'Docente' in lista_roles:
+                    return redirect('/grupos-alumnos')
+                elif 'Tutor' in lista_roles:
+                    return redirect('/tutor')
+                elif 'Pedagogia' in lista_roles:
+                    return redirect('/pedagogia')
+                else:
+                    return redirect('/dashboard')
+            else:
+                 messages.error(request, 'Contraseña incorrecta.')
+        except Usuario.DoesNotExist:
+             messages.error(request, 'El correo no está registrado.')
+
+    return render(request, "login.html")
+
+def logout_view(request):
+    request.session.flush()
+    return redirect('login')
+
+def new_group(request):
+    if request.method == "POST":
+        form = GrupoForm(request.POST, request.FILES)
+
+        if form.is_valid():
+            grupo = form.save(commit=False)
+
+            cuatrimestre_activo = Cuatrimestre.objects.filter(activo=True).first()
+            if not cuatrimestre_activo:
+                messages.error(request, "No hay cuatrimestre activo")
+                return redirect("director")
+
+            grupo.cuatrimestre = cuatrimestre_activo
+            grupo.save()
+
+            archivo = request.FILES.get("archivo_alumnos")
+
+            if archivo:
+                archivo_texto = TextIOWrapper(archivo, encoding="utf-8-sig")
+                reader = csv.DictReader(archivo_texto)
+
+                for fila in reader:
+                    nombre = fila.get("nombre")
+                    matricula = fila.get("matricula")
+
+                    if not nombre or not matricula:
+                        continue
+
+                    Alumno.objects.get_or_create(
+                        matricula=matricula.strip(),
+                        defaults={
+                            "nombre": nombre.strip(),
+                            "grupo": grupo
+                        }
+                    )
+
+            messages.success(request, "Grupo y alumnos creados correctamente")
+
+    return redirect("director")
+
+
+def new_materia(request):
+    if request.method == "POST":
+        form = GrupoDocenteMateriaForm(request.POST)
+
+        if form.is_valid():
+            nombre = form.cleaned_data['nombre_materia']
+            grupo = form.cleaned_data['grupo']
+            docente = form.cleaned_data['docente']
+
+            # Crear o reutilizar materia
+            materia, created = Materia.objects.get_or_create(
+                nombre=nombre
+            )
+
+            # Crear relación grupo-materia-docente
+            GrupoDocenteMateria.objects.create(
+                grupo=grupo,
+                materia=materia,
+                docente=docente
+            )
+
+    return redirect('director')
