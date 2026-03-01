@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.hashers import check_password
 from django.views.decorators.http import require_POST
+from django.utils import timezone
 import csv
 from io import TextIOWrapper
 from .forms import *
@@ -114,23 +115,31 @@ def gruposAlumnos(request):
 
 
 def actividades(request):
-
     if request.method == "POST":
         titulo = request.POST.get("titulo")
         descripcion = request.POST.get("descripcion")
         grupo_id = request.POST.get("grupo")
         fecha_entrega = request.POST.get("fecha_entrega")
 
-        grupo_docente = GrupoDocenteMateria.objects.filter(
-            grupo_id=grupo_id
-        ).first()
+        if not all([titulo, descripcion, grupo_id, fecha_entrega]):
+            return JsonResponse({"error": "Todos los campos son requeridos"}, status=400)
 
-        parcial = Parcial.objects.filter(
-            grupo_docente_materia=grupo_docente,
-            cerrado=False
-        ).first()
+        try:
+            grupo_docente = GrupoDocenteMateria.objects.filter(
+                grupo_id=grupo_id
+            ).first()
 
-        if parcial:
+            if not grupo_docente:
+                return JsonResponse({"error": "No hay docente asignado a este grupo"}, status=400)
+
+            parcial = Parcial.objects.filter(
+                grupo_docente_materia=grupo_docente,
+                cerrado=False
+            ).first()
+
+            if not parcial:
+                return JsonResponse({"error": "No hay un parcial activo para este grupo. Crea un parcial primero."}, status=400)
+
             actividad = Actividad.objects.create(
                 titulo=titulo,
                 descripcion=descripcion,
@@ -143,22 +152,54 @@ def actividades(request):
                 "titulo": actividad.titulo,
                 "descripcion": actividad.descripcion,
                 "grupo": actividad.parcial.grupo_docente_materia.grupo.clave,
-                "fecha": actividad.fecha_entrega,
+                "fecha": fecha_entrega,
                 "cerrado": actividad.parcial.cerrado
             })
 
-        return JsonResponse({"error": "No hay parcial activo"}, status=400)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
 
     grupos = Grupo.objects.all()
+    
     actividades = Actividad.objects.select_related(
         'parcial',
         'parcial__grupo_docente_materia',
         'parcial__grupo_docente_materia__grupo'
-    )
+    ).prefetch_related('entrega_set').all().order_by('-id')
+
+    from datetime import date
+    
+    actividades_con_datos = []
+    for actividad in actividades:
+        try:
+            total_alumnos = actividad.parcial.grupo_docente_materia.grupo.alumno_set.count()
+            entregas_completadas = actividad.entrega_set.filter(entregado=True).count()
+            
+            porcentaje = 0
+            if total_alumnos > 0:
+                porcentaje = int((entregas_completadas / total_alumnos) * 100)
+            
+            fecha_actual = date.today()
+            esta_vencida = actividad.fecha_entrega < fecha_actual and not actividad.parcial.cerrado
+            
+            actividades_con_datos.append({
+                'id': actividad.id,
+                'titulo': actividad.titulo,
+                'descripcion': actividad.descripcion,
+                'fecha_entrega': actividad.fecha_entrega,
+                'grupo_clave': actividad.parcial.grupo_docente_materia.grupo.clave,
+                'parcial_cerrado': actividad.parcial.cerrado,
+                'esta_vencida': esta_vencida,
+                'porcentaje': porcentaje,
+                'entregadas': entregas_completadas,
+                'total_alumnos': total_alumnos
+            })
+        except Exception:
+            continue
 
     return render(request, "actividades.html", {
         "grupos": grupos,
-        "actividades": actividades
+        "actividades": actividades_con_datos
     })
 
 
@@ -223,8 +264,6 @@ def guardar_entregas(request):
         return JsonResponse({"success": True})
 
     return JsonResponse({"error": "Método no permitido"}, status=405)
-
-
 
 def asistencia(request):
     return render(request, "asistencia.html")

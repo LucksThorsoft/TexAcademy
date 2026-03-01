@@ -76,7 +76,7 @@
         background: rgb(30, 64, 175);
         color: #ffffff;
         padding: 4px 12px;
-        border-radius: 999px;
+        border-radius: 6px;
         font-size: 13px;
         font-weight: 500;
     }
@@ -140,12 +140,11 @@
 
     .activity-progress-fill {
         height: 100%;
-        background: #1d4ed8;
+        background: #1e40af;
         border-radius: 999px;
         transition: width 0.3s ease;
     }
 
-    /* Modal base */
     .modal-overlay {
         position: fixed;
         top: 0;
@@ -258,7 +257,7 @@
     .student-left input {
         width: 18px;
         height: 18px;
-        accent-color: #1d4ed8;
+        accent-color: #1e40af;
     }
 
     .student-name {
@@ -350,7 +349,7 @@
 
     .form-actions {
         display: flex;
-        justify-content: flex-end;
+        justify-content: center;
         gap: 12px;
         margin-top: 25px;
     }
@@ -366,7 +365,7 @@
     }
 
     .btn-primary {
-        background-color: #1d4ed8;
+        background-color: #1e40af;
         color: white;
     }
 
@@ -381,6 +380,47 @@
 
     .btn-secondary:hover {
         background-color: #e5e7eb;
+    }
+
+    .btn-primary-moderno {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        white-space: nowrap;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.2s;
+        background-color: #1e40af;
+        color: white;
+        height: 36px;
+        padding: 8px 16px;
+        border: none;
+        cursor: pointer;
+        outline: none;
+        flex: 1;
+    }
+
+    .btn-primary-moderno:hover {
+        background-color: #1e40af;
+    }
+
+    .btn-primary-moderno:focus-visible {
+        border-color: #1d4ed8;
+        box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.3);
+    }
+
+    .btn-primary-moderno:disabled {
+        pointer-events: none;
+        opacity: 0.5;
+    }
+
+    .btn-primary-moderno svg {
+        pointer-events: none;
+        width: 16px;
+        height: 16px;
+        flex-shrink: 0;
     }
 
     .add-activity-btn {
@@ -401,7 +441,16 @@
     .add-activity-btn:hover {
         background: #1e40af;
     }
-    
+
+    .activity-status.inactive {
+        background: #e2e8f0;
+        color: #000000;
+    }
+
+    .activity-status.closed {
+        background: #6b7280;
+        color: #ffffff;
+    }
 </style>
 
 <div class="header-actions">
@@ -425,17 +474,23 @@
     <div class="activity-card" onclick="openActivityDetail('{{ actividad.id }}')">
         <div class="activity-header">
             <div class="activity-title">{{ actividad.titulo }}</div>
-            <div class="activity-status {% if actividad.parcial.cerrado %}closed{% endif %}">
-                {% if actividad.parcial.cerrado %}Cerrada{% else %}Activa{% endif %}
+            <div
+                class="activity-status {% if actividad.parcial_cerrado %}closed{% elif actividad.esta_vencida %}inactive{% endif %}">
+                {% if actividad.parcial_cerrado %}
+                Cerrada
+                {% elif actividad.esta_vencida %}
+                Cerrada
+                {% else %}
+                Activa
+                {% endif %}
             </div>
         </div>
 
         <div class="activity-description">{{ actividad.descripcion }}</div>
 
         <div class="activity-meta">
-
             <div class="activity-group">
-                {{ actividad.parcial.grupo_docente_materia.grupo.clave }}
+                {{ actividad.grupo_clave }}
             </div>
             <div class="activity-date">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
@@ -449,13 +504,22 @@
                 {{ actividad.fecha_entrega|date:"d/m/Y" }}
             </div>
         </div>
+
+        <div class="activity-progress-box">
+            <div class="activity-progress-header">
+                <span>Progreso de entregas</span>
+                <span>{{ actividad.entregadas }}/{{ actividad.total_alumnos }} ({{ actividad.porcentaje }}%)</span>
+            </div>
+            <div class="activity-progress-track">
+                <div class="activity-progress-fill" style="width: {{ actividad.porcentaje|default:0 }}%;"></div>
+            </div>
+        </div>
     </div>
     {% empty %}
-    <p>No hay actividades registradas.</p>
+    <p>No hay actividades creadas. ¡Agrega una nueva para empezar!</p>
     {% endfor %}
 </div>
 
-<!-- Modal crear actividad -->
 <div class="modal-overlay" id="activityModal">
     <div class="modal-content">
         <button type="button" class="modal-close-btn" onclick="closeActivityForm()">
@@ -508,7 +572,6 @@
     </div>
 </div>
 
-<!-- Modal detalle actividad -->
 <div class="modal-overlay" id="activityDetailModal">
     <div class="modal-content">
         <button type="button" class="modal-close-btn" onclick="closeActivityDetail()">
@@ -539,15 +602,14 @@
         </div>
 
         <div class="students-list" id="studentsList"></div>
-        <div class="form-actions" style="margin-top:20px;">
-            <button type="button" class="btn btn-primary" onclick="saveEntregas()">
+        <div class="form-actions" style="margin-top:20px; justify-content: center;">
+            <button type="button" class="btn-primary-moderno" onclick="saveEntregas()">
                 Guardar Cambios
             </button>
             <button type="button" class="btn btn-secondary" onclick="closeActivityDetail()">
                 Cerrar
             </button>
         </div>
-
     </div>
 </div>
 
@@ -567,7 +629,6 @@
         fetch(`/actividades/${activityId}/detalle`)
             .then(response => response.json())
             .then(data => {
-
                 document.getElementById('detailTitle').textContent = data.titulo;
                 document.getElementById('detailGroup').textContent = data.grupo;
                 document.getElementById('detailDate').textContent = data.fecha_entrega;
@@ -578,7 +639,6 @@
                 studentsList.innerHTML = '';
 
                 data.alumnos.forEach(alumno => {
-
                     const item = document.createElement('div');
                     item.className = 'student-item';
 
@@ -626,15 +686,12 @@
     }
 
     function saveEntregas() {
-
         const checkboxes = document.querySelectorAll('.student-checkbox');
         const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
         const entregas = [];
 
         checkboxes.forEach(cb => {
-
-            // IMPORTANTE: solo enviar si tiene ID válido
             if (cb.dataset.id) {
                 entregas.push({
                     id: cb.dataset.id,
@@ -653,98 +710,126 @@
                 entregas: entregas
             })
         })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error("Error en servidor");
-            }
-            return response.json();
-        })
-        .then(data => {
-            alert("Cambios guardados correctamente ✅");
-            closeActivityDetail();
-        })
-        .catch(error => {
-            console.error("Error:", error);
-            alert("Ocurrió un error al guardar ❌");
-        });
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Error en servidor");
+                }
+                return response.json();
+            })
+            .then(data => {
+                alert("Cambios guardados correctamente ✅");
+                closeActivityDetail();
+                location.reload();
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert("Ocurrió un error al guardar ❌");
+            });
     }
 
     document.addEventListener('DOMContentLoaded', function () {
-
         const modalCreate = document.getElementById('activityModal');
         const modalDetail = document.getElementById('activityDetailModal');
         const form = document.getElementById("activityForm");
 
-        // Cerrar modal al hacer click fuera
-        modalCreate.addEventListener('click', function (event) {
-            if (event.target === modalCreate) {
-                closeActivityForm();
-            }
-        });
+        if (modalCreate) {
+            modalCreate.addEventListener('click', function (event) {
+                if (event.target === modalCreate) {
+                    closeActivityForm();
+                }
+            });
+        }
 
-        modalDetail.addEventListener('click', function (event) {
-            if (event.target === modalDetail) {
-                closeActivityDetail();
-            }
-        });
+        if (modalDetail) {
+            modalDetail.addEventListener('click', function (event) {
+                if (event.target === modalDetail) {
+                    closeActivityDetail();
+                }
+            });
+        }
 
         // INTERCEPTAR SUBMIT
-        form.addEventListener("submit", function (e) {
-            e.preventDefault();
+        if (form) {
+            form.addEventListener("submit", function (e) {
+                e.preventDefault();
 
-            const formData = new FormData(form);
-            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                const formData = new FormData(form);
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
-            fetch("/actividades/", {
-                method: "POST",
-                headers: {
-                    "X-CSRFToken": csrfToken
-                },
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
+                // Validar campos
+                const titulo = formData.get('titulo');
+                const descripcion = formData.get('descripcion');
+                const grupo = formData.get('grupo');
+                const fecha = formData.get('fecha_entrega');
 
-                if (data.error) {
-                    alert(data.error);
+                if (!titulo || !descripcion || !grupo || !fecha) {
+                    alert("Por favor completa todos los campos");
                     return;
                 }
 
-                const container = document.getElementById("activitiesContainer");
+                fetch("/actividades/", {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": csrfToken
+                    },
+                    body: formData
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.json().then(err => { throw err; });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.error) {
+                            alert("Error: " + data.error);
+                            return;
+                        }
 
-                const card = document.createElement("div");
-                card.className = "activity-card";
-                card.onclick = function () {
-                    openActivityDetail(data.id);
-                };
+                        const container = document.getElementById("activitiesContainer");
 
-                card.innerHTML = `
-                    <div class="activity-header">
-                        <div class="activity-title">${data.titulo}</div>
-                        <div class="activity-status ${data.cerrado ? 'closed' : ''}">
-                            ${data.cerrado ? 'Cerrada' : 'Activa'}
+                        const card = document.createElement("div");
+                        card.className = "activity-card";
+                        card.onclick = function () {
+                            openActivityDetail(data.id);
+                        };
+
+                        card.innerHTML = `
+                        <div class="activity-header">
+                            <div class="activity-title">${data.titulo}</div>
+                            <div class="activity-status ${data.cerrado ? 'closed' : ''}">
+                                ${data.cerrado ? 'Cerrada' : 'Activa'}
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="activity-description">${data.descripcion}</div>
+                        <div class="activity-description">${data.descripcion}</div>
 
-                    <div class="activity-meta">
-                        <div class="activity-group">${data.grupo}</div>
-                        <div class="activity-date">${data.fecha}</div>
-                    </div>
-                `;
+                        <div class="activity-meta">
+                            <div class="activity-group">${data.grupo}</div>
+                            <div class="activity-date">${data.fecha}</div>
+                        </div>
 
-                container.prepend(card);
-                closeActivityForm();
-            })
-            .catch(error => {
-                console.error("Error:", error);
+                        <div class="activity-progress-box">
+                            <div class="activity-progress-header">
+                                <span>Progreso de entregas</span>
+                                <span>0/0 (0%)</span>
+                            </div>
+                            <div class="activity-progress-track">
+                                <div class="activity-progress-fill" style="width: 0%;"></div>
+                            </div>
+                        </div>
+                    `;
+
+                        container.insertBefore(card, container.firstChild);
+                        closeActivityForm();
+                    })
+                    .catch(error => {
+                        console.error("Error:", error);
+                        alert("Error al crear la actividad: " + (error.error || "Error desconocido"));
+                    });
             });
-        });
-
+        }
     });
 </script>
-
-
 
 {% endblock %}
