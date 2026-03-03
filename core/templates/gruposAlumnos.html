@@ -354,16 +354,241 @@
         position: sticky;
         top: 0;
         z-index: 10;
+        text-align: center;
+
     }
     
     .alumnos-table td {
         padding: 12px 16px;
         border-bottom: 1px solid #f0f0f0;
         font-size: 14px;
+        text-align: center;
     }
     
     .alumnos-table tr:hover {
         background: #f9f9f9;
+    }
+
+    /* Estilos para la fila expandible */
+    .expandable-row {
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+    .expandable-row:hover {
+        background-color: #f0f7ff !important;
+    }
+
+    /* Fila expandida - mantiene el color azul */
+    .expandable-row.expanded {
+        background-color: #f0f7ff !important;
+    }
+
+    .expandable-row td {
+        position: relative;
+    }
+
+    /* Contenedor para el contenido de la celda con flexbox */
+    .cell-content {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+    }
+
+    /* Estilo para el texto del estado */
+    .status-text {
+        flex: 1;
+    }
+
+    /* Flecha a la derecha */
+    .expand-arrow {
+        font-size: 12px;
+        color: #999;
+        margin-left: 15px;
+        transition: transform 0.3s ease, color 0.2s ease;
+        display: inline-block;
+    }
+
+    .expandable-row.expanded .expand-arrow {
+        transform: rotate(90deg);
+        color: #0066cc;
+    }
+
+    /* Efecto hover en la flecha */
+    .expandable-row:hover .expand-arrow {
+        color: #0066cc;
+    }
+
+    /* Ajuste para la última celda */
+    .expandable-row td:last-child {
+        position: relative;
+    }
+
+    /* Quitar la flecha que pusimos antes en la primera celda */
+    .expandable-row td:first-child::before {
+        display: none;
+    }
+
+    /* Fila de perfil expandido */
+    .profile-row {
+        display: none;
+        opacity: 0;
+        transform: translateY(-10px);
+        transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    
+    .profile-row.show {
+        display: table-row;
+        opacity: 1;
+        transform: translateY(0);
+    }
+    
+    .profile-row td {
+        padding: 0 !important;
+        border-bottom: none !important;
+        background-color: #f9f9f9;
+    }
+
+    .profile-container {
+        padding: 20px 24px;
+        border-bottom: 1px solid #eaeaea;
+        border-top: 1px solid #eaeaea;
+        background: white;
+        margin: 10px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        animation: slideIn 0.3s ease forwards;
+    }
+
+    @keyframes slideIn {
+        0% {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .profile-row.removing .profile-container {
+        animation: slideOut 0.3s ease forwards;
+    }
+
+    @keyframes slideOut {
+        0% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        100% {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+    }
+
+    /* Tarjeta de perfil */
+    .profile-card {
+        display: flex;
+        gap: 24px;
+    }
+
+    .profile-avatar {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 32px;
+        font-weight: 600;
+        flex-shrink: 0;
+    }
+
+    .profile-info {
+        flex: 1;
+    }
+
+    .profile-name {
+        font-size: 18px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 4px;
+        text-align: left;
+    }
+
+    .profile-matricula {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .profile-badge {
+        background: #e8f5e9;
+        color: #2e7d32;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 500;
+    }
+
+    .profile-detail {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid #eaeaea;
+    }
+
+    .profile-detail-item {
+        text-align: center;
+    }
+
+    .detail-label {
+        font-size: 11px;
+        color: #999;
+        margin-bottom: 2px;
+        text-transform: uppercase;
+    }
+
+    .detail-value {
+        font-size: 16px;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .detail-value.small {
+        font-size: 14px;
+    }
+
+    /* Estado en perfil */
+    .profile-status {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .status-good {
+        background: #e8f5e9;
+        color: #2e7d32;
+    }
+
+    .status-warning {
+        background: #fff3e0;
+        color: #e65100;
+    }
+
+    .status-danger {
+        background: #ffebee;
+        color: #c62828;
     }
     
     /* Contenedor para mensajes de contenido en desarrollo */
@@ -438,10 +663,43 @@
             padding: 10px 12px;
             font-size: 13px;
         }
+
+        .profile-card {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        
+        .profile-detail {
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+
+        .cell-content {
+            flex-wrap: wrap;
+        }
+        
+        .expand-arrow {
+            margin-left: 10px;
+        }
         
         .view-option {
             padding: 8px 40px;
             font-size: 13px;
+        }
+
+        .comentario-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 4px;
+        }
+        
+        .comentario-fecha {
+            font-size: 10px;
+        }
+        
+        .comentario-texto {
+            font-size: 12px;
         }
     }
     
@@ -483,6 +741,92 @@
             font-size: 12px;
             min-width: 80px;
         }
+    }
+
+    /* Estilos para la sección de comentarios */
+    .profile-comentarios {
+        margin-top: 20px;
+        padding-top: 15px;
+        border-top: 1px solid #eaeaea;
+    }
+
+    .comentarios-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .comentarios-title .mdi {
+        color: #666;
+        font-size: 16px;
+    }
+
+    .comentarios-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .comentario-item {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 12px;
+        border-left: 3px solid #667eea;
+    }
+
+    .comentario-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 6px;
+    }
+
+    .comentario-tipo {
+        font-size: 12px;
+        font-weight: 600;
+        color: #667eea;
+        background: #eef2ff;
+        padding: 2px 8px;
+        border-radius: 12px;
+    }
+
+    .comentario-fecha {
+        font-size: 11px;
+        color: #999;
+    }
+
+    .comentario-texto {
+        font-size: 13px;
+        color: #333;
+        margin-bottom: 8px;
+        line-height: 1.4;
+    }
+
+    .comentario-docente {
+        font-size: 11px;
+        color: #666;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .comentario-docente .mdi {
+        font-size: 12px;
+        color: #999;
+    }
+
+    .comentarios-empty {
+        text-align: center;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        color: #999;
+        font-size: 13px;
+        font-style: italic;
     }
 </style>
 
@@ -602,8 +946,6 @@
                                 <tr>
                                     <th>Nombre</th>
                                     <th>Matrícula</th>
-                                    <th>Promedio</th>
-                                    <th>Asistencia</th>
                                     <th>Estado</th>
                                 </tr>
                             </thead>
@@ -691,18 +1033,10 @@
             const estadoStr = String(estado || '');
             
             if (!estadoStr || estadoStr === 'null' || estadoStr === 'No asignado') {
-                return '<span style="color: #999;">No asignado</span>';
+                return 'No asignado';
             }
             
-            if (estadoStr.toLowerCase().includes('estable') || estadoStr.toLowerCase().includes('excelente')) {
-                return '<span style="color: #4CAF50;">✓ ' + estadoStr + '</span>';
-            } else if (estadoStr.toLowerCase().includes('atención') || estadoStr.toLowerCase().includes('atencion')) {
-                return '<span style="color: #FF9800;">⚠ ' + estadoStr + '</span>';
-            } else if (estadoStr.toLowerCase().includes('riesgo')) {
-                return '<span style="color: #F44336;">⚠ ' + estadoStr + '</span>';
-            } else {
-                return '<span>' + estadoStr + '</span>';
-            }
+            return estadoStr;
         }
         
         // Abrir modal al hacer click en una tarjeta de grupo
@@ -730,48 +1064,87 @@
                     alumnosData = [];
                 }
                 
-                // Si hay alumnos, llenar la tabla
+                // Modificar la parte donde se llena la tabla
                 if (alumnosData.length > 0) {
-                    alumnosData.forEach(alumno => {
+                    alumnosData.forEach((alumno, index) => {
                         const row = document.createElement('tr');
+                        row.className = 'expandable-row';
+                        row.setAttribute('data-alumno-index', index);
                         
-                        // Formatear promedio
-                        let promedioDisplay = formatValue(alumno.promedio);
-                        if (alumno.promedio !== null && alumno.promedio !== undefined && alumno.promedio !== 'null') {
-                            // Si es número, mostrarlo sin decimales si es entero
-                            if (!isNaN(alumno.promedio)) {
-                                const num = parseFloat(alumno.promedio);
-                                promedioDisplay = num % 1 === 0 ? num.toString() : num.toFixed(1);
-                            }
-                        }
+                        // Generar el HTML del estado
+                        const estadoHTML = getEstadoHTML(alumno.estado);
                         
-                        // Formatear asistencia
-                        let asistenciaDisplay = formatValue(alumno.asistencia);
-                        if (alumno.asistencia !== null && alumno.asistencia !== undefined && alumno.asistencia !== 'null') {
-                            // Si es número, agregar %
-                            if (!isNaN(alumno.asistencia)) {
-                                const num = parseFloat(alumno.asistencia);
-                                asistenciaDisplay = (num % 1 === 0 ? num.toString() : num.toFixed(1)) + '%';
-                            } else if (typeof alumno.asistencia === 'string' && !alumno.asistencia.includes('%')) {
-                                asistenciaDisplay = alumno.asistencia + '%';
-                            }
-                        }
-                        
+                        // Crear la fila con la estructura modificada
                         row.innerHTML = `
-                            <td>${alumno.nombre || 'No asignado'}</td>
-                            <td>${alumno.matricula || 'No asignado'}</td>
-                            <td>${promedioDisplay}</td>
-                            <td>${asistenciaDisplay}</td>
-                            <td>${getEstadoHTML(alumno.estado)}</td>
+                            <td>
+                                <div class="cell-content">
+                                    <span>${alumno.nombre || 'No asignado'}</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="cell-content">
+                                    <span>${alumno.matricula || 'No asignado'}</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="cell-content">
+                                    <span class="status-text">${estadoHTML}</span>
+                                    <span class="expand-arrow">▶</span>
+                                </div>
+                            </td>
                         `;
                         
                         modalAlumnosTable.appendChild(row);
+                        
+                        // Crear y agregar la fila de perfil
+                        const profileRow = createProfileRow(alumno, index);
+                        modalAlumnosTable.appendChild(profileRow);
+                        
+                        // Agregar evento de clic a la fila
+                        row.addEventListener('click', function(e) {
+                            e.stopPropagation(); // Evitar que el clic se propague al modal
+                            
+                            const isExpanded = this.classList.contains('expanded');
+                            const profileRow = document.getElementById(`profile-${index}`);
+                            
+                            // Función para cerrar con animación
+                            function closeWithAnimation(expandedRow, profileRowElement) {
+                                expandedRow.classList.remove('expanded');
+                                profileRowElement.classList.add('removing');
+                                
+                                // Esperar a que termine la animación antes de ocultar
+                                setTimeout(() => {
+                                    profileRowElement.classList.remove('show', 'removing');
+                                }, 200); // 200ms = duración de la animación de salida
+                            }
+                            
+                            // Cerrar todas las demás filas expandidas con animación
+                            document.querySelectorAll('.expandable-row.expanded').forEach(expandedRow => {
+                                if (expandedRow !== this) {
+                                    const expandedIndex = expandedRow.getAttribute('data-alumno-index');
+                                    const otherProfileRow = document.getElementById(`profile-${expandedIndex}`);
+                                    closeWithAnimation(expandedRow, otherProfileRow);
+                                }
+                            });
+                            
+                            // Toggle la fila actual
+                            if (isExpanded) {
+                                // Cerrar la fila actual con animación
+                                closeWithAnimation(this, profileRow);
+                            } else {
+                                // Abrir la fila actual
+                                this.classList.add('expanded');
+                                profileRow.classList.add('show');
+                                // Asegurar que no tenga la clase removing
+                                profileRow.classList.remove('removing');
+                            }
+                        });
                     });
                 } else {
                     // Mostrar mensaje si no hay alumnos
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td colspan="5" style="text-align: center; padding: 40px; color: #666;">
+                        <td colspan="3" style="text-align: center; padding: 40px; color: #666;">
                             No hay alumnos registrados en este grupo
                         </td>
                     `;
@@ -783,6 +1156,86 @@
                 document.body.style.overflow = 'hidden';
             });
         });
+
+        // Función para crear el perfil del alumno
+        function createProfileRow(alumno, rowIndex) {
+            const profileRow = document.createElement('tr');
+            profileRow.className = 'profile-row';
+            profileRow.id = `profile-${rowIndex}`;
+            
+            // Determinar clase de estado para el perfil
+            let statusClass = 'status-good';
+            let statusText = 'Estable';
+            
+            if (alumno.estado) {
+                const estadoStr = String(alumno.estado).toLowerCase();
+                if (estadoStr.includes('atención') || estadoStr.includes('atencion')) {
+                    statusClass = 'status-warning';
+                    statusText = 'Requiere atención';
+                } else if (estadoStr.includes('riesgo')) {
+                    statusClass = 'status-danger';
+                    statusText = 'En riesgo';
+                }
+            }
+            
+            // Obtener iniciales para el avatar
+            const iniciales = alumno.nombre
+                .split(' ')
+                .map(n => n[0])
+                .join('')
+                .toUpperCase()
+                .substring(0, 2);
+            
+            // Usar el grupo del alumno (si existe)
+            const grupoAlumno = alumno.grupo || 'Grupo no asignado';
+            
+            // Crear sección de comentarios
+            const comentariosHTML = createComentariosSection(alumno.comentarios || []);
+            
+            profileRow.innerHTML = `
+                <td colspan="3">
+                    <div class="profile-container">
+                        <div class="profile-card">
+                            <div class="profile-avatar">${iniciales}</div>
+                            <div class="profile-info">
+                                <div class="profile-name">${alumno.nombre || 'Nombre no disponible'}</div>
+                                <div class="profile-matricula">
+                                    ${alumno.matricula || 'Matrícula no disponible'}
+                                    <span class="profile-badge">${grupoAlumno}</span>
+                                </div>
+                                <div class="profile-detail">
+                                    <div class="profile-detail-item">
+                                        <div class="detail-label">Promedio General</div>
+                                        <div class="detail-value">--</div>
+                                    </div>
+                                    <div class="profile-detail-item">
+                                        <div class="detail-label">Asistencia</div>
+                                        <div class="detail-value">--</div>
+                                    </div>
+                                    <div class="profile-detail-item">
+                                        <div class="detail-label">Estado</div>
+                                        <div class="detail-value">
+                                            <span class="profile-status ${statusClass}">${statusText}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Sección de comentarios -->
+                                <div class="profile-comentarios">
+                                    <div class="comentarios-title">
+                                        <span class="mdi mdi-comment"></span>
+                                        Comentarios
+                                    </div>
+                                    ${comentariosHTML}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            `;
+            
+            return profileRow;
+        }
         
         // Cerrar modal
         closeModalBtn.addEventListener('click', function() {
@@ -823,6 +1276,38 @@
                 document.getElementById(`modal${viewType.charAt(0).toUpperCase() + viewType.slice(1)}`).classList.add('active');
             });
         });
+
+        // Función para crear la sección de comentarios
+        function createComentariosSection(comentarios) {
+            if (!comentarios || comentarios.length === 0) {
+                return `
+                    <div class="comentarios-empty">
+                        <p>No hay comentarios para este alumno</p>
+                    </div>
+                `;
+            }
+            
+            let comentariosHTML = '<div class="comentarios-list">';
+            
+            comentarios.forEach(comentario => {
+                comentariosHTML += `
+                    <div class="comentario-item">
+                        <div class="comentario-header">
+                            <span class="comentario-tipo">${comentario.tipo || 'Sin tipo'}</span>
+                            <span class="comentario-fecha">${comentario.fecha || 'Fecha no disponible'}</span>
+                        </div>
+                        <div class="comentario-texto">${comentario.texto || 'Sin texto'}</div>
+                        <div class="comentario-docente">
+                            <span class="mdi mdi-account"></span>
+                            ${comentario.docente || 'Docente no especificado'}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            comentariosHTML += '</div>';
+            return comentariosHTML;
+        }
     });
 </script>
 
