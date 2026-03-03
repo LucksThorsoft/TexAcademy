@@ -2,14 +2,12 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.hashers import check_password
 from django.views.decorators.http import require_POST
+from django.http import JsonResponse
 import csv
+import re
 from io import TextIOWrapper
 from .forms import *
 from .models import *
-import json
-
-# Create your views here.
-from django.http import JsonResponse
 import json
 from .models import Grupo, Actividad, Entrega, Alumno, GrupoDocenteMateria, Parcial
 
@@ -60,7 +58,6 @@ def gruposAlumnos(request):
                 def extract_matricula_number(matricula):
                     try:
                         # Extraer solo los dígitos de la matrícula
-                        import re
                         numbers = re.findall(r'\d+', matricula)
                         if numbers:
                             return int(numbers[0])
@@ -77,13 +74,30 @@ def gruposAlumnos(request):
                 # Crear lista de alumnos con sus datos
                 alumnos_data = []
                 for alumno in alumnos_list:
+                    # Obtener comentarios del alumno
+                    comentarios_alumno = Comentario.objects.filter(
+                        alumno=alumno
+                    ).select_related('docente').order_by('-fecha')
+                    
+                    comentarios_data = []
+                    for comentario in comentarios_alumno:
+                        comentarios_data.append({
+                            'id': comentario.id,
+                            'tipo': comentario.tipo,
+                            'texto': comentario.texto,
+                            'fecha': comentario.fecha.strftime('%d/%m/%Y'),
+                            'docente': comentario.docente.nombre
+                        })
+                    
                     alumnos_data.append({
                         'id': alumno.id,
                         'nombre': alumno.nombre,
                         'matricula': alumno.matricula,
+                        'grupo': grupo.clave,
                         'promedio': None,
                         'asistencia': None,
                         'estado': None,
+                        'comentarios': comentarios_data,
                     })
                 
                 grupos_dict[grupo.clave] = {
