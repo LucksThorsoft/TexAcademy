@@ -279,6 +279,19 @@
         background-color: #dbeafe;
     }
 
+
+.celda-comentario {
+    text-align: center;
+    vertical-align: middle;
+}
+
+.celda-comentario .btn-status {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto; 
+}
+
     /* Summary Bar para Registro Diario */
     .summary-bar {
         background-color: #f8fafc;
@@ -938,7 +951,7 @@
                         </div>
                     </div>
                 </td>
-                <td id:"td_comment" style="text-align: center;">
+                <td class="celda-comentario">
                     <div class="btn-status comment-btn" onclick="abrirComentario(${alumno.id})" title="Agregar comentario">
                         <i class="fa-regular fa-comment"></i>
                     </div>
