@@ -175,6 +175,12 @@
 
 
 <div id="groupsView" class="view-content">
+
+    <div class="groups-search">
+        <span class="mdi mdi-magnify search-icon"></span>
+        <input type="text" id="searchGroups" placeholder="Buscar grupo, materia o docente...">
+    </div>
+
     <div class="groups-grid">
         {% for grupo in grupos %}
         <div class="group-card">
@@ -344,6 +350,31 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    const searchInput = document.getElementById("searchGroups");
+    const groupCards = document.querySelectorAll(".group-card");
+
+    searchInput.addEventListener("keyup", function() {
+
+        const filter = this.value.toLowerCase();
+
+        groupCards.forEach(card => {
+
+            const text = card.textContent.toLowerCase();
+
+            if (text.includes(filter)) {
+                card.style.display = "block";
+            } else {
+                card.style.display = "none";
+            }
+
+        });
+
+    });
+
 });
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -739,7 +770,6 @@ document.addEventListener("DOMContentLoaded", () => {
     align-items: center;
     gap: 10px;
     height: 38px;
-    padding: 0 12px;
     border-radius: 10px;
     border: 1px solid #e5e7eb;
     cursor: pointer;
@@ -775,7 +805,57 @@ document.addEventListener("DOMContentLoaded", () => {
     text-overflow: ellipsis;
     white-space: nowrap;
 }
+.groups-search{
+    margin-bottom:20px;
+}
 
+.groups-search input{
+    width:100%;
+    max-width:350px;
+    height:38px;
+    padding:8px 12px;
+    border-radius:10px;
+    border:1px solid #e5e7eb;
+    font-size:14px;
+    outline:none;
+}
 
+.groups-search input:focus{
+    border-color:#2563eb;
+    box-shadow:0 0 0 2px rgba(37,99,235,0.15);
+}
+
+.groups-search{
+    position: relative;
+    margin-bottom: 20px;
+    max-width: 360px;
+}
+
+.groups-search input{
+    width: 100%;
+    height: 38px;
+    padding: 8px 12px 8px 36px;
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+    font-size: 14px;
+    outline: none;
+    background: #fff;
+    transition: all 0.2s ease;
+}
+
+.groups-search input:focus{
+    border-color:#2563eb;
+    box-shadow:0 0 0 2px rgba(37,99,235,0.15);
+}
+
+.search-icon{
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 18px;
+    color: #6b7280;
+    pointer-events: none;
+}
 </style>
 {% endblock %}
