@@ -699,3 +699,55 @@ def new_materia(request):
             )
 
     return redirect('director')
+
+
+
+def guardar_comentario(request):
+    """Endpoint AJAX para guardar comentarios de alumnos"""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            alumno_id = data.get('alumno_id')
+            texto = data.get('texto')
+            docente_id = request.session.get('usuario_id')
+            
+            print(f"Guardando comentario - Alumno ID: {alumno_id}")
+            
+            # Validar datos requeridos
+            if not all([alumno_id, texto, docente_id]):
+                return JsonResponse({'error': 'Faltan datos requeridos'}, status=400)
+            
+            # Verificar que el alumno existe
+            try:
+                alumno = Alumno.objects.get(id=alumno_id)
+            except Alumno.DoesNotExist:
+                return JsonResponse({'error': 'Alumno no encontrado'}, status=404)
+            
+            # Verificar que el docente existe
+            try:
+                docente = Usuario.objects.get(id=docente_id)
+            except Usuario.DoesNotExist:
+                return JsonResponse({'error': 'Docente no encontrado'}, status=404)
+            
+            # Crear el comentario (tipo por defecto "General")
+            comentario = Comentario.objects.create(
+                alumno=alumno,
+                docente=docente,
+                tipo="General",  # Valor por defecto ya que no lo usas
+                texto=texto
+            )
+            
+            print(f"Comentario guardado con ID: {comentario.id}")
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Comentario guardado correctamente'
+            })
+            
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Datos JSON inválidos'}, status=400)
+        except Exception as e:
+            print(f"Error inesperado: {str(e)}")
+            return JsonResponse({'error': str(e)}, status=500)
+    
+    return JsonResponse({'error': 'Método no permitido'}, status=405)

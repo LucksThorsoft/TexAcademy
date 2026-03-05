@@ -222,7 +222,7 @@
     .status-actions {
         display: flex;
         gap: 8px;
-        justify-content: flex-end;
+        justify-content: flex-start;
     }
 
     .btn-status {
@@ -237,6 +237,10 @@
         cursor: pointer;
         transition: all 0.2s;
         font-size: 14px;
+    }
+
+    #td_comment {
+        display: flex;
     }
 
     .btn-status.active-check {
@@ -264,6 +268,29 @@
     .btn-status.inactive {
         color: #64748b;
     }
+
+    .btn-status.comment-btn {
+        color: #3b82f6;
+        border-color: #bfdbfe;
+        background-color: #eff6ff;
+    }
+
+    .btn-status.comment-btn:hover {
+        background-color: #dbeafe;
+    }
+
+
+.celda-comentario {
+    text-align: center;
+    vertical-align: middle;
+}
+
+.celda-comentario .btn-status {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto; 
+}
 
     /* Summary Bar para Registro Diario */
     .summary-bar {
@@ -498,18 +525,18 @@
     }
   
     .badge-warning {
-    background-color: #f59e0b;
-    color: white;
-}
+        background-color: #f59e0b;
+        color: white;
+    }
 
-.badge-danger {
-    background-color: #dc2626;
-    color: white;
-}
+    .badge-danger {
+        background-color: #dc2626;
+        color: white;
+    }
 
-.progress-fill.red {
-    background-color: #ef4444;
-}
+    .progress-fill.red {
+        background-color: #ef4444;
+    }
     
     .loading-spinner {
         display: inline-block;
@@ -524,6 +551,122 @@
 
     @keyframes spin {
         to { transform: rotate(360deg); }
+    }
+
+    /* Estilos para el modal de comentarios */
+    #comentarioModal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+    }
+
+    #comentarioModal.mostrar {
+        display: block;
+    }
+
+    .modal-content {
+        background-color: white;
+        margin: 15% auto;
+        padding: 24px;
+        border-radius: 12px;
+        width: 400px;
+        max-width: 90%;
+        box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .modal-header h3 {
+        margin: 0;
+        font-size: 18px;
+        color: #1e293b;
+        font-weight: 600;
+    }
+
+    .modal-close {
+        cursor: pointer;
+        font-size: 24px;
+        color: #64748b;
+    }
+
+    .modal-close:hover {
+        color: #1e293b;
+    }
+
+    .modal-body {
+        margin-bottom: 20px;
+    }
+
+    .modal-body label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: #1e293b;
+    }
+
+    .modal-body textarea {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        resize: vertical;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+    }
+
+    .modal-body textarea:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+    }
+
+    .modal-footer {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+    }
+
+    .modal-btn {
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        border: none;
+    }
+
+    .modal-btn-cancel {
+        background-color: white;
+        border: 1px solid #e2e8f0;
+        color: #64748b;
+    }
+
+    .modal-btn-cancel:hover {
+        background-color: #f8fafc;
+    }
+
+    .modal-btn-save {
+        background-color: #1d4ed8;
+        color: white;
+    }
+
+    .modal-btn-save:hover {
+        background-color: #1e40af;
+    }
+
+    .modal-btn-save:disabled {
+        background-color: #94a3b8;
+        cursor: not-allowed;
     }
 </style>
 
@@ -575,7 +718,8 @@
                             <tr>
                                 <th>Alumno</th>
                                 <th>Matrícula</th>
-                                <th style="text-align: right; padding-right: 40px;">Estado</th>
+                                <th style="text-align: left;">Estado</th>
+                                <th style="text-align: center;">Comentario</th>
                             </tr>
                         </thead>
                         <tbody id="tablaBody">
@@ -665,6 +809,25 @@
                 <i class="fa-solid fa-spinner fa-spin" style="font-size: 48px; margin-bottom: 16px; color: #94a3b8;"></i>
                 <h3 style="margin: 0 0 8px 0; font-weight: 500;">Cargando historial...</h3>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para comentarios -->
+<div id="comentarioModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Agregar Comentario</h3>
+            <span class="modal-close" onclick="cerrarModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="comentarioAlumnoId" value="">
+            <label for="comentarioTexto">Escribe tu comentario:</label>
+            <textarea id="comentarioTexto" rows="4" placeholder="Escribe tu comentario aquí..."></textarea>
+        </div>
+        <div class="modal-footer">
+            <button class="modal-btn modal-btn-cancel" onclick="cerrarModal()">Cancelar</button>
+            <button class="modal-btn modal-btn-save" onclick="guardarComentario()">Guardar</button>
         </div>
     </div>
 </div>
@@ -788,6 +951,11 @@
                         </div>
                     </div>
                 </td>
+                <td class="celda-comentario">
+                    <div class="btn-status comment-btn" onclick="abrirComentario(${alumno.id})" title="Agregar comentario">
+                        <i class="fa-regular fa-comment"></i>
+                    </div>
+                </td>
             `;
             
             tablaBody.appendChild(row);
@@ -819,191 +987,253 @@
         document.getElementById('totalFaltas').textContent = faltas;
     }
 
-// Guardar asistencia
-function guardarAsistencia() {
-    const grupoId = document.getElementById('grupoSelect').value;
-    const fecha = document.getElementById('fechaInput').value;
-    
-    if (!grupoId) {
-        mostrarAlerta('Selecciona un grupo', 'warning');
-        return;
-    }
-    
-    if (!fecha) {
-        mostrarAlerta('Selecciona una fecha', 'warning');
-        return;
-    }
+    // Guardar asistencia
+    function guardarAsistencia() {
+        const grupoId = document.getElementById('grupoSelect').value;
+        const fecha = document.getElementById('fechaInput').value;
+        
+        if (!grupoId) {
+            mostrarAlerta('Selecciona un grupo', 'warning');
+            return;
+        }
+        
+        if (!fecha) {
+            mostrarAlerta('Selecciona una fecha', 'warning');
+            return;
+        }
 
-    // Verificar que hay alumnos
-    if (alumnosActuales.length === 0) {
-        mostrarAlerta('No hay alumnos en este grupo', 'warning');
-        return;
-    }
+        // Verificar que hay alumnos
+        if (alumnosActuales.length === 0) {
+            mostrarAlerta('No hay alumnos en este grupo', 'warning');
+            return;
+        }
 
-    // Deshabilitar botón y mostrar carga
-    const btnGuardar = document.getElementById('btnGuardar');
-    const textoOriginal = btnGuardar.innerHTML;
-    btnGuardar.disabled = true;
-    btnGuardar.innerHTML = '<span class="loading-spinner"></span> Guardando...';
+        // Deshabilitar botón y mostrar carga
+        const btnGuardar = document.getElementById('btnGuardar');
+        const textoOriginal = btnGuardar.innerHTML;
+        btnGuardar.disabled = true;
+        btnGuardar.innerHTML = '<span class="loading-spinner"></span> Guardando...';
 
-    console.log('Guardando asistencia:', {
-        grupo_id: grupoId,
-        fecha: fecha,
-        asistencias: asistenciasActuales
-    });
-
-    fetch('/guardar-asistencia/', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCookie('csrftoken')
-        },
-        body: JSON.stringify({
+        console.log('Guardando asistencia:', {
             grupo_id: grupoId,
             fecha: fecha,
             asistencias: asistenciasActuales
+        });
+
+        fetch('/guardar-asistencia/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                grupo_id: grupoId,
+                fecha: fecha,
+                asistencias: asistenciasActuales
+            })
         })
-    })
-    .then(response => {
-        if (!response.ok) {
-            return response.json().then(err => { throw new Error(err.error || 'Error en el servidor'); });
-        }
-        return response.json();
-    })
-    .then(data => {
-        btnGuardar.disabled = false;
-        btnGuardar.innerHTML = textoOriginal;
-        
-        if (data.success) {
-            mostrarAlerta(data.message || 'Asistencia guardada correctamente', 'success');
-            
-            // Actualizar automáticamente el historial si estamos en esa pestaña
-            const historialTab = document.getElementById('historial-tab');
-            if (historialTab.classList.contains('active')) {
-                cargarHistorial();
-            } else {
-                // Opcional: cambiar a la pestaña de historial después de guardar
-                // document.querySelector('.tab[onclick="showTab(\'historial\', event)"]').click();
-            }
-        } else {
-            mostrarAlerta('Error: ' + (data.error || 'Error desconocido'), 'error');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        btnGuardar.disabled = false;
-        btnGuardar.innerHTML = textoOriginal;
-        mostrarAlerta('Error al guardar la asistencia: ' + error.message, 'error');
-    });
-}
-    
-// Cargar historial de asistencia
-function cargarHistorial() {
-    const grupoId = document.getElementById('historialGrupo').value;
-    
-    if (!grupoId) {
-        document.getElementById('historialTableContainer').style.display = 'none';
-        document.getElementById('sinHistorialMessage').style.display = 'block';
-        document.getElementById('cargandoHistorialMessage').style.display = 'none';
-        return;
-    }
-
-    // Mostrar mensaje de carga
-    document.getElementById('historialTableContainer').style.display = 'none';
-    document.getElementById('sinHistorialMessage').style.display = 'none';
-    document.getElementById('cargandoHistorialMessage').style.display = 'block';
-
-    console.log('Cargando historial para grupo:', grupoId);
-
-    fetch(`/obtener-historial-asistencia/?grupo_id=${grupoId}`)
         .then(response => {
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                return response.json().then(err => { throw new Error(err.error || 'Error en el servidor'); });
             }
             return response.json();
         })
         .then(data => {
-            console.log('Datos de historial recibidos:', data);
-            document.getElementById('cargandoHistorialMessage').style.display = 'none';
+            btnGuardar.disabled = false;
+            btnGuardar.innerHTML = textoOriginal;
             
-            if (data.historial && data.historial.length > 0) {
-                actualizarTablaHistorial(data.historial);
-                document.getElementById('historialTableContainer').style.display = 'block';
-                document.getElementById('sinHistorialMessage').style.display = 'none';
-            } else {
-                document.getElementById('historialTableContainer').style.display = 'none';
-                document.getElementById('sinHistorialMessage').style.display = 'block';
+            if (data.success) {
+                mostrarAlerta(data.message || 'Asistencia guardada correctamente', 'success');
                 
-                let mensaje = 'No hay datos de asistencia para este grupo';
-                if (data.message) {
-                    mensaje = data.message;
+                // Actualizar automáticamente el historial si estamos en esa pestaña
+                const historialTab = document.getElementById('historial-tab');
+                if (historialTab.classList.contains('active')) {
+                    cargarHistorial();
                 }
-                
-                document.getElementById('sinHistorialMessage').innerHTML = `
-                    <i class="fa-solid fa-chart-line" style="font-size: 48px; margin-bottom: 16px; color: #94a3b8;"></i>
-                    <h3 style="margin: 0 0 8px 0; font-weight: 500;">${mensaje}</h3>
-                    <p style="margin: 0; font-size: 14px;">Registra asistencias para ver el historial</p>
-                `;
+            } else {
+                mostrarAlerta('Error: ' + (data.error || 'Error desconocido'), 'error');
             }
         })
         .catch(error => {
-            console.error('Error detallado:', error);
-            document.getElementById('cargandoHistorialMessage').style.display = 'none';
-            mostrarAlerta('Error al cargar el historial: ' + error.message, 'error');
-            document.getElementById('sinHistorialMessage').style.display = 'block';
-            document.getElementById('sinHistorialMessage').innerHTML = `
-                <i class="fa-solid fa-exclamation-triangle" style="font-size: 48px; margin-bottom: 16px; color: #dc2626;"></i>
-                <h3 style="margin: 0 0 8px 0; font-weight: 500;">Error al cargar datos</h3>
-                <p style="margin: 0; font-size: 14px;">${error.message}</p>
-            `;
+            console.error('Error:', error);
+            btnGuardar.disabled = false;
+            btnGuardar.innerHTML = textoOriginal;
+            mostrarAlerta('Error al guardar la asistencia: ' + error.message, 'error');
         });
-}
+    }
+    
+    // Cargar historial de asistencia
+    function cargarHistorial() {
+        const grupoId = document.getElementById('historialGrupo').value;
+        
+        if (!grupoId) {
+            document.getElementById('historialTableContainer').style.display = 'none';
+            document.getElementById('sinHistorialMessage').style.display = 'block';
+            document.getElementById('cargandoHistorialMessage').style.display = 'none';
+            return;
+        }
 
-    
-// Actualizar tabla de historial
-function actualizarTablaHistorial(historial) {
-    const historialBody = document.getElementById('historialBody');
-    historialBody.innerHTML = '';
-    
-    historial.forEach((item, index) => {
-        const row = document.createElement('tr');
+        // Mostrar mensaje de carga
+        document.getElementById('historialTableContainer').style.display = 'none';
+        document.getElementById('sinHistorialMessage').style.display = 'none';
+        document.getElementById('cargandoHistorialMessage').style.display = 'block';
+
+        console.log('Cargando historial para grupo:', grupoId);
+
+        fetch(`/obtener-historial-asistencia/?grupo_id=${grupoId}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Datos de historial recibidos:', data);
+                document.getElementById('cargandoHistorialMessage').style.display = 'none';
+                
+                if (data.historial && data.historial.length > 0) {
+                    actualizarTablaHistorial(data.historial);
+                    document.getElementById('historialTableContainer').style.display = 'block';
+                    document.getElementById('sinHistorialMessage').style.display = 'none';
+                } else {
+                    document.getElementById('historialTableContainer').style.display = 'none';
+                    document.getElementById('sinHistorialMessage').style.display = 'block';
+                    
+                    let mensaje = 'No hay datos de asistencia para este grupo';
+                    if (data.message) {
+                        mensaje = data.message;
+                    }
+                    
+                    document.getElementById('sinHistorialMessage').innerHTML = `
+                        <i class="fa-solid fa-chart-line" style="font-size: 48px; margin-bottom: 16px; color: #94a3b8;"></i>
+                        <h3 style="margin: 0 0 8px 0; font-weight: 500;">${mensaje}</h3>
+                        <p style="margin: 0; font-size: 14px;">Registra asistencias para ver el historial</p>
+                    `;
+                }
+            })
+            .catch(error => {
+                console.error('Error detallado:', error);
+                document.getElementById('cargandoHistorialMessage').style.display = 'none';
+                mostrarAlerta('Error al cargar el historial: ' + error.message, 'error');
+                document.getElementById('sinHistorialMessage').style.display = 'block';
+                document.getElementById('sinHistorialMessage').innerHTML = `
+                    <i class="fa-solid fa-exclamation-triangle" style="font-size: 48px; margin-bottom: 16px; color: #dc2626;"></i>
+                    <h3 style="margin: 0 0 8px 0; font-weight: 500;">Error al cargar datos</h3>
+                    <p style="margin: 0; font-size: 14px;">${error.message}</p>
+                `;
+            });
+    }
+
+    // Actualizar tabla de historial
+    function actualizarTablaHistorial(historial) {
+        const historialBody = document.getElementById('historialBody');
+        historialBody.innerHTML = '';
         
-        // Determinar color del badge según el estado
-        let badgeClass = 'badge-gray';
-        if (item.estado === 'Bueno') badgeClass = 'badge-blue';
-        else if (item.estado === 'Regular') badgeClass = 'badge-warning';
-        else if (item.estado === 'Crítico') badgeClass = 'badge-danger';
-        else if (item.estado === 'Sin datos') badgeClass = 'badge-gray';
-        
-        row.innerHTML = `
-            <td>
-                <span class="student-name">${item.nombre}</span>
-                <span class="student-id">${item.matricula}</span>
-            </td>
-            <td><div class="stat-box bg-green-light">${item.asistencias}</div></td>
-            <td><div class="stat-box bg-red-light">${item.faltas}</div></td>
-            <td><div class="stat-box bg-yellow-light">${item.retardos}</div></td>
-            <td>
-                <div class="progress-container">
-                    <div class="progress-bar">
-                        <div class="progress-fill ${item.porcentaje >= 80 ? 'green' : item.porcentaje >= 60 ? 'orange' : 'red'}" 
-                             style="width: ${item.porcentaje}%; background-color: ${item.porcentaje >= 80 ? '#10b981' : item.porcentaje >= 60 ? '#f59e0b' : '#ef4444'};"></div>
+        historial.forEach((item, index) => {
+            const row = document.createElement('tr');
+            
+            // Determinar color del badge según el estado
+            let badgeClass = 'badge-gray';
+            if (item.estado === 'Bueno') badgeClass = 'badge-blue';
+            else if (item.estado === 'Regular') badgeClass = 'badge-warning';
+            else if (item.estado === 'Crítico') badgeClass = 'badge-danger';
+            else if (item.estado === 'Sin datos') badgeClass = 'badge-gray';
+            
+            row.innerHTML = `
+                <td>
+                    <span class="student-name">${item.nombre}</span>
+                    <span class="student-id">${item.matricula}</span>
+                </td>
+                <td><div class="stat-box bg-green-light">${item.asistencias}</div></td>
+                <td><div class="stat-box bg-red-light">${item.faltas}</div></td>
+                <td><div class="stat-box bg-yellow-light">${item.retardos}</div></td>
+                <td>
+                    <div class="progress-container">
+                        <div class="progress-bar">
+                            <div class="progress-fill ${item.porcentaje >= 80 ? 'green' : item.porcentaje >= 60 ? 'orange' : 'red'}" 
+                                 style="width: ${item.porcentaje}%; background-color: ${item.porcentaje >= 80 ? '#10b981' : item.porcentaje >= 60 ? '#f59e0b' : '#ef4444'};"></div>
+                        </div>
+                        <span class="percentage-text">${item.porcentaje}%</span>
                     </div>
-                    <span class="percentage-text">${item.porcentaje}%</span>
-                </div>
-            </td>
-            <td>
-                <span class="badge ${badgeClass}" 
-                      style="background-color: ${item.estado === 'Bueno' ? '#2563eb' : item.estado === 'Regular' ? '#f59e0b' : item.estado === 'Crítico' ? '#dc2626' : '#e2e8f0'}; 
-                             color: white; padding: 4px 8px; border-radius: 4px;">
-                    ${item.estado}
-                </span>
-            </td>
-        `;
+                </td>
+                <td>
+                    <span class="badge ${badgeClass}" 
+                          style="background-color: ${item.estado === 'Bueno' ? '#2563eb' : item.estado === 'Regular' ? '#f59e0b' : item.estado === 'Crítico' ? '#dc2626' : '#e2e8f0'}; 
+                                 color: white; padding: 4px 8px; border-radius: 4px;">
+                        ${item.estado}
+                    </span>
+                </td>
+            `;
+            
+            historialBody.appendChild(row);
+        });
+    }
+
+    // ===== FUNCIONES PARA COMENTARIOS =====
+
+    // Variable para almacenar el alumno actual
+    let alumnoComentarioActual = null;
+
+    // Función para abrir modal de comentario
+    function abrirComentario(alumnoId) {
+        alumnoComentarioActual = alumnoId;
+        document.getElementById('comentarioAlumnoId').value = alumnoId;
+        document.getElementById('comentarioTexto').value = '';
+        document.getElementById('comentarioModal').classList.add('mostrar');
+    }
+
+    // Función para cerrar modal
+    function cerrarModal() {
+        document.getElementById('comentarioModal').classList.remove('mostrar');
+    }
+
+    // Función para guardar comentario
+    function guardarComentario() {
+        const alumnoId = document.getElementById('comentarioAlumnoId').value;
+        const texto = document.getElementById('comentarioTexto').value.trim();
         
-        historialBody.appendChild(row);
-    });
-}
+        if (!texto) {
+            alert('Por favor escribe un comentario');
+            return;
+        }
+        
+        // Deshabilitar botón
+        const btnGuardar = event.target;
+        const textoOriginal = btnGuardar.innerHTML;
+        btnGuardar.disabled = true;
+        btnGuardar.innerHTML = 'Guardando...';
+        
+        fetch('/guardar-comentario/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                alumno_id: alumnoId,
+                texto: texto
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            btnGuardar.disabled = false;
+            btnGuardar.innerHTML = textoOriginal;
+            
+            if (data.success) {
+                cerrarModal();
+                mostrarAlerta('Comentario guardado correctamente', 'success');
+            } else {
+                mostrarAlerta('Error: ' + (data.error || 'Error desconocido'), 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            btnGuardar.disabled = false;
+            btnGuardar.innerHTML = textoOriginal;
+            mostrarAlerta('Error al guardar el comentario', 'error');
+        });
+    }
+
     // Funciones auxiliares para colores de avatar
     function getAvatarColor(index) {
         const colors = ['#e0e7ff', '#fef3c7', '#d1fae5', '#fee2e2', '#ede9fe', '#fae8ff'];
