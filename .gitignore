@@ -29,3 +29,8 @@ Desktop.ini
 *.log
 media/
 static/
+
+# --- Base de datos ---
+*.db
+*.sqlite3
+*.sqlite
