@@ -23,6 +23,7 @@ urlpatterns = [
     path('guardar-asistencia/', views.guardar_asistencia, name='guardar_asistencia'),
     path('obtener-historial-asistencia/', views.obtener_historial_asistencia, name='obtener_historial_asistencia'),
     path('guardar-comentario/', views.guardar_comentario, name='guardar_comentario'),
+    path('cuatrimestre/nuevo/', views.new_cuatrimestre, name='new_cuatrimestre'),
 
     
 ]

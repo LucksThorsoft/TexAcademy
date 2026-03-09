@@ -518,6 +518,8 @@ def director(request):
     grupo_form = GrupoForm()
     materia_form = GrupoDocenteMateriaForm()  # 👈 ESTO FALTABA
 
+    cuatrimestre_activo = Cuatrimestre.objects.filter(activo=True).first()
+
     relaciones = GrupoDocenteMateria.objects.select_related(
         'grupo', 'materia', 'docente'
     ).order_by('grupo__clave', 'materia__nombre')
@@ -540,7 +542,8 @@ def director(request):
         "form": form,
         "grupo_form": grupo_form,
         "materia_form": materia_form,  # 👈 Y PASARLO
-        "grupos": grupos_data
+        "grupos": grupos_data,
+        "sin_cuatrimestre": cuatrimestre_activo is None,
     })
 
 
@@ -751,3 +754,23 @@ def guardar_comentario(request):
             return JsonResponse({'error': str(e)}, status=500)
     
     return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+
+def new_cuatrimestre(request):
+    if request.method == "POST":
+        nombre = request.POST.get("nombre")
+        fecha_inicio = request.POST.get("fecha_inicio")
+        fecha_fin = request.POST.get("fecha_fin")
+
+        # Desactivar cualquier cuatrimestre activo previo
+        Cuatrimestre.objects.filter(activo=True).update(activo=False)
+
+        Cuatrimestre.objects.create(
+            nombre=nombre,
+            fecha_inicio=fecha_inicio,
+            fecha_fin=fecha_fin,
+            activo=True
+        )
+        messages.success(request, "Cuatrimestre creado correctamente")
+
+    return redirect("director")
