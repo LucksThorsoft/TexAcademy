@@ -77,6 +77,7 @@ class GrupoDocenteMateria(models.Model):
     grupo = models.ForeignKey(Grupo, on_delete=models.CASCADE)
     materia = models.ForeignKey(Materia, on_delete=models.CASCADE)
     docente = models.ForeignKey(Usuario, on_delete=models.CASCADE)
+    parciales_configurados = models.BooleanField(default=False)   # <-- NUEVO
 
     class Meta:
         unique_together = ('grupo', 'materia')
@@ -91,6 +92,7 @@ class GrupoDocenteMateria(models.Model):
 # -------------------------
 
 class Parcial(models.Model):
+    numero_parcial = models.IntegerField(default=1)         # <-- NUEVO
     nombre = models.CharField(max_length=50)
     porcentaje = models.IntegerField()
     grupo_docente_materia = models.ForeignKey(GrupoDocenteMateria, on_delete=models.CASCADE)
@@ -98,6 +100,8 @@ class Parcial(models.Model):
     fecha_cierre = models.DateField()
     cerrado = models.BooleanField(default=False)
 
+    class Meta:
+        unique_together = ('grupo_docente_materia', 'numero_parcial')  # No duplicar número por materia
 
 class Actividad(models.Model):
     titulo = models.CharField(max_length=100)
