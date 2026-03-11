@@ -4,7 +4,7 @@
 
 {% block content %}
 <style>
-    /* Estilos generales (manteniendo los tuyos) */
+    /* ===== ESTILOS GENERALES ===== */
     .page-title {
         margin-bottom: 30px;
     }
@@ -21,7 +21,7 @@
         font-size: 14px;
     }
     
-    /* Switch de vista */
+    /* ===== SWITCH DE VISTA PRINCIPAL ===== */
     .view-switch {
         display: inline-flex;
         background: #f5f5f5;
@@ -48,7 +48,7 @@
         color: #333;
     }
     
-    /* Grid de grupos */
+    /* ===== GRID DE GRUPOS ===== */
     .groups-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -57,7 +57,6 @@
         width: 100%;
     }
     
-    /* Grid de alumnos (inicialmente oculto) */
     .students-grid {
         display: none;
         grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -66,7 +65,7 @@
         width: 100%;
     }
     
-    /* Tarjetas de grupo y alumno */
+    /* ===== TARJETAS DE GRUPO ===== */
     .group-card, .student-card {
         background: white;
         border-radius: 12px;
@@ -75,13 +74,13 @@
         transition: transform 0.2s ease, box-shadow 0.2s ease;
         height: 100%;
         box-sizing: border-box;
-        cursor: pointer; /* Agregado: cursor pointer */
+        cursor: pointer;
     }
     
     .group-card:hover, .student-card:hover {
         border: 2px solid rgb(0, 0, 180);
         box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
-        transform: translateY(-2px); /* Efecto adicional en hover */
+        transform: translateY(-2px);
     }
     
     .group-header, .student-header {
@@ -97,7 +96,6 @@
         margin-bottom: 8px;
     }
     
-    /* Materia en negritas a la izquierda */
     .materia-principal {
         color: #333;
         font-size: 16px;
@@ -105,21 +103,18 @@
         margin-right: 8px;
     }
     
-    /* Separador */
     .group-separator {
         color: #666;
         margin-right: 8px;
         font-weight: 500;
     }
     
-    /* Grupo sin negritas a la derecha */
     .group-clave {
         color: #666;
         font-size: 16px;
         font-weight: 400;
     }
     
-    /* Número de alumnos */
     .group-meta {
         display: flex;
         gap: 5px;
@@ -128,7 +123,6 @@
         margin-top: 5px;
     }
     
-    /* Estadísticas */
     .group-stats {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
@@ -153,7 +147,6 @@
         color: #DC2626;
     }
     
-    /* Botón de atención */
     .attention-btn {
         display: flex;
         align-items: center;
@@ -165,7 +158,7 @@
         gap: 8px;
     }
     
-    /* ===== ESTILOS PARA EL MODAL ===== */
+    /* ===== MODAL ===== */
     .modal-overlay {
         display: none;
         position: fixed;
@@ -187,16 +180,16 @@
         background: white;
         border-radius: 16px;
         width: 90%;
-        max-width: 850px; /* Ancho máximo reducido */
-        height: 70vh; /* Altura fija en 70% de la ventana */
-        max-height: 600px; /* Altura máxima */
+        max-width: 850px;
+        height: 70vh;
+        max-height: 600px;
         overflow: hidden;
         box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
         display: flex;
         flex-direction: column;
     }
     
-    /* Header del modal */
+    /* Header del modal simplificado */
     .modal-header {
         padding: 20px 24px;
         display: flex;
@@ -204,43 +197,41 @@
         align-items: center;
         background: #f8f9fa;
         gap: 20px;
-        flex-shrink: 0; /* No se reduce */
+        flex-shrink: 0;
         border-bottom: 1px solid #eaeaea;
     }
     
     .modal-title {
-        /* Ahora contiene la estructura group-header-main */
-        flex-grow: 1;
-        min-width: 0; /* Para que funcione el text-overflow */
+        flex: 1;
+        min-width: 0;
     }
-
-    /* Ajustes para el group-header-main dentro del modal */
+    
     .modal-title .group-header-main {
         margin-bottom: 0;
         align-items: center;
-        flex-wrap: nowrap; /* Para que no se rompa en múltiples líneas */
+        flex-wrap: nowrap;
     }
-
+    
     .modal-title .materia-principal {
         color: #333;
-        font-size: 18px; /* Un poco más grande que en las tarjetas */
+        font-size: 18px;
         font-weight: 600;
         margin-right: 8px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
     }
-
+    
     .modal-title .group-separator {
         color: #666;
         margin-right: 8px;
         font-weight: 500;
         font-size: 18px;
     }
-
+    
     .modal-title .group-clave {
         color: #666;
-        font-size: 18px; /* Un poco más grande que en las tarjetas */
+        font-size: 18px;
         font-weight: 400;
         white-space: nowrap;
     }
@@ -265,14 +256,13 @@
         background: #f0f0f0;
         color: #333;
     }
-
+    
     /* Switch interno del modal */
     .modal-switch-container {
         padding: 20px 24px;
-        flex-shrink: 0; /* No se reduce */
+        flex-shrink: 0;
     }
     
-    /* Switch interno del modal */
     .modal-switch {
         display: inline-flex;
         background: #f5f5f5;
@@ -299,29 +289,27 @@
         background: white;
         color: #333;
     }
-
-    /* Contenedor principal del contenido */
+    
+    /* Contenedor del contenido */
     .modal-content-wrapper {
-        flex: 1; /* Ocupa el espacio restante */
+        flex: 1;
         display: flex;
         flex-direction: column;
-        min-height: 0; /* Importante para el scroll interno */
+        min-height: 0;
     }
     
-    /* Contenido del modal - Área con scroll */
     .modal-content {
         padding: 0 24px 24px;
         overflow-y: auto;
-        flex: 1; /* Ocupa todo el espacio disponible */
+        flex: 1;
         display: flex;
         flex-direction: column;
     }
     
-    /* Vista dentro del contenido - Todas ocupan el mismo espacio */
     .modal-view {
         display: none;
-        flex: 1; /* Todas las vistas ocupan el mismo espacio */
-        min-height: 0; /* Importante para scroll interno */
+        flex: 1;
+        min-height: 0;
     }
     
     .modal-view.active {
@@ -329,13 +317,12 @@
         flex-direction: column;
     }
     
-    /* Estilos para las tablas/vistas internas */
+    /* ===== TABLA DE ALUMNOS ===== */
     .alumnos-table {
         width: 100%;
         border-collapse: collapse;
-        flex: 1;
     }
-
+    
     .alumnos-table-wrapper {
         flex: 1;
         overflow-y: auto;
@@ -344,7 +331,7 @@
     }
     
     .alumnos-table th {
-        text-align: left;
+        text-align: center;
         padding: 12px 16px;
         background: #f8f9fa;
         color: #666;
@@ -354,8 +341,6 @@
         position: sticky;
         top: 0;
         z-index: 10;
-        text-align: center;
-
     }
     
     .alumnos-table td {
@@ -365,241 +350,133 @@
         text-align: center;
     }
     
-    .alumnos-table tr:hover {
-        background: #f9f9f9;
-    }
-
-    /* Estilos para la fila expandible */
-    .expandable-row {
+    .clickable-row {
         cursor: pointer;
         transition: background-color 0.2s;
     }
-
-    .expandable-row:hover {
+    
+    .clickable-row:hover {
         background-color: #f0f7ff !important;
     }
-
-    /* Fila expandida - mantiene el color azul */
-    .expandable-row.expanded {
-        background-color: #f0f7ff !important;
-    }
-
-    .expandable-row td {
-        position: relative;
-    }
-
-    /* Contenedor para el contenido de la celda con flexbox */
-    .cell-content {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 100%;
-    }
-
-    /* Estilo para el texto del estado */
-    .status-text {
+    
+    /* ===== VISTA DE CALIFICACIONES ===== */
+    .calificaciones-container {
         flex: 1;
-    }
-
-    /* Flecha a la derecha */
-    .expand-arrow {
-        font-size: 12px;
-        color: #999;
-        margin-left: 15px;
-        transition: transform 0.3s ease, color 0.2s ease;
-        display: inline-block;
-    }
-
-    .expandable-row.expanded .expand-arrow {
-        transform: rotate(90deg);
-        color: #0066cc;
-    }
-
-    /* Efecto hover en la flecha */
-    .expandable-row:hover .expand-arrow {
-        color: #0066cc;
-    }
-
-    /* Ajuste para la última celda */
-    .expandable-row td:last-child {
-        position: relative;
-    }
-
-    /* Quitar la flecha que pusimos antes en la primera celda */
-    .expandable-row td:first-child::before {
-        display: none;
-    }
-
-    /* Fila de perfil expandido */
-    .profile-row {
-        display: none;
-        opacity: 0;
-        transform: translateY(-10px);
-        transition: opacity 0.3s ease, transform 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
     }
     
-    .profile-row.show {
-        display: table-row;
-        opacity: 1;
-        transform: translateY(0);
-    }
-    
-    .profile-row td {
-        padding: 0 !important;
-        border-bottom: none !important;
-        background-color: #f9f9f9;
-    }
-
-    .profile-container {
-        padding: 20px 24px;
-        border-bottom: 1px solid #eaeaea;
-        border-top: 1px solid #eaeaea;
-        background: white;
-        margin: 10px;
+    .calificaciones-table-wrapper {
+        flex: 1;
+        overflow-y: auto;
+        border: 1px solid #eaeaea;
         border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        animation: slideIn 0.3s ease forwards;
     }
-
-    @keyframes slideIn {
-        0% {
-            opacity: 0;
-            transform: translateY(-10px);
-        }
-        100% {
-            opacity: 1;
-            transform: translateY(0);
-        }
+    
+    .calificaciones-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 600px;
+        border: 1px solid #dee2e6;
     }
-
-    .profile-row.removing .profile-container {
-        animation: slideOut 0.3s ease forwards;
+    
+    .calificaciones-table th,
+    .calificaciones-table td {
+        padding: 12px 16px;
+        border: 1px solid #dee2e6;
+        vertical-align: middle;
     }
-
-    @keyframes slideOut {
-        0% {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        100% {
-            opacity: 0;
-            transform: translateY(-10px);
-        }
-    }
-
-    /* Tarjeta de perfil */
-    .profile-card {
-        display: flex;
-        gap: 24px;
-    }
-
-    .profile-avatar {
-        width: 80px;
-        height: 80px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 32px;
-        font-weight: 600;
-        flex-shrink: 0;
-    }
-
-    .profile-info {
-        flex: 1;
-    }
-
-    .profile-name {
-        font-size: 18px;
-        font-weight: 600;
-        color: #333;
-        margin-bottom: 4px;
-        text-align: left;
-    }
-
-    .profile-matricula {
-        font-size: 14px;
+    
+    .calificaciones-table th {
+        background: #f8f9fa;
         color: #666;
-        margin-bottom: 12px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .profile-badge {
-        background: #e8f5e9;
-        color: #2e7d32;
-        padding: 2px 8px;
-        border-radius: 12px;
-        font-size: 11px;
-        font-weight: 500;
-    }
-
-    .profile-detail {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 16px;
-        margin-top: 12px;
-        padding-top: 12px;
-        border-top: 1px solid #eaeaea;
-    }
-
-    .profile-detail-item {
+        font-weight: 600;
+        font-size: 14px;
+        position: sticky;
+        top: 0;
+        z-index: 10;
         text-align: center;
     }
-
-    .detail-label {
-        font-size: 11px;
-        color: #999;
-        margin-bottom: 2px;
-        text-transform: uppercase;
-    }
-
-    .detail-value {
-        font-size: 16px;
-        font-weight: 600;
-        color: #333;
-    }
-
-    .detail-value.small {
-        font-size: 14px;
-    }
-
-    /* Estado en perfil */
-    .profile-status {
-        display: inline-block;
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 500;
-    }
-
-    .status-good {
-        background: #e8f5e9;
-        color: #2e7d32;
-    }
-
-    .status-warning {
-        background: #fff3e0;
-        color: #e65100;
-    }
-
-    .status-danger {
-        background: #ffebee;
-        color: #c62828;
+    
+    .calificaciones-table .calificaciones-header-row th {
+        background: #e9ecef;
+        color: #495057;
+        font-size: 15px;
     }
     
-    /* Contenedor para mensajes de contenido en desarrollo */
+    .calificaciones-table .calificaciones-subheader-row th {
+        background: #f1f3f5;
+        color: #666;
+        font-size: 13px;
+        font-weight: 500;
+    }
+    
+    .calificaciones-table td {
+        background: white;
+        font-size: 14px;
+    }
+    
+    .calificaciones-table td:first-child {
+        text-align: left;
+        font-weight: 500;
+        color: #333;
+    }
+    
+    /* Celda combinada de nombre y matrícula */
+    .alumno-info-cell {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .alumno-nombre {
+        font-weight: 500;
+        color: #333;
+        font-size: 14px;
+    }
+    
+    .alumno-matricula {
+        font-size: 12px;
+        color: #666;
+    }
+    
+    /* Input de calificación */
+    .calificacion-input {
+        width: 100px;
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 14px;
+        text-align: center;
+        transition: all 0.2s;
+        margin: 0;
+    }
+    
+    .calificacion-input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .calificacion-input:hover {
+        border-color: #999;
+    }
+    
+    /* Centrar el contenido de la segunda columna */
+    .calificaciones-table td:nth-child(2) {
+        text-align: center;
+    }
+    
+    /* Mensajes de desarrollo */
     .dev-message-container {
         flex: 1;
         display: flex;
         align-items: center;
         justify-content: center;
-        min-height: 300px; /* Altura mínima para mantener tamaño */
+        min-height: 300px;
     }
-
+    
     .dev-message {
         text-align: center;
         padding: 40px;
@@ -618,7 +495,7 @@
         color: #999;
     }
     
-    /* Responsive */
+    /* ===== RESPONSIVE ===== */
     @media (max-width: 768px) {
         .groups-grid {
             grid-template-columns: 1fr;
@@ -626,14 +503,14 @@
         
         .modal-container {
             width: 95%;
-            height: 75vh; /* Un poco más alto en móviles */
+            height: 75vh;
             max-height: none;
         }
         
         .modal-header {
             padding: 16px 20px;
         }
-
+        
         .modal-switch-container {
             padding: 0 20px;
         }
@@ -657,49 +534,28 @@
             text-align: center;
             min-width: 100px;
         }
-
+        
         .alumnos-table th,
         .alumnos-table td {
             padding: 10px 12px;
             font-size: 13px;
         }
-
-        .profile-card {
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
+        
+        .calificaciones-table th,
+        .calificaciones-table td {
+            padding: 10px 12px;
+            font-size: 13px;
         }
         
-        .profile-detail {
-            grid-template-columns: 1fr;
-            gap: 8px;
-        }
-
-        .cell-content {
-            flex-wrap: wrap;
-        }
-        
-        .expand-arrow {
-            margin-left: 10px;
+        .calificacion-input {
+            width: 80px;
+            padding: 6px 10px;
+            font-size: 13px;
         }
         
         .view-option {
             padding: 8px 40px;
             font-size: 13px;
-        }
-
-        .comentario-header {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 4px;
-        }
-        
-        .comentario-fecha {
-            font-size: 10px;
-        }
-        
-        .comentario-texto {
-            font-size: 12px;
         }
     }
     
@@ -708,19 +564,19 @@
             height: 80vh;
             border-radius: 12px;
         }
-
+        
         .modal-title .materia-principal,
         .modal-title .group-separator,
         .modal-title .group-clave {
             font-size: 16px;
         }
-
+        
         .close-btn {
             width: 32px;
             height: 32px;
             font-size: 20px;
         }
-
+        
         .view-option {
             padding: 8px 20px;
         }
@@ -742,92 +598,6 @@
             min-width: 80px;
         }
     }
-
-    /* Estilos para la sección de comentarios */
-    .profile-comentarios {
-        margin-top: 20px;
-        padding-top: 15px;
-        border-top: 1px solid #eaeaea;
-    }
-
-    .comentarios-title {
-        font-size: 14px;
-        font-weight: 600;
-        color: #333;
-        margin-bottom: 12px;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-
-    .comentarios-title .mdi {
-        color: #666;
-        font-size: 16px;
-    }
-
-    .comentarios-list {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-    }
-
-    .comentario-item {
-        background: #f8f9fa;
-        border-radius: 8px;
-        padding: 12px;
-        border-left: 3px solid #667eea;
-    }
-
-    .comentario-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 6px;
-    }
-
-    .comentario-tipo {
-        font-size: 12px;
-        font-weight: 600;
-        color: #667eea;
-        background: #eef2ff;
-        padding: 2px 8px;
-        border-radius: 12px;
-    }
-
-    .comentario-fecha {
-        font-size: 11px;
-        color: #999;
-    }
-
-    .comentario-texto {
-        font-size: 13px;
-        color: #333;
-        margin-bottom: 8px;
-        line-height: 1.4;
-    }
-
-    .comentario-docente {
-        font-size: 11px;
-        color: #666;
-        display: flex;
-        align-items: center;
-        gap: 4px;
-    }
-
-    .comentario-docente .mdi {
-        font-size: 12px;
-        color: #999;
-    }
-
-    .comentarios-empty {
-        text-align: center;
-        padding: 15px;
-        background: #f8f9fa;
-        border-radius: 8px;
-        color: #999;
-        font-size: 13px;
-        font-style: italic;
-    }
 </style>
 
 <!-- Switch de vista principal -->
@@ -836,7 +606,7 @@
     <button class="view-option" data-view="students">Todos mis Alumnos</button>
 </div>
 
-<!-- Vista de Mis Grupos (visible por defecto) -->
+<!-- Vista de Mis Grupos -->
 <div id="groupsView" class="view-content">
     <div class="groups-grid">
         {% for grupo in grupos %}
@@ -896,7 +666,7 @@
     </div>
 </div>
 
-<!-- Vista de Todos los Alumnos (oculta por defecto) -->
+<!-- Vista de Todos los Alumnos -->
 <div id="studentsView" class="view-content" style="display: none;">
     <div class="students-grid">
         <div style="text-align: center; padding: 40px;">
@@ -913,10 +683,10 @@
 <!-- ===== MODAL ===== -->
 <div class="modal-overlay" id="groupModal">
     <div class="modal-container">
-        <!-- Header con título y botón de cerrar -->
+        <!-- Header simplificado -->
         <div class="modal-header">
-            <div class="modal-title">
-                <div class="group-header-main">
+            <div class="modal-title" id="modalTitleContainer">
+                <div class="group-header-main" id="modalTitle">
                     <span class="materia-principal" id="modalMateria">Materia</span>
                     <span class="group-separator">|</span>
                     <span class="group-clave" id="modalClave">Grupo</span>
@@ -925,8 +695,8 @@
             <button class="close-btn" id="closeModal">&times;</button>
         </div>
         
-        <!-- Switch interno con 3 opciones -->
-        <div class="modal-switch-container">
+        <!-- Switch interno -->
+        <div class="modal-switch-container" id="modalSwitchContainer">
             <div class="modal-switch" id="modalSwitch">
                 <button class="modal-switch-option active" data-modal-view="alumnos">Alumnos</button>
                 <button class="modal-switch-option" data-modal-view="calificaciones">Calificaciones</button>
@@ -934,12 +704,11 @@
             </div>
         </div>
         
-        <!-- Contenedor principal del contenido -->
+        <!-- Contenido -->
         <div class="modal-content-wrapper">
-            <!-- Contenido del modal -->
             <div class="modal-content">
-                <!-- Vista de Alumnos -->
-                <div class="modal-view active" id="modalAlumnos">
+                <!-- Lista de Alumnos -->
+                <div class="modal-view active" id="modalListaAlumnos">
                     <div class="alumnos-table-wrapper">
                         <table class="alumnos-table">
                             <thead>
@@ -949,19 +718,32 @@
                                     <th>Estado</th>
                                 </tr>
                             </thead>
-                            <tbody id="modalAlumnosBody">
-                                <!-- Los datos se cargarán aquí dinámicamente -->
-                            </tbody>
+                            <tbody id="modalAlumnosBody"></tbody>
                         </table>
                     </div>
                 </div>
                 
                 <!-- Vista de Calificaciones -->
                 <div class="modal-view" id="modalCalificaciones">
-                    <div class="dev-message-container">
-                        <div class="dev-message">
-                            <h3>Calificaciones</h3>
-                            <p>Esta sección estará disponible próximamente</p>
+                    <div class="calificaciones-container">
+                        <div class="calificaciones-table-wrapper">
+                            <table class="calificaciones-table">
+                                <thead>
+                                    <tr class="calificaciones-header-row">
+                                        <th></th>
+                                        <th>Unidad 1</th>
+                                        <th></th>
+                                    </tr>
+                                    <tr class="calificaciones-subheader-row">
+                                        <th>Alumnos</th>
+                                        <th>Nombre de Unidad 1 - 35%</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="modalCalificacionesBody">
+                                    <!-- Los datos se cargarán aquí dinámicamente -->
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -981,333 +763,245 @@
 </div>
 
 <script>
-    // Script para manejar el cambio de vista principal
     document.addEventListener('DOMContentLoaded', function() {
+        // Elementos del DOM
         const viewSwitch = document.getElementById('viewSwitch');
         const viewOptions = viewSwitch.querySelectorAll('.view-option');
         const groupsView = document.getElementById('groupsView');
         const studentsView = document.getElementById('studentsView');
         
-        viewOptions.forEach(option => {
-            option.addEventListener('click', function() {
-                // Remover clase active de todos
-                viewOptions.forEach(opt => opt.classList.remove('active'));
-                
-                // Agregar clase active al botón clickeado
-                this.classList.add('active');
-                
-                // Ocultar todas las vistas
-                groupsView.style.display = 'none';
-                studentsView.style.display = 'none';
-                
-                // Mostrar la vista correspondiente
-                const viewType = this.getAttribute('data-view');
-                if (viewType === 'groups') {
-                    groupsView.style.display = 'block';
-                } else if (viewType === 'students') {
-                    studentsView.style.display = 'block';
-                }
-            });
-        });
-        
-        // ===== FUNCIONALIDAD DEL MODAL =====
+        // Elementos del modal
         const modal = document.getElementById('groupModal');
         const closeModalBtn = document.getElementById('closeModal');
         const modalSwitch = document.getElementById('modalSwitch');
         const modalSwitchOptions = modalSwitch.querySelectorAll('.modal-switch-option');
+        const modalSwitchContainer = document.getElementById('modalSwitchContainer');
         const modalViews = document.querySelectorAll('.modal-view');
         const modalMateria = document.getElementById('modalMateria');
         const modalClave = document.getElementById('modalClave');
-        const modalAlumnosTable = document.getElementById('modalAlumnosBody');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalAlumnosBody = document.getElementById('modalAlumnosBody');
+        const modalCalificacionesBody = document.getElementById('modalCalificacionesBody');
         
-        // Función para formatear datos
-        function formatValue(value) {
-            if (value === null || value === undefined || value === 'null') {
-                return 'No asignado';
-            }
-            return value;
-        }
+        let currentGrupoData = null;
+        let currentGrupoId = null;
+        let currentMateria = null;
+        let currentClave = null;
         
-        // Función para determinar el estado con color
+        // Función para obtener HTML del estado
         function getEstadoHTML(estado) {
             const estadoStr = String(estado || '');
-            
             if (!estadoStr || estadoStr === 'null' || estadoStr === 'No asignado') {
                 return 'No asignado';
             }
-            
             return estadoStr;
         }
         
-        // Abrir modal al hacer click en una tarjeta de grupo
+        // Función para cargar la lista de alumnos
+        function cargarListaAlumnos() {
+            modalAlumnosBody.innerHTML = '';
+            
+            if (currentGrupoData && currentGrupoData.length > 0) {
+                currentGrupoData.forEach(alumno => {
+                    const row = document.createElement('tr');
+                    row.className = 'clickable-row';
+                    
+                    row.innerHTML = `
+                        <td>${alumno.nombre || 'No asignado'}</td>
+                        <td>${alumno.matricula || 'No asignado'}</td>
+                        <td>${getEstadoHTML(alumno.estado)}</td>
+                    `;
+                    
+                    // Evento para abrir perfil en nueva pestaña
+                    row.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const url = `/alumno/${alumno.id}/perfil/`;
+                        window.open(url, '_blank');
+                    });
+                    
+                    modalAlumnosBody.appendChild(row);
+                });
+            } else {
+                modalAlumnosBody.innerHTML = `
+                    <tr>
+                        <td colspan="3" style="text-align: center; padding: 40px; color: #666;">
+                            No hay alumnos registrados en este grupo
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+        
+        // Función para cargar la vista de calificaciones
+        function cargarCalificaciones() {
+            modalCalificacionesBody.innerHTML = '';
+            
+            if (currentGrupoData && currentGrupoData.length > 0) {
+                currentGrupoData.forEach(alumno => {
+                    const row = document.createElement('tr');
+                    
+                    // Obtener calificación de unidad 1 (si existe)
+                    const califUnidad1 = alumno.calificaciones?.unidad1 || '';
+                    
+                    row.innerHTML = `
+                        <td>
+                            <div class="alumno-info-cell">
+                                <span class="alumno-nombre">${alumno.nombre || 'No asignado'}</span>
+                                <span class="alumno-matricula">${alumno.matricula || 'No asignado'}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <input type="text" class="calificacion-input" 
+                                   value="${califUnidad1}" 
+                                   placeholder="0-100"
+                                   data-alumno-id="${alumno.id}"
+                                   data-unidad="unidad1">
+                        </td>
+                        <td></td>
+                    `;
+                    
+                    modalCalificacionesBody.appendChild(row);
+                });
+            } else {
+                modalCalificacionesBody.innerHTML = `
+                    <tr>
+                        <td colspan="3" style="text-align: center; padding: 40px; color: #666;">
+                            No hay alumnos registrados en este grupo
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+        
+        // Mostrar lista de alumnos
+        function showAlumnosList() {
+            modalTitle.style.display = 'flex';
+            modalSwitchContainer.style.display = 'block';
+            
+            // Asegurar que la pestaña "Alumnos" esté activa
+            modalSwitchOptions.forEach(opt => {
+                if (opt.getAttribute('data-modal-view') === 'alumnos') {
+                    opt.classList.add('active');
+                } else {
+                    opt.classList.remove('active');
+                }
+            });
+            
+            // Cargar la lista de alumnos
+            cargarListaAlumnos();
+            
+            modalViews.forEach(view => view.classList.remove('active'));
+            document.getElementById('modalListaAlumnos').classList.add('active');
+        }
+        
+        // Abrir modal desde tarjeta de grupo
         document.querySelectorAll('.group-card').forEach(card => {
             card.addEventListener('click', function() {
                 const materia = this.getAttribute('data-materia');
                 const clave = this.getAttribute('data-clave');
                 const alumnosJSON = this.getAttribute('data-alumnos');
+                const grupoId = this.getAttribute('data-group-id');
                 
-                // Actualizar título del modal con el mismo formato
-                modalMateria.textContent = materia || 'Sin materia';
-                modalClave.textContent = clave;
+                // Guardar datos del grupo actual
+                currentMateria = materia || 'Sin materia';
+                currentClave = clave;
+                currentGrupoId = grupoId;
                 
-                // Limpiar tabla anterior
-                modalAlumnosTable.innerHTML = '';
+                modalMateria.textContent = currentMateria;
+                modalClave.textContent = currentClave;
                 
-                // Parsear datos JSON de alumnos
-                let alumnosData = [];
                 try {
-                    if (alumnosJSON && alumnosJSON !== 'null') {
-                        alumnosData = JSON.parse(alumnosJSON);
-                    }
+                    currentGrupoData = (alumnosJSON && alumnosJSON !== 'null') 
+                        ? JSON.parse(alumnosJSON) 
+                        : [];
                 } catch (error) {
                     console.error('Error parsing JSON:', error);
-                    alumnosData = [];
+                    currentGrupoData = [];
                 }
                 
-                // Modificar la parte donde se llena la tabla
-                if (alumnosData.length > 0) {
-                    alumnosData.forEach((alumno, index) => {
-                        const row = document.createElement('tr');
-                        row.className = 'expandable-row';
-                        row.setAttribute('data-alumno-index', index);
-                        
-                        // Generar el HTML del estado
-                        const estadoHTML = getEstadoHTML(alumno.estado);
-                        
-                        // Crear la fila con la estructura modificada
-                        row.innerHTML = `
-                            <td>
-                                <div class="cell-content">
-                                    <span>${alumno.nombre || 'No asignado'}</span>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="cell-content">
-                                    <span>${alumno.matricula || 'No asignado'}</span>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="cell-content">
-                                    <span class="status-text">${estadoHTML}</span>
-                                    <span class="expand-arrow">▶</span>
-                                </div>
-                            </td>
-                        `;
-                        
-                        modalAlumnosTable.appendChild(row);
-                        
-                        // Crear y agregar la fila de perfil
-                        const profileRow = createProfileRow(alumno, index);
-                        modalAlumnosTable.appendChild(profileRow);
-                        
-                        // Agregar evento de clic a la fila
-                        row.addEventListener('click', function(e) {
-                            e.stopPropagation(); // Evitar que el clic se propague al modal
-                            
-                            const isExpanded = this.classList.contains('expanded');
-                            const profileRow = document.getElementById(`profile-${index}`);
-                            
-                            // Función para cerrar con animación
-                            function closeWithAnimation(expandedRow, profileRowElement) {
-                                expandedRow.classList.remove('expanded');
-                                profileRowElement.classList.add('removing');
-                                
-                                // Esperar a que termine la animación antes de ocultar
-                                setTimeout(() => {
-                                    profileRowElement.classList.remove('show', 'removing');
-                                }, 200); // 200ms = duración de la animación de salida
-                            }
-                            
-                            // Cerrar todas las demás filas expandidas con animación
-                            document.querySelectorAll('.expandable-row.expanded').forEach(expandedRow => {
-                                if (expandedRow !== this) {
-                                    const expandedIndex = expandedRow.getAttribute('data-alumno-index');
-                                    const otherProfileRow = document.getElementById(`profile-${expandedIndex}`);
-                                    closeWithAnimation(expandedRow, otherProfileRow);
-                                }
-                            });
-                            
-                            // Toggle la fila actual
-                            if (isExpanded) {
-                                // Cerrar la fila actual con animación
-                                closeWithAnimation(this, profileRow);
-                            } else {
-                                // Abrir la fila actual
-                                this.classList.add('expanded');
-                                profileRow.classList.add('show');
-                                // Asegurar que no tenga la clase removing
-                                profileRow.classList.remove('removing');
-                            }
-                        });
-                    });
-                } else {
-                    // Mostrar mensaje si no hay alumnos
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td colspan="3" style="text-align: center; padding: 40px; color: #666;">
-                            No hay alumnos registrados en este grupo
-                        </td>
-                    `;
-                    modalAlumnosTable.appendChild(row);
-                }
+                // Resetear el switch a la pestaña "Alumnos"
+                modalSwitchOptions.forEach(opt => {
+                    if (opt.getAttribute('data-modal-view') === 'alumnos') {
+                        opt.classList.add('active');
+                    } else {
+                        opt.classList.remove('active');
+                    }
+                });
+                
+                // Mostrar lista de alumnos
+                showAlumnosList();
                 
                 // Mostrar modal
                 modal.classList.add('active');
                 document.body.style.overflow = 'hidden';
             });
         });
-
-        // Función para crear el perfil del alumno
-        function createProfileRow(alumno, rowIndex) {
-            const profileRow = document.createElement('tr');
-            profileRow.className = 'profile-row';
-            profileRow.id = `profile-${rowIndex}`;
-            
-            // Determinar clase de estado para el perfil
-            let statusClass = 'status-good';
-            let statusText = 'Estable';
-            
-            if (alumno.estado) {
-                const estadoStr = String(alumno.estado).toLowerCase();
-                if (estadoStr.includes('atención') || estadoStr.includes('atencion')) {
-                    statusClass = 'status-warning';
-                    statusText = 'Requiere atención';
-                } else if (estadoStr.includes('riesgo')) {
-                    statusClass = 'status-danger';
-                    statusText = 'En riesgo';
-                }
-            }
-            
-            // Obtener iniciales para el avatar
-            const iniciales = alumno.nombre
-                .split(' ')
-                .map(n => n[0])
-                .join('')
-                .toUpperCase()
-                .substring(0, 2);
-            
-            // Usar el grupo del alumno (si existe)
-            const grupoAlumno = alumno.grupo || 'Grupo no asignado';
-            
-            // Crear sección de comentarios
-            const comentariosHTML = createComentariosSection(alumno.comentarios || []);
-            
-            profileRow.innerHTML = `
-                <td colspan="3">
-                    <div class="profile-container">
-                        <div class="profile-card">
-                            <div class="profile-avatar">${iniciales}</div>
-                            <div class="profile-info">
-                                <div class="profile-name">${alumno.nombre || 'Nombre no disponible'}</div>
-                                <div class="profile-matricula">
-                                    ${alumno.matricula || 'Matrícula no disponible'}
-                                    <span class="profile-badge">${grupoAlumno}</span>
-                                </div>
-                                <div class="profile-detail">
-                                    <div class="profile-detail-item">
-                                        <div class="detail-label">Promedio General</div>
-                                        <div class="detail-value">--</div>
-                                    </div>
-                                    <div class="profile-detail-item">
-                                        <div class="detail-label">Asistencia</div>
-                                        <div class="detail-value">--</div>
-                                    </div>
-                                    <div class="profile-detail-item">
-                                        <div class="detail-label">Estado</div>
-                                        <div class="detail-value">
-                                            <span class="profile-status ${statusClass}">${statusText}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <!-- Sección de comentarios -->
-                                <div class="profile-comentarios">
-                                    <div class="comentarios-title">
-                                        <span class="mdi mdi-comment"></span>
-                                        Comentarios
-                                    </div>
-                                    ${comentariosHTML}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </td>
-            `;
-            
-            return profileRow;
-        }
         
         // Cerrar modal
-        closeModalBtn.addEventListener('click', function() {
+        closeModalBtn.addEventListener('click', () => {
             modal.classList.remove('active');
             document.body.style.overflow = 'auto';
         });
         
-        // Cerrar modal al hacer click fuera del contenido
-        modal.addEventListener('click', function(e) {
+        modal.addEventListener('click', (e) => {
             if (e.target === modal) {
                 modal.classList.remove('active');
                 document.body.style.overflow = 'auto';
             }
         });
         
-        // Cerrar modal con tecla ESC
-        document.addEventListener('keydown', function(e) {
+        document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && modal.classList.contains('active')) {
                 modal.classList.remove('active');
                 document.body.style.overflow = 'auto';
             }
         });
         
-        // Cambiar vista dentro del modal
-        modalSwitchOptions.forEach(option => {
+        // Switch de vista principal
+        viewOptions.forEach(option => {
             option.addEventListener('click', function() {
-                // Remover clase active de todos
-                modalSwitchOptions.forEach(opt => opt.classList.remove('active'));
-                
-                // Agregar clase active al botón clickeado
+                viewOptions.forEach(opt => opt.classList.remove('active'));
                 this.classList.add('active');
                 
-                // Ocultar todas las vistas
-                modalViews.forEach(view => view.classList.remove('active'));
+                groupsView.style.display = 'none';
+                studentsView.style.display = 'none';
                 
-                // Mostrar la vista correspondiente
-                const viewType = this.getAttribute('data-modal-view');
-                document.getElementById(`modal${viewType.charAt(0).toUpperCase() + viewType.slice(1)}`).classList.add('active');
+                const viewType = this.getAttribute('data-view');
+                if (viewType === 'groups') {
+                    groupsView.style.display = 'block';
+                } else {
+                    studentsView.style.display = 'block';
+                }
             });
         });
-
-        // Función para crear la sección de comentarios
-        function createComentariosSection(comentarios) {
-            if (!comentarios || comentarios.length === 0) {
-                return `
-                    <div class="comentarios-empty">
-                        <p>No hay comentarios para este alumno</p>
-                    </div>
-                `;
-            }
-            
-            let comentariosHTML = '<div class="comentarios-list">';
-            
-            comentarios.forEach(comentario => {
-                comentariosHTML += `
-                    <div class="comentario-item">
-                        <div class="comentario-header">
-                            <span class="comentario-tipo">${comentario.tipo || 'Sin tipo'}</span>
-                            <span class="comentario-fecha">${comentario.fecha || 'Fecha no disponible'}</span>
-                        </div>
-                        <div class="comentario-texto">${comentario.texto || 'Sin texto'}</div>
-                        <div class="comentario-docente">
-                            <span class="mdi mdi-account"></span>
-                            ${comentario.docente || 'Docente no especificado'}
-                        </div>
-                    </div>
-                `;
+        
+        // Switch interno del modal
+        modalSwitchOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                // Solo permitir cambio si estamos en la vista de lista
+                if (modalTitle.style.display !== 'none') {
+                    const viewType = this.getAttribute('data-modal-view');
+                    
+                    // Actualizar clases active
+                    modalSwitchOptions.forEach(opt => opt.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Ocultar todas las vistas
+                    modalViews.forEach(view => view.classList.remove('active'));
+                    
+                    // Mostrar la vista correspondiente
+                    if (viewType === 'alumnos') {
+                        cargarListaAlumnos();
+                        document.getElementById('modalListaAlumnos').classList.add('active');
+                    } else if (viewType === 'calificaciones') {
+                        cargarCalificaciones();
+                        document.getElementById('modalCalificaciones').classList.add('active');
+                    } else if (viewType === 'alertas') {
+                        document.getElementById('modalAlertas').classList.add('active');
+                    }
+                }
             });
-            
-            comentariosHTML += '</div>';
-            return comentariosHTML;
-        }
+        });
     });
 </script>
 

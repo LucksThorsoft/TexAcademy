@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.hashers import check_password
 from django.views.decorators.http import require_POST
@@ -10,6 +10,8 @@ from .forms import *
 from .models import *
 import json
 from .models import Grupo, Actividad, Entrega, Alumno, GrupoDocenteMateria, Parcial
+from django.db.models.functions import Coalesce
+
 
 
 def home(request):
@@ -89,6 +91,12 @@ def gruposAlumnos(request):
                             'docente': comentario.docente.nombre
                         })
                     
+                    # Obtener calificaciones del alumno (si existen)
+                    # Por ahora datos de ejemplo, después los reemplazaremos con datos reales
+                    calificaciones_data = {
+                        'unidad1': None,  # Aquí iría la calificación real
+                    }
+                    
                     alumnos_data.append({
                         'id': alumno.id,
                         'nombre': alumno.nombre,
@@ -98,7 +106,8 @@ def gruposAlumnos(request):
                         'asistencia': None,
                         'estado': None,
                         'comentarios': comentarios_data,
-                    })
+                        'calificaciones': calificaciones_data,
+                    });
                 
                 grupos_dict[grupo.clave] = {
                     'clave': grupo.clave,
@@ -126,6 +135,122 @@ def gruposAlumnos(request):
     
     return render(request, "gruposAlumnos.html", context)
 
+def perfil_alumno(request, alumno_id):
+    # Verificar si el usuario está autenticado
+    if not request.session.get('usuario_id'):
+        return redirect('login')
+    
+    # Obtener el alumno
+    alumno = get_object_or_404(Alumno, id=alumno_id)
+    
+    # Obtener el docente actual
+    docente_id = request.session.get('usuario_id')
+    docente = get_object_or_404(Usuario, id=docente_id)
+    
+    # Obtener comentarios del alumno
+    comentarios = Comentario.objects.filter(
+        alumno=alumno
+    ).select_related('docente').order_by('-fecha')
+    
+    # Obtener las materias que este docente imparte en el grupo del alumno
+    materias_docente = GrupoDocenteMateria.objects.filter(
+        grupo=alumno.grupo,
+        docente=docente
+    ).select_related('materia')
+    
+    # Obtener las actividades relacionadas con estas materias
+    actividades_data = []
+    for gdm in materias_docente:
+        # Obtener los parciales de esta materia
+        parciales = Parcial.objects.filter(
+            grupo_docente_materia=gdm,
+            cerrado=False
+        )
+        
+        for parcial in parciales:
+            # Obtener actividades de este parcial
+            actividades = Actividad.objects.filter(
+                parcial=parcial
+            ).order_by('fecha_entrega')
+            
+            for actividad in actividades:
+                # Verificar si el alumno entregó esta actividad
+                entrega = Entrega.objects.filter(
+                    actividad=actividad,
+                    alumno=alumno
+                ).first()
+                
+                # Determinar estado de entrega
+                if entrega:
+                    estado_entrega = "Entregado" if entrega.entregado else "Pendiente"
+                    calificacion = entrega.calificacion if entrega.calificacion else None
+                else:
+                    estado_entrega = "No asignado"
+                    calificacion = None
+                
+                actividades_data.append({
+                    'id': actividad.id,
+                    'nombre': actividad.titulo,
+                    'materia': gdm.materia.nombre,
+                    'fecha_entrega': actividad.fecha_entrega.strftime('%d/%m/%Y'),
+                    'estado': estado_entrega,
+                    'calificacion': calificacion,
+                    'entregado': entrega.entregado if entrega else False,
+                })
+    
+    # Obtener historial de asistencia del alumno
+    asistencias = Asistencia.objects.filter(
+        alumno=alumno,
+        grupo_docente_materia__docente=docente  # Solo asistencias registradas por este docente
+    ).select_related('grupo_docente_materia__materia', 'estado').order_by('-fecha')
+    
+    # Procesar datos de asistencia
+    asistencia_data = []
+    total_asistencias = 0
+    total_retardos = 0
+    total_faltas = 0
+    
+    for asistencia in asistencias:
+        materia_nombre = asistencia.grupo_docente_materia.materia.nombre
+        estado_nombre = asistencia.estado.nombre
+        
+        # Contar para estadísticas
+        if estado_nombre == 'Asistió':
+            total_asistencias += 1
+        elif estado_nombre == 'Retardo':
+            total_retardos += 1
+        elif estado_nombre == 'No asistió':
+            total_faltas += 1
+        
+        asistencia_data.append({
+            'fecha': asistencia.fecha.strftime('%d/%m/%Y'),
+            'materia': materia_nombre,
+            'estado': estado_nombre,
+            'comentario': asistencia.comentario,
+        })
+    
+    # Calcular porcentaje de asistencia (considerando retardos como 0.5)
+    total_clases = len(asistencia_data)
+    if total_clases > 0:
+        porcentaje_asistencia = int(((total_asistencias + total_retardos * 0.5) / total_clases) * 100)
+    else:
+        porcentaje_asistencia = 0
+    
+    context = {
+        'alumno': alumno,
+        'comentarios': comentarios,
+        'actividades': actividades_data,
+        'asistencia_historial': asistencia_data,
+        'estadisticas_asistencia': {
+            'asistencias': total_asistencias,
+            'retardos': total_retardos,
+            'faltas': total_faltas,
+            'total_clases': total_clases,
+            'porcentaje': porcentaje_asistencia,
+        }
+    }
+    
+    return render(request, "perfilAlumno.html", context)
 
 def actividades(request):
 
