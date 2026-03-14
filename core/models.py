@@ -121,6 +121,17 @@ class Entrega(models.Model):
     class Meta:
         unique_together = ('actividad', 'alumno')
 
+# -------------------------
+# CALIFICACIONES POR PARCIAL
+# -------------------------
+
+class CalificacionParcial(models.Model):
+    alumno = models.ForeignKey(Alumno, on_delete=models.CASCADE)
+    parcial = models.ForeignKey(Parcial, on_delete=models.CASCADE)
+    calificacion = models.FloatField(null=True, blank=True)  # null = aún no capturada
+    comentario = models.TextField(null=True, blank=True)
+    fecha_registro = models.DateTimeField(auto_now_add=True)
+    fecha_actualizacion = models.DateTimeField(auto_now=True)
 
 # -------------------------
 # ASISTENCIAS
