@@ -10,6 +10,8 @@ from .forms import *
 from .models import *
 import json
 from .models import Grupo, Actividad, Entrega, Alumno, GrupoDocenteMateria, Parcial
+from datetime import date
+
 
 
 def home(request):
@@ -768,12 +770,22 @@ def guardar_comentario(request):
     
     return JsonResponse({'error': 'Método no permitido'}, status=405)
 
-
 def new_cuatrimestre(request):
     if request.method == "POST":
-        nombre = request.POST.get("nombre")
         fecha_inicio = request.POST.get("fecha_inicio")
         fecha_fin = request.POST.get("fecha_fin")
+
+        # Generar nombre automático según el mes actual
+        hoy = date.today()
+        mes = hoy.month
+        anio = hoy.year
+
+        if 1 <= mes <= 4:
+            nombre = f"Enero-Abril {anio}"
+        elif 5 <= mes <= 8:
+            nombre = f"Mayo-Agosto {anio}"
+        else:
+            nombre = f"Septiembre-Diciembre {anio}"
 
         # Desactivar cualquier cuatrimestre activo previo
         Cuatrimestre.objects.filter(activo=True).update(activo=False)
@@ -784,6 +796,6 @@ def new_cuatrimestre(request):
             fecha_fin=fecha_fin,
             activo=True
         )
-        messages.success(request, "Cuatrimestre creado correctamente")
+        messages.success(request, f"Cuatrimestre '{nombre}' creado correctamente")
 
     return redirect("director")
