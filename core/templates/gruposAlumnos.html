@@ -179,9 +179,9 @@
     .modal-container {
         background: white;
         border-radius: 16px;
-        width: 90%;
-        max-width: 850px;
-        height: 70vh;
+        width: 100%;
+        max-width: 1000px;
+        height: 100vh;
         max-height: 600px;
         overflow: hidden;
         box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
@@ -358,6 +358,239 @@
     .clickable-row:hover {
         background-color: #f0f7ff !important;
     }
+
+    /* ===== CONFIGURACIÓN DE PARCIALES ===== */
+    .config-header {
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #eaeaea;
+    }
+
+    .config-titulo {
+        font-size: 18px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 5px;
+    }
+
+    .config-subtitulo {
+        font-size: 14px;
+        color: #666;
+    }
+
+    .config-subtitulo span {
+        font-weight: 600;
+        color: #667eea;
+    }
+
+    .unidad-card {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+        border: 2px solid #e4e4e4;
+        position: relative;
+    }
+
+    .unidad-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    .unidad-titulo {
+        font-size: 16px;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .btn-eliminar-unidad {
+        background: none;
+        border: none;
+        color: #dc2626;
+        cursor: pointer;
+        font-size: 18px;
+        padding: 4px 8px;
+        border-radius: 4px;
+    }
+
+    .btn-eliminar-unidad:hover {
+        background: #fee2e2;
+    }
+
+    .unidad-form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+
+    .unidad-form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .unidad-form-group label {
+        font-size: 12px;
+        font-weight: 500;
+        color: #666;
+    }
+
+    .unidad-form-group input {
+        padding: 10px 12px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.2s;
+    }
+
+    .unidad-form-group input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .unidad-form-group input[type="number"] {
+        -moz-appearance: textfield;
+    }
+
+    .unidad-form-group input[type="number"]::-webkit-outer-spin-button,
+    .unidad-form-group input[type="number"]::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    /* Estilos para inputs deshabilitados */
+    .unidad-fecha-inicio:disabled,
+    .unidad-fecha-fin:disabled {
+        background-color: #f5f5f5;
+        cursor: not-allowed;
+        opacity: 0.7;
+    }
+
+    .unidad-fecha-inicio:disabled:hover,
+    .unidad-fecha-fin:disabled:hover {
+        border-color: #ddd;
+    }
+
+    /* Tooltip para inputs deshabilitados */
+    .unidad-fecha-inicio:disabled::after,
+    .unidad-fecha-fin:disabled::after {
+        content: attr(title);
+        position: absolute;
+        background: #333;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        display: none;
+    }
+
+    .unidad-fecha-inicio:disabled:hover::after,
+    .unidad-fecha-fin:disabled:hover::after {
+        display: block;
+    }
+
+    .config-actions {
+        display: flex;
+        gap: 15px;
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+
+    .btn-unidad {
+        padding: 12px 24px;
+        background: white;
+        color: #667eea;
+        border: 2px solid #667eea;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s;
+    }
+
+    .btn-unidad:hover {
+        background: #667eea;
+        color: white;
+    }
+
+    .btn-unidad:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        background: #f5f5f5;
+        color: #999;
+        border-color: #ddd;
+    }
+
+    .btn-unidad:disabled:hover {
+        background: #f5f5f5;
+        color: #999;
+    }
+
+    .btn-guardar-unidades {
+        padding: 12px 24px;
+        background: #059669;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s;
+    }
+
+    .btn-guardar-unidades:hover {
+        background: #047857;
+    }
+
+    .btn-guardar-unidades:disabled {
+        background: #94a3b8;
+        cursor: not-allowed;
+    }
+
+    .porcentaje-total {
+        text-align: right;
+        font-size: 16px;
+        font-weight: 600;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        margin-top: 15px;
+    }
+
+    .porcentaje-total.error {
+        color: #dc2626;
+        background: #fee2e2;
+    }
+
+    .porcentaje-total.success {
+        color: #059669;
+        background: #e8f5e9;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .unidad-form-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .config-actions {
+            flex-direction: column;
+        }
+        
+        .btn-unidad, .btn-guardar-unidades {
+            width: 100%;
+            justify-content: center;
+        }
+    }
     
     /* ===== VISTA DE CALIFICACIONES ===== */
     .calificaciones-container {
@@ -377,17 +610,17 @@
     .calificaciones-table {
         width: 100%;
         border-collapse: collapse;
-        min-width: 600px;
+        min-width: 500px;
         border: 1px solid #dee2e6;
     }
-    
+
     .calificaciones-table th,
     .calificaciones-table td {
         padding: 12px 16px;
         border: 1px solid #dee2e6;
         vertical-align: middle;
     }
-    
+
     .calificaciones-table th {
         background: #f8f9fa;
         color: #666;
@@ -398,49 +631,50 @@
         z-index: 10;
         text-align: center;
     }
-    
+
     .calificaciones-table .calificaciones-header-row th {
         background: #e9ecef;
         color: #495057;
         font-size: 15px;
     }
-    
+
     .calificaciones-table .calificaciones-subheader-row th {
         background: #f1f3f5;
         color: #666;
         font-size: 13px;
         font-weight: 500;
     }
-    
+
     .calificaciones-table td {
         background: white;
         font-size: 14px;
     }
-    
+
     .calificaciones-table td:first-child {
         text-align: left;
         font-weight: 500;
         color: #333;
+        width: 200px;
     }
-    
+
     /* Celda combinada de nombre y matrícula */
     .alumno-info-cell {
         display: flex;
         flex-direction: column;
         gap: 4px;
     }
-    
+
     .alumno-nombre {
         font-weight: 500;
         color: #333;
         font-size: 14px;
     }
-    
+
     .alumno-matricula {
         font-size: 12px;
         color: #666;
     }
-    
+
     /* Input de calificación */
     .calificacion-input {
         width: 100px;
@@ -450,22 +684,27 @@
         font-size: 14px;
         text-align: center;
         transition: all 0.2s;
-        margin: 0;
+        margin: 0 auto;
+        display: block;
     }
-    
+
     .calificacion-input:focus {
         outline: none;
         border-color: #667eea;
         box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
     }
-    
+
     .calificacion-input:hover {
         border-color: #999;
     }
-    
-    /* Centrar el contenido de la segunda columna */
-    .calificaciones-table td:nth-child(2) {
+
+    /* Centrar el contenido de las celdas */
+    .calificaciones-table td {
         text-align: center;
+    }
+
+    .calificaciones-table td:first-child {
+        text-align: left;
     }
     
     /* Mensajes de desarrollo */
@@ -552,6 +791,10 @@
             padding: 6px 10px;
             font-size: 13px;
         }
+
+        .calificaciones-table td:first-child {
+            width: 150px;
+        }
         
         .view-option {
             padding: 8px 40px;
@@ -612,13 +855,14 @@
         {% for grupo in grupos %}
         <div class="group-card" 
             data-group-id="{{ grupo.grupo_id }}" 
-            data-materia="{{ grupo.materias.0 }}" 
+            data-materia="{{ grupo.materias.0.nombre }}" 
             data-clave="{{ grupo.clave }}"
-            data-alumnos="{{ grupo.alumnos_json }}">
+            data-alumnos="{{ grupo.alumnos_json }}"
+            data-materias='{{ grupo.materias_json }}'>
             <div class="group-header">
                 <div class="group-header-main">
                     {% if grupo.materias %}
-                        <span class="materia-principal">{{ grupo.materias.0 }}</span>
+                        <span class="materia-principal">{{ grupo.materias.0.nombre }}</span>
                         <span class="group-separator">|</span>
                         <span class="group-clave">{{ grupo.clave }}</span>
                     {% else %}
@@ -726,24 +970,44 @@
                 <!-- Vista de Calificaciones -->
                 <div class="modal-view" id="modalCalificaciones">
                     <div class="calificaciones-container">
-                        <div class="calificaciones-table-wrapper">
-                            <table class="calificaciones-table">
-                                <thead>
-                                    <tr class="calificaciones-header-row">
-                                        <th></th>
-                                        <th>Unidad 1</th>
-                                        <th></th>
-                                    </tr>
-                                    <tr class="calificaciones-subheader-row">
-                                        <th>Alumnos</th>
-                                        <th>Nombre de Unidad 1 - 35%</th>
-                                        <th></th>
-                                    </tr>
-                                </thead>
-                                <tbody id="modalCalificacionesBody">
-                                    <!-- Los datos se cargarán aquí dinámicamente -->
-                                </tbody>
-                            </table>
+                        <!-- Vista de configuración de parciales (se muestra si no hay parciales) -->
+                        <div id="configuracionParciales" style="display: none;">
+                            <div class="config-header">
+                                <h3 class="config-titulo">Configurar Unidades (Parciales)</h3>
+                                <p class="config-subtitulo">Define las unidades para <span id="materiaNombre"></span></p>
+                            </div>
+                            
+                            <div id="unidades-container">
+                                <!-- Las unidades se agregarán aquí dinámicamente -->
+                            </div>
+                            
+                            <div class="config-actions">
+                                <button class="btn-unidad" onclick="agregarUnidad()">
+                                    <span class="mdi mdi-plus"></span>
+                                    Agregar Unidad
+                                </button>
+                                <button class="btn-guardar-unidades" onclick="guardarUnidades()">
+                                    <span class="mdi mdi-content-save"></span>
+                                    Guardar Configuración
+                                </button>
+                            </div>
+                            
+                            <div class="porcentaje-total" id="porcentajeTotal">
+                                Total: 0%
+                            </div>
+                        </div>
+                        
+                        <!-- Vista de tabla de calificaciones (se muestra si ya hay parciales) -->
+                        <div id="tablaCalificaciones" style="display: none;">
+                            <div class="calificaciones-table-wrapper" id="calificacionesTableWrapper">
+                                <!-- La tabla se generará dinámicamente -->
+                            </div>
+                        </div>
+                        
+                        <!-- Mensaje de carga -->
+                        <div id="cargandoCalificaciones" style="display: none; text-align: center; padding: 40px;">
+                            <span class="mdi mdi-loading mdi-spin" style="font-size: 40px; color: #667eea;"></span>
+                            <p style="margin-top: 10px; color: #666;">Cargando...</p>
                         </div>
                     </div>
                 </div>
@@ -783,10 +1047,15 @@
         const modalAlumnosBody = document.getElementById('modalAlumnosBody');
         const modalCalificacionesBody = document.getElementById('modalCalificacionesBody');
         
-        let currentGrupoData = null;
+        window.currentGrupoData = null;
         let currentGrupoId = null;
         let currentMateria = null;
         let currentClave = null;
+        let unidadActual = 1;
+        let parcialesData = [];
+        let materiaActualId = null;
+        let gdmActualId = null;
+        let fechasOcupadas = [];
         
         // Función para obtener HTML del estado
         function getEstadoHTML(estado) {
@@ -801,8 +1070,8 @@
         function cargarListaAlumnos() {
             modalAlumnosBody.innerHTML = '';
             
-            if (currentGrupoData && currentGrupoData.length > 0) {
-                currentGrupoData.forEach(alumno => {
+            if (window.currentGrupoData && window.currentGrupoData.length > 0) {
+                window.currentGrupoData.forEach(alumno => {
                     const row = document.createElement('tr');
                     row.className = 'clickable-row';
                     
@@ -832,47 +1101,6 @@
             }
         }
         
-        // Función para cargar la vista de calificaciones
-        function cargarCalificaciones() {
-            modalCalificacionesBody.innerHTML = '';
-            
-            if (currentGrupoData && currentGrupoData.length > 0) {
-                currentGrupoData.forEach(alumno => {
-                    const row = document.createElement('tr');
-                    
-                    // Obtener calificación de unidad 1 (si existe)
-                    const califUnidad1 = alumno.calificaciones?.unidad1 || '';
-                    
-                    row.innerHTML = `
-                        <td>
-                            <div class="alumno-info-cell">
-                                <span class="alumno-nombre">${alumno.nombre || 'No asignado'}</span>
-                                <span class="alumno-matricula">${alumno.matricula || 'No asignado'}</span>
-                            </div>
-                        </td>
-                        <td>
-                            <input type="text" class="calificacion-input" 
-                                   value="${califUnidad1}" 
-                                   placeholder="0-100"
-                                   data-alumno-id="${alumno.id}"
-                                   data-unidad="unidad1">
-                        </td>
-                        <td></td>
-                    `;
-                    
-                    modalCalificacionesBody.appendChild(row);
-                });
-            } else {
-                modalCalificacionesBody.innerHTML = `
-                    <tr>
-                        <td colspan="3" style="text-align: center; padding: 40px; color: #666;">
-                            No hay alumnos registrados en este grupo
-                        </td>
-                    </tr>
-                `;
-            }
-        }
-        
         // Mostrar lista de alumnos
         function showAlumnosList() {
             modalTitle.style.display = 'flex';
@@ -893,6 +1121,759 @@
             modalViews.forEach(view => view.classList.remove('active'));
             document.getElementById('modalListaAlumnos').classList.add('active');
         }
+
+        // Asegurar que cargarCalificaciones sea global
+        window.cargarCalificaciones = function(grupoId, materiaId, materiaNombre, gdmId, tieneParciales, parcialesConfigurados, parcialesExistentes) {
+            console.log('Cargando calificaciones:', {
+                grupoId, materiaId, materiaNombre, gdmId, tieneParciales, parcialesConfigurados, parcialesExistentes
+            });
+            
+            // Validar que tenemos los datos necesarios
+            if (!materiaId || !gdmId) {
+                console.error('Faltan datos necesarios para cargar calificaciones');
+                document.getElementById('cargandoCalificaciones').style.display = 'none';
+                const configView = document.getElementById('configuracionParciales');
+                configView.style.display = 'block';
+                configView.innerHTML = `
+                    <div class="config-header">
+                        <h3 class="config-titulo">Error</h3>
+                        <p class="config-subtitulo">No se pudieron cargar los datos de la materia</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            window.materiaActualId = materiaId;
+            window.gdmActualId = gdmId;
+            
+            const configView = document.getElementById('configuracionParciales');
+            const tablaView = document.getElementById('tablaCalificaciones');
+            const cargando = document.getElementById('cargandoCalificaciones');
+            const materiaNombreSpan = document.getElementById('materiaNombre');
+            const unidadesContainer = document.getElementById('unidades-container');
+            
+            materiaNombreSpan.textContent = materiaNombre;
+            
+            // LIMPIAR TODO: Resetear variables y contenedores
+            window.unidadActual = 1;
+            window.parcialesData = [];
+            window.fechasOcupadas = [];
+            
+            // Limpiar el contenedor de unidades
+            if (unidadesContainer) {
+                unidadesContainer.innerHTML = '';
+            }
+            
+            // Ocultar carga
+            cargando.style.display = 'none';
+            
+            if (tieneParciales && parcialesConfigurados) {
+                console.log('Mostrando tabla de calificaciones');
+                configView.style.display = 'none';
+                tablaView.style.display = 'block';
+                
+                // PASAR LOS ALUMNOS A LA FUNCIÓN
+                window.generarTablaCalificaciones(parcialesExistentes || [], window.currentGrupoData || []);
+                
+            } else if (tieneParciales && !parcialesConfigurados) {
+                console.log('Mostrando formulario con parciales existentes');
+                configView.style.display = 'block';
+                tablaView.style.display = 'none';
+                
+                // Cargar los parciales existentes en el formulario
+                window.cargarParcialesExistentes(parcialesExistentes || []);
+                
+            } else {
+                console.log('Mostrando formulario vacío');
+                configView.style.display = 'block';
+                tablaView.style.display = 'none';
+                
+                // Inicializar con una unidad por defecto
+                window.agregarUnidad();
+            }
+        };
+
+        // Hacer global la función cargarParcialesExistentes
+        window.cargarParcialesExistentes = function(parciales) {
+            console.log('Cargando parciales existentes:', parciales);
+            const container = document.getElementById('unidades-container');
+            
+            if (!container) {
+                console.error('No se encontró el contenedor de unidades');
+                return;
+            }
+            
+            // Limpiar el contenedor
+            container.innerHTML = '';
+            
+            // Resetear variables
+            window.parcialesData = [];
+            
+            // Si no hay parciales, salir
+            if (!parciales || parciales.length === 0) {
+                console.log('No hay parciales para cargar');
+                return;
+            }
+            
+            // Ordenar parciales por número
+            const parcialesOrdenados = [...parciales].sort((a, b) => a.numero - b.numero);
+            
+            // Crear una tarjeta por cada parcial existente
+            parcialesOrdenados.forEach((parcial, index) => {
+                const numeroUnidad = index + 1;
+                const unidadId = `unidad-${numeroUnidad}`;
+                
+                const unidadDiv = document.createElement('div');
+                unidadDiv.className = 'unidad-card';
+                unidadDiv.id = unidadId;
+                unidadDiv.dataset.unidad = numeroUnidad;
+                
+                // Formatear fechas si vienen en formato YYYY-MM-DD
+                const fechaInicio = parcial.fecha_inicio || '';
+                const fechaFin = parcial.fecha_fin || '';
+                
+                unidadDiv.innerHTML = `
+                    <div class="unidad-header">
+                        <span class="unidad-titulo">Unidad ${numeroUnidad}</span>
+                        ${index > 0 ? '<button class="btn-eliminar-unidad" onclick="window.eliminarUnidad(this)"><span class="mdi mdi-delete"></span></button>' : ''}
+                    </div>
+                    <div class="unidad-form-grid">
+                        <div class="unidad-form-group">
+                            <label>Nombre de la Unidad</label>
+                            <input type="text" class="unidad-nombre" value="${parcial.nombre || ''}" placeholder="Ej: Introducción" onchange="window.actualizarPorcentajeTotal()" onfocus="window.limpiarError(this)">
+                        </div>
+                        <div class="unidad-form-group">
+                            <label>Porcentaje (%)</label>
+                            <input type="number" class="unidad-porcentaje" value="${parcial.porcentaje || ''}" min="1" max="100" placeholder="0-100" onchange="window.validarPorcentaje(this)" oninput="window.actualizarPorcentajeTotal()" onfocus="window.limpiarError(this)">
+                        </div>
+                        <div class="unidad-form-group">
+                            <label>Fecha de Inicio</label>
+                            <input type="date" class="unidad-fecha-inicio" value="${fechaInicio}" onchange="window.actualizarFechas(); window.actualizarEstadoInputs();" onfocus="window.limpiarError(this)">
+                        </div>
+                        <div class="unidad-form-group">
+                            <label>Fecha de Término</label>
+                            <input type="date" class="unidad-fecha-fin" value="${fechaFin}" onchange="window.actualizarFechas(); window.actualizarEstadoInputs();" onfocus="window.limpiarError(this)">
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(unidadDiv);
+            });
+            
+            // Actualizar el contador global
+            window.unidadActual = parciales.length + 1;
+            
+            // Actualizar validaciones
+            window.actualizarFechas();
+            window.actualizarPorcentajeTotal();
+            window.actualizarEstadoInputs();
+            window.inicializarListenersFechas(); // <-- NUEVO
+        };
+
+        // Función para agregar una nueva unidad
+        window.agregarUnidad = function() {
+            console.log('Agregando unidad...');
+            
+            // Verificar el total actual antes de agregar
+            const porcentajes = document.querySelectorAll('.unidad-porcentaje');
+            let totalActual = 0;
+            porcentajes.forEach(input => {
+                totalActual += parseInt(input.value) || 0;
+            });
+            
+            // Si ya llegó al 100%, no permitir agregar más
+            if (totalActual >= 100) {
+                alert('No puedes agregar más unidades porque ya has alcanzado el 100%.\nModifica los porcentajes de las unidades existentes para agregar más.');
+                return;
+            }
+            
+            const container = document.getElementById('unidades-container');
+            
+            if (!container) {
+                console.error('No se encontró el contenedor de unidades');
+                return;
+            }
+            
+            // Obtener el número correcto basado en las unidades existentes
+            const cardsExistentes = document.querySelectorAll('.unidad-card');
+            const nuevoNumero = cardsExistentes.length + 1;
+            
+            const unidadId = `unidad-${nuevoNumero}`;
+            
+            const unidadDiv = document.createElement('div');
+            unidadDiv.className = 'unidad-card';
+            unidadDiv.id = unidadId;
+            unidadDiv.dataset.unidad = nuevoNumero;
+            
+            unidadDiv.innerHTML = `
+                <div class="unidad-header">
+                    <span class="unidad-titulo">Unidad ${nuevoNumero}</span>
+                    <button class="btn-eliminar-unidad" onclick="window.eliminarUnidad(this)"><span class="mdi mdi-delete"></span></button>
+                </div>
+                <div class="unidad-form-grid">
+                    <div class="unidad-form-group">
+                        <label>Nombre de la Unidad</label>
+                        <input type="text" class="unidad-nombre" placeholder="Ej: Introducción" onchange="window.actualizarPorcentajeTotal()" onfocus="window.limpiarError(this)">
+                    </div>
+                    <div class="unidad-form-group">
+                        <label>Porcentaje (%)</label>
+                        <input type="number" class="unidad-porcentaje" min="1" max="100" placeholder="0-100" onchange="window.validarPorcentaje(this)" oninput="window.actualizarPorcentajeTotal()" onfocus="window.limpiarError(this)">
+                    </div>
+                    <div class="unidad-form-group">
+                        <label>Fecha de Inicio</label>
+                        <input type="date" class="unidad-fecha-inicio" onchange="window.actualizarFechas(); window.actualizarEstadoInputs();" onfocus="window.limpiarError(this)">
+                    </div>
+                    <div class="unidad-form-group">
+                        <label>Fecha de Término</label>
+                        <input type="date" class="unidad-fecha-fin" onchange="window.actualizarFechas(); window.actualizarEstadoInputs();" onfocus="window.limpiarError(this)">
+                    </div>
+                </div>
+            `;
+            
+            container.appendChild(unidadDiv);
+            window.unidadActual = nuevoNumero + 1;
+            window.actualizarFechas();
+            window.actualizarPorcentajeTotal();
+            window.actualizarEstadoInputs();
+            window.inicializarListenersFechas(); // <-- NUEVO
+        };
+
+        // Función para eliminar unidad
+        window.eliminarUnidad = function(btn) {
+            console.log('Eliminando unidad...');
+            const unidadCard = btn.closest('.unidad-card');
+            if (unidadCard) {
+                unidadCard.remove();
+                
+                // Reordenar los números de las unidades restantes
+                const cards = document.querySelectorAll('.unidad-card');
+                cards.forEach((card, index) => {
+                    const nuevoNumero = index + 1;
+                    card.dataset.unidad = nuevoNumero;
+                    
+                    // Actualizar el título
+                    const titulo = card.querySelector('.unidad-titulo');
+                    if (titulo) {
+                        titulo.textContent = `Unidad ${nuevoNumero}`;
+                    }
+                });
+                
+                // Actualizar el contador global
+                window.unidadActual = cards.length + 1;
+                
+                // Actualizar validaciones
+                window.actualizarPorcentajeTotal();
+                window.actualizarFechas();
+                window.actualizarEstadoInputs();
+                
+                // Habilitar botón de agregar si el total es menor a 100
+                const porcentajes = document.querySelectorAll('.unidad-porcentaje');
+                let total = 0;
+                porcentajes.forEach(input => {
+                    total += parseInt(input.value) || 0;
+                });
+                
+                const btnAgregar = document.querySelector('.btn-unidad');
+                if (btnAgregar && total < 100) {
+                    btnAgregar.disabled = false;
+                    btnAgregar.style.opacity = '1';
+                    btnAgregar.style.cursor = 'pointer';
+                }
+            }
+        };
+
+        // Función para validar porcentaje
+        window.validarPorcentaje = function(input) {
+            const valor = parseInt(input.value) || 0;
+            if (valor > 100) {
+                input.value = 100;
+            } else if (valor < 0) {
+                input.value = 0;
+            }
+            window.actualizarPorcentajeTotal();
+        };
+
+        // Función para actualizar porcentaje total
+        window.actualizarPorcentajeTotal = function() {
+            const porcentajes = document.querySelectorAll('.unidad-porcentaje');
+            let total = 0;
+            
+            porcentajes.forEach(input => {
+                total += parseInt(input.value) || 0;
+            });
+            
+            const totalDiv = document.getElementById('porcentajeTotal');
+            const btnAgregar = document.querySelector('.btn-unidad');
+            const btnGuardar = document.querySelector('.btn-guardar-unidades');
+            
+            if (totalDiv) {
+                totalDiv.textContent = `Total: ${total}%`;
+                
+                if (total > 100) {
+                    totalDiv.classList.add('error');
+                    totalDiv.classList.remove('success');
+                    if (btnGuardar) btnGuardar.disabled = true;
+                    // Deshabilitar botón de agregar si se excede
+                    if (btnAgregar) {
+                        btnAgregar.disabled = true;
+                        btnAgregar.style.opacity = '0.5';
+                        btnAgregar.style.cursor = 'not-allowed';
+                    }
+                } else if (total === 100) {
+                    totalDiv.classList.remove('error');
+                    totalDiv.classList.add('success');
+                    if (btnGuardar) btnGuardar.disabled = false;
+                    // Deshabilitar botón de agregar al llegar al 100%
+                    if (btnAgregar) {
+                        btnAgregar.disabled = true;
+                        btnAgregar.style.opacity = '0.5';
+                        btnAgregar.style.cursor = 'not-allowed';
+                    }
+                } else {
+                    totalDiv.classList.remove('error', 'success');
+                    if (btnGuardar) btnGuardar.disabled = true;
+                    // Habilitar botón de agregar si hay espacio
+                    if (btnAgregar) {
+                        btnAgregar.disabled = false;
+                        btnAgregar.style.opacity = '1';
+                        btnAgregar.style.cursor = 'pointer';
+                    }
+                }
+            }
+        };
+
+        // Función para inicializar los listeners de los inputs de fecha
+        window.inicializarListenersFechas = function() {
+            document.querySelectorAll('.unidad-fecha-inicio, .unidad-fecha-fin').forEach(input => {
+                input.addEventListener('input', function() {
+                    // Si el campo se vacía, actualizar restricciones
+                    if (!this.value) {
+                        window.actualizarFechas();
+                        window.actualizarEstadoInputs();
+                    }
+                });
+            });
+        };
+
+        // Función para actualizar fechas (simplificada)
+        window.actualizarFechas = function() {
+            const cards = document.querySelectorAll('.unidad-card');
+            
+            cards.forEach((card, index) => {
+                const fechaInicioInput = card.querySelector('.unidad-fecha-inicio');
+                const fechaFinInput = card.querySelector('.unidad-fecha-fin');
+                
+                // Resetear restricciones básicas
+                fechaInicioInput.removeAttribute('max');
+                fechaInicioInput.removeAttribute('min');
+                fechaFinInput.removeAttribute('max');
+                fechaFinInput.removeAttribute('min');
+                
+                // Aplicar restricciones básicas (el resto lo maneja actualizarEstadoInputs)
+                if (fechaInicioInput.value) {
+                    fechaFinInput.min = fechaInicioInput.value;
+                }
+                
+                if (fechaFinInput.value) {
+                    fechaInicioInput.max = fechaFinInput.value;
+                }
+            });
+        };
+
+        // Función para actualizar el estado de los inputs según el orden secuencial
+        window.actualizarEstadoInputs = function() {
+            const cards = document.querySelectorAll('.unidad-card');
+            
+            // PRIMERO: Aplicar restricciones de atrás hacia adelante (prioridad)
+            for (let i = 0; i < cards.length; i++) {
+                const cardActual = cards[i];
+                const fechaInicioActual = cardActual.querySelector('.unidad-fecha-inicio');
+                const fechaFinActual = cardActual.querySelector('.unidad-fecha-fin');
+                
+                // Si no es la primera unidad, verificar con la anterior
+                if (i > 0) {
+                    const cardAnterior = cards[i - 1];
+                    const fechaFinAnterior = cardAnterior.querySelector('.unidad-fecha-fin')?.value;
+                    
+                    // Si la unidad anterior tiene fecha fin, la actual debe empezar después
+                    if (fechaFinAnterior) {
+                        const fechaMin = new Date(fechaFinAnterior);
+                        fechaMin.setDate(fechaMin.getDate() + 1);
+                        fechaInicioActual.min = fechaMin.toISOString().split('T')[0];
+                        
+                        // Si la fecha inicio actual es menor o igual a la fecha fin anterior, BORRARLA
+                        if (fechaInicioActual.value && new Date(fechaInicioActual.value) <= new Date(fechaFinAnterior)) {
+                            console.log(`Borrando fecha inicio de Unidad ${i+1} porque es anterior a fecha fin de Unidad ${i}`);
+                            fechaInicioActual.value = '';
+                            // También borrar la fecha fin de esta unidad si existe
+                            fechaFinActual.value = '';
+                        }
+                    }
+                }
+                
+                // Restricciones dentro de la misma unidad
+                if (fechaInicioActual.value) {
+                    fechaFinActual.min = fechaInicioActual.value;
+                    
+                    // Si fecha fin es menor que fecha inicio, BORRAR fecha fin
+                    if (fechaFinActual.value && new Date(fechaFinActual.value) < new Date(fechaInicioActual.value)) {
+                        console.log(`Borrando fecha fin de Unidad ${i+1} porque es menor que fecha inicio`);
+                        fechaFinActual.value = '';
+                    }
+                }
+            }
+            
+            // SEGUNDO: Aplicar restricciones hacia adelante (pero con menor prioridad)
+            for (let i = cards.length - 1; i >= 0; i--) {
+                const cardActual = cards[i];
+                const fechaInicioActual = cardActual.querySelector('.unidad-fecha-inicio');
+                const fechaFinActual = cardActual.querySelector('.unidad-fecha-fin');
+                
+                // Si no es la última unidad, verificar con la siguiente
+                if (i < cards.length - 1) {
+                    const cardSiguiente = cards[i + 1];
+                    const fechaInicioSiguiente = cardSiguiente.querySelector('.unidad-fecha-inicio')?.value;
+                    
+                    // Si la unidad siguiente tiene fecha inicio, la actual debe terminar antes
+                    if (fechaInicioSiguiente) {
+                        const fechaMax = new Date(fechaInicioSiguiente);
+                        fechaMax.setDate(fechaMax.getDate() - 1);
+                        fechaFinActual.max = fechaMax.toISOString().split('T')[0];
+                        
+                        // Si la fecha fin actual es mayor o igual a la fecha inicio siguiente, BORRARLA
+                        if (fechaFinActual.value && new Date(fechaFinActual.value) >= new Date(fechaInicioSiguiente)) {
+                            console.log(`Borrando fecha fin de Unidad ${i+1} porque interfiere con Unidad ${i+2}`);
+                            fechaFinActual.value = '';
+                        }
+                    }
+                }
+            }
+            
+            // TERCERO: Actualizar estados de habilitación/deshabilitación y limpiar inputs deshabilitados
+            cards.forEach((card, index) => {
+                const fechaInicioInput = card.querySelector('.unidad-fecha-inicio');
+                const fechaFinInput = card.querySelector('.unidad-fecha-fin');
+                const btnEliminar = card.querySelector('.btn-eliminar-unidad');
+                
+                // Resetear estilos
+                fechaInicioInput.style.backgroundColor = '';
+                fechaInicioInput.style.cursor = '';
+                fechaInicioInput.title = '';
+                fechaFinInput.style.backgroundColor = '';
+                fechaFinInput.style.cursor = '';
+                fechaFinInput.title = '';
+                
+                // Lógica de habilitación
+                if (index === 0) {
+                    // Unidad 1 siempre habilitada para fecha inicio
+                    fechaInicioInput.disabled = false;
+                    
+                    // Fecha fin habilitada solo si hay fecha inicio
+                    if (fechaInicioInput.value) {
+                        fechaFinInput.disabled = false;
+                    } else {
+                        fechaFinInput.disabled = true;
+                        fechaFinInput.style.backgroundColor = '#f5f5f5';
+                        fechaFinInput.style.cursor = 'not-allowed';
+                        fechaFinInput.title = 'Primero define la fecha de inicio';
+                        // BORRAR contenido si está deshabilitado
+                        if (fechaFinInput.value) {
+                            fechaFinInput.value = '';
+                        }
+                    }
+                } else {
+                    // Unidades siguientes dependen de la unidad anterior
+                    const cardAnterior = cards[index - 1];
+                    const fechaInicioAnterior = cardAnterior.querySelector('.unidad-fecha-inicio')?.value;
+                    const fechaFinAnterior = cardAnterior.querySelector('.unidad-fecha-fin')?.value;
+                    
+                    if (fechaInicioAnterior && fechaFinAnterior) {
+                        fechaInicioInput.disabled = false;
+                        
+                        if (fechaInicioInput.value) {
+                            fechaFinInput.disabled = false;
+                        } else {
+                            fechaFinInput.disabled = true;
+                            fechaFinInput.style.backgroundColor = '#f5f5f5';
+                            fechaFinInput.style.cursor = 'not-allowed';
+                            fechaFinInput.title = 'Primero define la fecha de inicio';
+                            // BORRAR contenido si está deshabilitado
+                            if (fechaFinInput.value) {
+                                fechaFinInput.value = '';
+                            }
+                        }
+                    } else {
+                        fechaInicioInput.disabled = true;
+                        fechaInicioInput.style.backgroundColor = '#f5f5f5';
+                        fechaInicioInput.style.cursor = 'not-allowed';
+                        fechaInicioInput.title = 'Primero completa la unidad anterior';
+                        // BORRAR contenido si está deshabilitado
+                        if (fechaInicioInput.value) {
+                            fechaInicioInput.value = '';
+                        }
+                        
+                        fechaFinInput.disabled = true;
+                        fechaFinInput.style.backgroundColor = '#f5f5f5';
+                        fechaFinInput.style.cursor = 'not-allowed';
+                        fechaFinInput.title = 'Primero completa la unidad anterior';
+                        // BORRAR contenido si está deshabilitado
+                        if (fechaFinInput.value) {
+                            fechaFinInput.value = '';
+                        }
+                    }
+                }
+                
+                // Botón eliminar solo para unidades que no sean la primera
+                if (btnEliminar) {
+                    btnEliminar.style.display = index === 0 ? 'none' : 'block';
+                }
+            });
+        };
+
+        window.guardarUnidades = function() {
+            console.log('Guardando unidades...');
+            
+            // VALIDACIÓN: Verificar que todos los campos estén completos
+            const cards = document.querySelectorAll('.unidad-card');
+            let camposIncompletos = false;
+            let primerCampoVacio = null;
+            
+            // Primero, limpiar todos los estilos de error anteriores
+            document.querySelectorAll('.unidad-nombre, .unidad-porcentaje, .unidad-fecha-inicio, .unidad-fecha-fin').forEach(input => {
+                input.style.borderColor = '';
+                input.style.backgroundColor = '';
+            });
+            
+            cards.forEach((card, index) => {
+                const nombre = card.querySelector('.unidad-nombre')?.value.trim();
+                const porcentaje = card.querySelector('.unidad-porcentaje')?.value;
+                const fechaInicio = card.querySelector('.unidad-fecha-inicio')?.value;
+                const fechaFin = card.querySelector('.unidad-fecha-fin')?.value;
+                
+                if (!nombre || !porcentaje || !fechaInicio || !fechaFin) {
+                    camposIncompletos = true;
+                    
+                    // Resaltar los campos vacíos
+                    if (!nombre) {
+                        const input = card.querySelector('.unidad-nombre');
+                        input.style.borderColor = '#dc2626';
+                        input.style.backgroundColor = '#fee2e2';
+                        if (!primerCampoVacio) primerCampoVacio = input;
+                    }
+                    if (!porcentaje) {
+                        const input = card.querySelector('.unidad-porcentaje');
+                        input.style.borderColor = '#dc2626';
+                        input.style.backgroundColor = '#fee2e2';
+                        if (!primerCampoVacio) primerCampoVacio = input;
+                    }
+                    if (!fechaInicio) {
+                        const input = card.querySelector('.unidad-fecha-inicio');
+                        input.style.borderColor = '#dc2626';
+                        input.style.backgroundColor = '#fee2e2';
+                        if (!primerCampoVacio) primerCampoVacio = input;
+                    }
+                    if (!fechaFin) {
+                        const input = card.querySelector('.unidad-fecha-fin');
+                        input.style.borderColor = '#dc2626';
+                        input.style.backgroundColor = '#fee2e2';
+                        if (!primerCampoVacio) primerCampoVacio = input;
+                    }
+                }
+            });
+            
+            if (camposIncompletos) {
+                // Hacer scroll al primer campo vacío
+                if (primerCampoVacio) {
+                    primerCampoVacio.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    primerCampoVacio.focus();
+                }
+                return; // No continuar con el guardado
+            }
+            
+            const unidades = [];
+            
+            cards.forEach((card, index) => {
+                const nombre = card.querySelector('.unidad-nombre')?.value.trim();
+                const porcentaje = card.querySelector('.unidad-porcentaje')?.value;
+                const fechaInicio = card.querySelector('.unidad-fecha-inicio')?.value;
+                const fechaFin = card.querySelector('.unidad-fecha-fin')?.value;
+                
+                // Ya validamos que todos existen, así que podemos agregarlos sin preocupación
+                unidades.push({
+                    numero: index + 1,
+                    nombre: nombre,
+                    porcentaje: parseInt(porcentaje),
+                    fecha_inicio: fechaInicio,
+                    fecha_fin: fechaFin
+                });
+            });
+            
+            // Validar que el total sea 100%
+            const total = unidades.reduce((sum, u) => sum + u.porcentaje, 0);
+            if (total !== 100) {
+                alert('El total de porcentajes debe ser 100%');
+                return;
+            }
+            
+            console.log('Unidades a guardar:', unidades);
+            
+            // Deshabilitar botón y mostrar carga
+            const btnGuardar = document.querySelector('.btn-guardar-unidades');
+            const textoOriginal = btnGuardar.innerHTML;
+            btnGuardar.innerHTML = '<span class="mdi mdi-loading mdi-spin"></span> Guardando...';
+            btnGuardar.disabled = true;
+            
+            // Enviar al servidor
+            fetch('/guardar-parciales/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    gdm_id: window.gdmActualId,
+                    unidades: unidades
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { throw new Error(err.error || 'Error en el servidor'); });
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Respuesta del servidor:', data);
+                
+                if (data.success) {
+                    // Mostrar mensaje de éxito
+                    alert('Unidades guardadas correctamente');
+                    
+                    // ACTUALIZAR LOS DATOS DE LA MATERIA EN window.materiasData
+                    // Buscar la materia que acabamos de configurar
+                    if (window.materiasData && window.materiasData.length > 0) {
+                        const materiaIndex = window.materiasData.findIndex(m => m.id === window.gdmActualId);
+                        if (materiaIndex !== -1) {
+                            // Actualizar los datos de la materia
+                            window.materiasData[materiaIndex].tiene_parciales = true;
+                            window.materiasData[materiaIndex].parciales_configurados = true;
+                            window.materiasData[materiaIndex].parciales = data.parciales;
+                        }
+                    }
+                    
+                    // Recargar la vista de calificaciones con los nuevos parciales
+                    const materiaNombre = document.getElementById('materiaNombre').textContent;
+                    
+                    window.cargarCalificaciones(
+                        null,
+                        window.materiaActualId,
+                        materiaNombre,
+                        window.gdmActualId,
+                        true,  // tieneParciales
+                        true,  // parcialesConfigurados (ahora ya están configurados)
+                        data.parciales
+                    );
+                } else {
+                    alert('Error: ' + (data.error || 'Error desconocido'));
+                    btnGuardar.innerHTML = textoOriginal;
+                    btnGuardar.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al guardar las unidades: ' + error.message);
+                btnGuardar.innerHTML = textoOriginal;
+                btnGuardar.disabled = false;
+            });
+        };
+
+        // Función para limpiar estilos de error al enfocar un campo
+        window.limpiarError = function(input) {
+            input.style.borderColor = '';
+            input.style.backgroundColor = '';
+        };
+
+        // Función para generar la tabla de calificaciones
+        window.generarTablaCalificaciones = function(parciales, alumnos) {
+            console.log('Generando tabla con parciales:', parciales);
+            console.log('Alumnos:', alumnos);
+            
+            const wrapper = document.getElementById('calificacionesTableWrapper');
+            
+            if (!wrapper) {
+                console.error('No se encontró el wrapper de calificaciones');
+                return;
+            }
+            
+            // Si no hay alumnos, mostrar mensaje
+            if (!alumnos || alumnos.length === 0) {
+                wrapper.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #666;">
+                        <span class="mdi mdi-account-group" style="font-size: 48px; color: #ccc;"></span>
+                        <h3 style="margin-top: 10px;">No hay alumnos en este grupo</h3>
+                        <p>Agrega alumnos para poder registrar calificaciones</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Crear estructura de la tabla
+            let html = '<table class="calificaciones-table">';
+            
+            // PRIMERA FILA: Encabezado con los nombres de las unidades
+            html += '<thead>';
+            html += '<tr class="calificaciones-header-row">';
+            html += '<th></th>'; // Columna de alumnos
+            
+            parciales.forEach(parcial => {
+                html += `<th>Unidad ${parcial.numero}</th>`;
+            });
+            
+            html += '</tr>';
+            
+            // SEGUNDA FILA: Nombres de las unidades con porcentajes
+            html += '<tr class="calificaciones-subheader-row">';
+            html += '<th>Alumnos</th>';
+            
+            parciales.forEach(parcial => {
+                html += `<th>${parcial.nombre} - ${parcial.porcentaje}%</th>`;
+            });
+            
+            html += '</tr>';
+            html += '</thead>';
+            
+            // CUERPO DE LA TABLA: Alumnos
+            html += '<tbody id="calificacionesTableBody">';
+            
+            alumnos.forEach(alumno => {
+                html += '<tr>';
+                
+                // Columna de alumno (nombre + matrícula)
+                html += `<td>
+                    <div class="alumno-info-cell">
+                        <span class="alumno-nombre">${alumno.nombre || 'No asignado'}</span>
+                        <span class="alumno-matricula">${alumno.matricula || 'No asignado'}</span>
+                    </div>
+                </td>`;
+                
+                // Columnas para cada parcial (solo input)
+                parciales.forEach(parcial => {
+                    html += `<td>
+                        <input type="text" class="calificacion-input" 
+                            placeholder="0-100"
+                            data-alumno-id="${alumno.id}"
+                            data-parcial="${parcial.numero}">
+                    </td>`;
+                });
+                
+                html += '</tr>';
+            });
+            
+            html += '</tbody>';
+            html += '</table>';
+            
+            wrapper.innerHTML = html;
+        };
+
         
         // Abrir modal desde tarjeta de grupo
         document.querySelectorAll('.group-card').forEach(card => {
@@ -901,22 +1882,32 @@
                 const clave = this.getAttribute('data-clave');
                 const alumnosJSON = this.getAttribute('data-alumnos');
                 const grupoId = this.getAttribute('data-group-id');
+                const materiasJSON = this.getAttribute('data-materias');
                 
                 // Guardar datos del grupo actual
                 currentMateria = materia || 'Sin materia';
                 currentClave = clave;
                 currentGrupoId = grupoId;
                 
+                // Guardar datos de materias en variable global
+                try {
+                    window.materiasData = materiasJSON ? JSON.parse(materiasJSON) : [];
+                    console.log('Materias cargadas al abrir modal:', window.materiasData);
+                } catch (error) {
+                    console.error('Error parsing materias JSON:', error);
+                    window.materiasData = [];
+                }
+                
                 modalMateria.textContent = currentMateria;
                 modalClave.textContent = currentClave;
                 
                 try {
-                    currentGrupoData = (alumnosJSON && alumnosJSON !== 'null') 
+                    window.currentGrupoData = (alumnosJSON && alumnosJSON !== 'null') 
                         ? JSON.parse(alumnosJSON) 
                         : [];
                 } catch (error) {
                     console.error('Error parsing JSON:', error);
-                    currentGrupoData = [];
+                    window.currentGrupoData = [];
                 }
                 
                 // Resetear el switch a la pestaña "Alumnos"
@@ -941,6 +1932,12 @@
         closeModalBtn.addEventListener('click', () => {
             modal.classList.remove('active');
             document.body.style.overflow = 'auto';
+            
+            // Limpiar estado al cerrar el modal
+            unidadActual = 1;
+            parcialesData = [];
+            fechasOcupadas = [];
+            document.getElementById('unidades-container').innerHTML = '';
         });
         
         modal.addEventListener('click', (e) => {
@@ -994,7 +1991,43 @@
                         cargarListaAlumnos();
                         document.getElementById('modalListaAlumnos').classList.add('active');
                     } else if (viewType === 'calificaciones') {
-                        cargarCalificaciones();
+                        // Verificar si hay materias disponibles
+                        if (window.materiasData && window.materiasData.length > 0) {
+                            // Por ahora, tomamos la primera materia del grupo
+                            const materia = window.materiasData[0];
+                            
+                            console.log('Datos de materia al entrar a calificaciones:', materia);
+                            
+                            // Mostrar indicador de carga
+                            document.getElementById('cargandoCalificaciones').style.display = 'block';
+                            document.getElementById('configuracionParciales').style.display = 'none';
+                            document.getElementById('tablaCalificaciones').style.display = 'none';
+                            
+                            // Llamar a cargarCalificaciones con los datos de la materia
+                            window.cargarCalificaciones(
+                                currentGrupoId,
+                                materia.id,
+                                materia.nombre,
+                                materia.id,
+                                materia.tiene_parciales || false,
+                                materia.parciales_configurados || false,
+                                materia.parciales || []
+                            );
+                        } else {
+                            // Si no hay materias, mostrar mensaje
+                            alert('No hay materias configuradas para este grupo');
+                            
+                            // Ocultar carga y mostrar mensaje en el contenedor
+                            document.getElementById('cargandoCalificaciones').style.display = 'none';
+                            const configView = document.getElementById('configuracionParciales');
+                            configView.style.display = 'block';
+                            configView.innerHTML = `
+                                <div class="config-header">
+                                    <h3 class="config-titulo">Sin materias</h3>
+                                    <p class="config-subtitulo">Este grupo no tiene materias asignadas</p>
+                                </div>
+                            `;
+                        }
                         document.getElementById('modalCalificaciones').classList.add('active');
                     } else if (viewType === 'alertas') {
                         document.getElementById('modalAlertas').classList.add('active');
@@ -1002,6 +2035,22 @@
                 }
             });
         });
+
+        // Función para obtener el token CSRF
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
     });
 </script>
 

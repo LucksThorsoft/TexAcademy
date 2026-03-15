@@ -11,6 +11,9 @@ from .models import *
 import json
 from .models import Grupo, Actividad, Entrega, Alumno, GrupoDocenteMateria, Parcial
 from django.db.models.functions import Coalesce
+from django.views.decorators.csrf import csrf_exempt
+from django.utils import timezone
+from datetime import datetime
 
 
 
@@ -91,12 +94,6 @@ def gruposAlumnos(request):
                             'docente': comentario.docente.nombre
                         })
                     
-                    # Obtener calificaciones del alumno (si existen)
-                    # Por ahora datos de ejemplo, después los reemplazaremos con datos reales
-                    calificaciones_data = {
-                        'unidad1': None,  # Aquí iría la calificación real
-                    }
-                    
                     alumnos_data.append({
                         'id': alumno.id,
                         'nombre': alumno.nombre,
@@ -106,24 +103,48 @@ def gruposAlumnos(request):
                         'asistencia': None,
                         'estado': None,
                         'comentarios': comentarios_data,
-                        'calificaciones': calificaciones_data,
-                    });
+                    })
                 
+                # Inicializar el grupo con una lista vacía de materias
                 grupos_dict[grupo.clave] = {
                     'clave': grupo.clave,
-                    'materias': [],
+                    'materias': [],  # Lista vacía que se llenará después
                     'num_alumnos': num_alumnos,
                     'grupo_id': grupo.id,
                     'alumnos': alumnos_data,
                     'alumnos_json': json.dumps(alumnos_data, ensure_ascii=False),
                 }
             
-            # Agregar la materia a la lista de materias del grupo
-            if materia.nombre not in grupos_dict[grupo.clave]['materias']:
-                grupos_dict[grupo.clave]['materias'].append(materia.nombre)
+            # Verificar si esta materia ya tiene parciales configurados
+            parciales = Parcial.objects.filter(grupo_docente_materia=gdm).order_by('numero_parcial')
+            tiene_parciales = parciales.exists()
+            
+            # Obtener datos de parciales si existen
+            parciales_data = []
+            if tiene_parciales:
+                for parcial in parciales:
+                    parciales_data.append({
+                        'numero': parcial.numero_parcial,
+                        'nombre': parcial.nombre,
+                        'porcentaje': parcial.porcentaje,
+                        'fecha_inicio': parcial.fecha_inicio.strftime('%Y-%m-%d'),
+                        'fecha_fin': parcial.fecha_cierre.strftime('%Y-%m-%d'),
+                    })
+            
+            # Agregar la materia con su información de parciales
+            grupos_dict[grupo.clave]['materias'].append({
+                'id': gdm.id,
+                'nombre': materia.nombre,
+                'tiene_parciales': tiene_parciales,
+                'parciales_configurados': gdm.parciales_configurados,
+                'parciales': parciales_data,
+            })
         
-        # Convertir el diccionario a lista
-        grupos_data = list(grupos_dict.values())
+        # Convertir el diccionario a lista y agregar materias_json a cada grupo
+        grupos_data = []
+        for clave, grupo_data in grupos_dict.items():
+            grupo_data['materias_json'] = json.dumps(grupo_data['materias'], ensure_ascii=False)
+            grupos_data.append(grupo_data)
         
         context = {
             'grupos': grupos_data,
@@ -134,6 +155,99 @@ def gruposAlumnos(request):
         return redirect('login')
     
     return render(request, "gruposAlumnos.html", context)
+
+@csrf_exempt
+def guardar_parciales(request):
+    """Endpoint para guardar la configuración de parciales"""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            gdm_id = data.get('gdm_id')
+            unidades = data.get('unidades', [])
+            
+            # Validar datos
+            if not gdm_id:
+                return JsonResponse({'error': 'ID de materia no proporcionado'}, status=400)
+            
+            if not unidades:
+                return JsonResponse({'error': 'No se recibieron unidades'}, status=400)
+            
+            # Obtener la relación GrupoDocenteMateria
+            gdm = GrupoDocenteMateria.objects.get(id=gdm_id)
+            
+            # Validar que el docente sea el mismo que está en sesión
+            docente_id = request.session.get('usuario_id')
+            if gdm.docente.id != docente_id:
+                return JsonResponse({'error': 'No tienes permiso para modificar esta materia'}, status=403)
+            
+            # Validar que el total de porcentajes sea 100
+            total_porcentaje = sum(u['porcentaje'] for u in unidades)
+            if total_porcentaje != 100:
+                return JsonResponse({'error': 'El total de porcentajes debe ser 100%'}, status=400)
+            
+            # Validar fechas consecutivas
+            fechas_validas = validar_fechas_consecutivas(unidades)
+            if not fechas_validas:
+                return JsonResponse({'error': 'Las fechas no son consecutivas correctamente'}, status=400)
+            
+            # Eliminar parciales existentes
+            Parcial.objects.filter(grupo_docente_materia=gdm).delete()
+            
+            # Crear los nuevos parciales
+            parciales_creados = []
+            for unidad in unidades:
+                parcial = Parcial.objects.create(
+                    numero_parcial=unidad['numero'],
+                    nombre=unidad['nombre'],
+                    porcentaje=unidad['porcentaje'],
+                    grupo_docente_materia=gdm,
+                    fecha_inicio=datetime.strptime(unidad['fecha_inicio'], '%Y-%m-%d').date(),
+                    fecha_cierre=datetime.strptime(unidad['fecha_fin'], '%Y-%m-%d').date(),
+                    cerrado=False
+                )
+                parciales_creados.append({
+                    'numero': parcial.numero_parcial,
+                    'nombre': parcial.nombre,
+                    'porcentaje': parcial.porcentaje,
+                    'fecha_inicio': parcial.fecha_inicio.strftime('%Y-%m-%d'),
+                    'fecha_fin': parcial.fecha_cierre.strftime('%Y-%m-%d'),
+                })
+            
+            # Marcar como configurado
+            gdm.parciales_configurados = True
+            gdm.save()
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Parciales guardados correctamente',
+                'parciales': parciales_creados
+            })
+            
+        except GrupoDocenteMateria.DoesNotExist:
+            return JsonResponse({'error': 'Materia no encontrada'}, status=404)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    
+    return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+def validar_fechas_consecutivas(unidades):
+    """Valida que las fechas sean consecutivas independientemente del orden"""
+    if len(unidades) <= 1:
+        return True
+    
+    # Ordenar por fecha de inicio
+    unidades_ordenadas = sorted(unidades, key=lambda x: x['fecha_inicio'])
+    
+    # Verificar que los números de parcial correspondan al orden de fechas
+    for i in range(len(unidades_ordenadas) - 1):
+        fecha_fin_actual = datetime.strptime(unidades_ordenadas[i]['fecha_fin'], '%Y-%m-%d').date()
+        fecha_inicio_siguiente = datetime.strptime(unidades_ordenadas[i + 1]['fecha_inicio'], '%Y-%m-%d').date()
+        
+        # La fecha de inicio siguiente debe ser al menos 1 día después de la fecha fin actual
+        if fecha_inicio_siguiente <= fecha_fin_actual:
+            return False
+    
+    return True
 
 def perfil_alumno(request, alumno_id):
     # Verificar si el usuario está autenticado

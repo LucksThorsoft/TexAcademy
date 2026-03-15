@@ -24,4 +24,5 @@ urlpatterns = [
     path('obtener-historial-asistencia/', views.obtener_historial_asistencia, name='obtener_historial_asistencia'),
     path('guardar-comentario/', views.guardar_comentario, name='guardar_comentario'),    
     path('alumno/<int:alumno_id>/perfil/', views.perfil_alumno, name='perfil_alumno'),
+    path('guardar-parciales/', views.guardar_parciales, name='guardar_parciales'),
 ]
