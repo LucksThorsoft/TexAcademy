@@ -706,6 +706,43 @@
     .calificaciones-table td:first-child {
         text-align: left;
     }
+
+    /* Botón de guardar calificaciones */
+    .btn-guardar-calificaciones {
+        padding: 12px 24px;
+        background: #059669;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s;
+    }
+
+    .btn-guardar-calificaciones:hover {
+        background: #047857;
+    }
+
+    .btn-guardar-calificaciones:disabled {
+        background: #94a3b8;
+        cursor: not-allowed;
+    }
+
+    /* Estilo para inputs con error */
+    .calificacion-input.error {
+        border-color: #dc2626 !important;
+        background-color: #fee2e2 !important;
+    }
+
+    /* Estilo para el borde rojo cuando hay error */
+    .calificacion-input.error:focus {
+        border-color: #dc2626 !important;
+        box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1) !important;
+    }
     
     /* Mensajes de desarrollo */
     .dev-message-container {
@@ -1123,9 +1160,9 @@
         }
 
         // Asegurar que cargarCalificaciones sea global
-        window.cargarCalificaciones = function(grupoId, materiaId, materiaNombre, gdmId, tieneParciales, parcialesConfigurados, parcialesExistentes) {
+        window.cargarCalificaciones = function(grupoId, materiaId, materiaNombre, gdmId, tieneParciales, parcialesConfigurados, parcialesExistentes, calificacionesExistentes = []) {
             console.log('Cargando calificaciones:', {
-                grupoId, materiaId, materiaNombre, gdmId, tieneParciales, parcialesConfigurados, parcialesExistentes
+                grupoId, materiaId, materiaNombre, gdmId, tieneParciales, parcialesConfigurados, parcialesExistentes, calificacionesExistentes
             });
             
             // Validar que tenemos los datos necesarios
@@ -1172,8 +1209,8 @@
                 configView.style.display = 'none';
                 tablaView.style.display = 'block';
                 
-                // PASAR LOS ALUMNOS A LA FUNCIÓN
-                window.generarTablaCalificaciones(parcialesExistentes || [], window.currentGrupoData || []);
+                // PASAR LOS ALUMNOS Y CALIFICACIONES A LA FUNCIÓN
+                window.generarTablaCalificaciones(parcialesExistentes || [], window.currentGrupoData || [], calificacionesExistentes);
                 
             } else if (tieneParciales && !parcialesConfigurados) {
                 console.log('Mostrando formulario con parciales existentes');
@@ -1793,9 +1830,10 @@
         };
 
         // Función para generar la tabla de calificaciones
-        window.generarTablaCalificaciones = function(parciales, alumnos) {
+        window.generarTablaCalificaciones = function(parciales, alumnos, calificacionesGuardadas = []) {
             console.log('Generando tabla con parciales:', parciales);
             console.log('Alumnos:', alumnos);
+            console.log('Calificaciones guardadas:', calificacionesGuardadas);
             
             const wrapper = document.getElementById('calificacionesTableWrapper');
             
@@ -1814,6 +1852,15 @@
                     </div>
                 `;
                 return;
+            }
+            
+            // Crear un mapa de calificaciones para acceso rápido
+            const calificacionesMap = {};
+            if (calificacionesGuardadas && calificacionesGuardadas.length > 0) {
+                calificacionesGuardadas.forEach(cal => {
+                    const key = `${cal.alumno_id}-${cal.parcial}`;
+                    calificacionesMap[key] = cal.calificacion;
+                });
             }
             
             // Crear estructura de la tabla
@@ -1855,13 +1902,18 @@
                     </div>
                 </td>`;
                 
-                // Columnas para cada parcial (solo input)
+                // Columnas para cada parcial
                 parciales.forEach(parcial => {
+                    const key = `${alumno.id}-${parcial.numero}`;
+                    const calificacionGuardada = calificacionesMap[key] || '';
+                    
                     html += `<td>
                         <input type="text" class="calificacion-input" 
+                            value="${calificacionGuardada}"
                             placeholder="0-100"
                             data-alumno-id="${alumno.id}"
-                            data-parcial="${parcial.numero}">
+                            data-parcial="${parcial.numero}"
+                            data-original-value="${calificacionGuardada}">
                     </td>`;
                 });
                 
@@ -1871,9 +1923,180 @@
             html += '</tbody>';
             html += '</table>';
             
+            // Agregar botón de guardar al final
+            html += `
+                <div style="display: flex; justify-content: flex-end; margin: 20px 0 20px 0;">
+                    <button class="btn-guardar-calificaciones" onclick="window.guardarCalificaciones()">
+                        <span class="mdi mdi-content-save"></span>
+                        Guardar Calificaciones
+                    </button>
+                </div>
+            `;
+            
             wrapper.innerHTML = html;
         };
 
+        // Función para guardar calificaciones
+        window.guardarCalificaciones = function() {
+            console.log('Guardando calificaciones...');
+            
+            // Primero, limpiar todos los estilos de error anteriores
+            document.querySelectorAll('.calificacion-input').forEach(input => {
+                input.classList.remove('error');
+                input.style.borderColor = '';
+                input.style.backgroundColor = '';
+            });
+            
+            // Obtener todos los inputs de calificación
+            const inputs = document.querySelectorAll('.calificacion-input');
+            const calificacionesModificadas = [];
+            let hayErrores = false;
+            let primerError = null;
+            
+            // Validar inputs y recoger solo los modificados
+            inputs.forEach(input => {
+                const valorActual = input.value.trim();
+                const valorOriginal = input.getAttribute('data-original-value') || '';
+                const alumnoId = input.getAttribute('data-alumno-id');
+                const parcialNumero = input.getAttribute('data-parcial');
+                
+                // Validar que no exceda 100 (incluso antes de verificar si cambió)
+                if (valorActual !== '') {
+                    const num = parseFloat(valorActual);
+                    if (isNaN(num)) {
+                        // No es un número válido
+                        input.classList.add('error');
+                        input.style.borderColor = '#dc2626';
+                        input.style.backgroundColor = '#fee2e2';
+                        hayErrores = true;
+                        if (!primerError) primerError = input;
+                    } else if (num < 0) {
+                        // Número negativo
+                        input.classList.add('error');
+                        input.style.borderColor = '#dc2626';
+                        input.style.backgroundColor = '#fee2e2';
+                        hayErrores = true;
+                        if (!primerError) primerError = input;
+                    } else if (num > 100) {
+                        // Excede 100
+                        input.classList.add('error');
+                        input.style.borderColor = '#dc2626';
+                        input.style.backgroundColor = '#fee2e2';
+                        hayErrores = true;
+                        if (!primerError) primerError = input;
+                    }
+                }
+                
+                // Solo guardar si el valor cambió y no hay errores (por ahora)
+                if (valorActual !== valorOriginal && !hayErrores) {
+                    calificacionesModificadas.push({
+                        alumno_id: alumnoId,
+                        parcial: parseInt(parcialNumero),
+                        calificacion: valorActual || null
+                    });
+                }
+            });
+            
+            // Si hay errores, mostrar mensaje y hacer scroll al primero
+            if (hayErrores) {
+                alert('Hay calificaciones inválidas. Por favor verifica:\n- Deben ser números entre 0 y 100\n- No pueden ser negativas\n- No pueden exceder 100');
+                
+                if (primerError) {
+                    primerError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    primerError.focus();
+                }
+                return;
+            }
+            
+            // Si no hay cambios, mostrar mensaje
+            if (calificacionesModificadas.length === 0) {
+                alert('No hay cambios para guardar');
+                return;
+            }
+            
+            console.log('Calificaciones a guardar:', calificacionesModificadas);
+            
+            // Deshabilitar botón y mostrar carga
+            const btnGuardar = document.querySelector('.btn-guardar-calificaciones');
+            const textoOriginal = btnGuardar.innerHTML;
+            btnGuardar.innerHTML = '<span class="mdi mdi-loading mdi-spin"></span> Guardando...';
+            btnGuardar.disabled = true;
+            
+            // Enviar al servidor
+            fetch('/guardar-calificaciones/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    gdm_id: window.gdmActualId,
+                    calificaciones: calificacionesModificadas
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { throw new Error(err.error || 'Error en el servidor'); });
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Respuesta del servidor:', data);
+                
+                if (data.success) {
+                    // Mostrar mensaje de éxito
+                    alert('Calificaciones guardadas correctamente');
+                    
+                    // ACTUALIZAR LOS DATOS EN window.materiasData
+                    if (window.materiasData && window.materiasData.length > 0) {
+                        // Buscar la materia actual
+                        const materiaIndex = window.materiasData.findIndex(m => m.id === window.gdmActualId);
+                        if (materiaIndex !== -1) {
+                            // Crear o actualizar el objeto de calificaciones en la materia
+                            if (!window.materiasData[materiaIndex].calificaciones) {
+                                window.materiasData[materiaIndex].calificaciones = [];
+                            }
+                            
+                            // Actualizar cada calificación modificada
+                            calificacionesModificadas.forEach(cal => {
+                                const calIndex = window.materiasData[materiaIndex].calificaciones.findIndex(
+                                    c => c.alumno_id === cal.alumno_id && c.parcial === cal.parcial
+                                );
+                                
+                                if (calIndex !== -1) {
+                                    // Actualizar existente
+                                    window.materiasData[materiaIndex].calificaciones[calIndex].calificacion = cal.calificacion;
+                                } else {
+                                    // Agregar nueva
+                                    window.materiasData[materiaIndex].calificaciones.push(cal);
+                                }
+                            });
+                        }
+                    }
+                    
+                    // Actualizar los valores originales en los inputs
+                    inputs.forEach(input => {
+                        const valorActual = input.value.trim();
+                        input.setAttribute('data-original-value', valorActual);
+                        input.classList.remove('error');
+                        input.style.borderColor = '';
+                        input.style.backgroundColor = '';
+                    });
+                } else {
+                    alert('Error: ' + (data.error || 'Error desconocido'));
+                }
+                
+                // Restaurar botón
+                btnGuardar.innerHTML = textoOriginal;
+                btnGuardar.disabled = false;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al guardar las calificaciones: ' + error.message);
+                btnGuardar.innerHTML = textoOriginal;
+                btnGuardar.disabled = false;
+            });
+        };
         
         // Abrir modal desde tarjeta de grupo
         document.querySelectorAll('.group-card').forEach(card => {
@@ -2003,16 +2226,48 @@
                             document.getElementById('configuracionParciales').style.display = 'none';
                             document.getElementById('tablaCalificaciones').style.display = 'none';
                             
-                            // Llamar a cargarCalificaciones con los datos de la materia
-                            window.cargarCalificaciones(
-                                currentGrupoId,
-                                materia.id,
-                                materia.nombre,
-                                materia.id,
-                                materia.tiene_parciales || false,
-                                materia.parciales_configurados || false,
-                                materia.parciales || []
-                            );
+                            // Primero, obtener las calificaciones del servidor
+                            fetch(`/obtener-calificaciones/?gdm_id=${materia.id}`)
+                                .then(response => response.json())
+                                .then(data => {
+                                    console.log('Calificaciones obtenidas:', data);
+                                    
+                                    let calificacionesExistentes = [];
+                                    if (data.success && data.calificaciones) {
+                                        calificacionesExistentes = data.calificaciones;
+                                        
+                                        // Guardar en window.materiasData para futuras referencias
+                                        if (!window.materiasData[0].calificaciones) {
+                                            window.materiasData[0].calificaciones = calificacionesExistentes;
+                                        }
+                                    }
+                                    
+                                    // Llamar a cargarCalificaciones con los datos de la materia
+                                    window.cargarCalificaciones(
+                                        currentGrupoId,
+                                        materia.id,
+                                        materia.nombre,
+                                        materia.id,
+                                        materia.tiene_parciales || false,
+                                        materia.parciales_configurados || false,
+                                        materia.parciales || [],
+                                        calificacionesExistentes
+                                    );
+                                })
+                                .catch(error => {
+                                    console.error('Error al obtener calificaciones:', error);
+                                    // Si hay error, igual intentamos cargar sin calificaciones
+                                    window.cargarCalificaciones(
+                                        currentGrupoId,
+                                        materia.id,
+                                        materia.nombre,
+                                        materia.id,
+                                        materia.tiene_parciales || false,
+                                        materia.parciales_configurados || false,
+                                        materia.parciales || [],
+                                        []
+                                    );
+                                });
                         } else {
                             // Si no hay materias, mostrar mensaje
                             alert('No hay materias configuradas para este grupo');

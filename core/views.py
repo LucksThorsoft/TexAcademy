@@ -249,6 +249,133 @@ def validar_fechas_consecutivas(unidades):
     
     return True
 
+@csrf_exempt
+def guardar_calificaciones(request):
+    """Endpoint para guardar las calificaciones de los alumnos por parcial"""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            gdm_id = data.get('gdm_id')
+            calificaciones = data.get('calificaciones', [])
+            
+            # Validar datos
+            if not gdm_id:
+                return JsonResponse({'error': 'ID de materia no proporcionado'}, status=400)
+            
+            if not calificaciones:
+                return JsonResponse({'error': 'No se recibieron calificaciones'}, status=400)
+            
+            # Obtener la relación GrupoDocenteMateria
+            gdm = GrupoDocenteMateria.objects.get(id=gdm_id)
+            
+            # Validar que el docente sea el mismo que está en sesión
+            docente_id = request.session.get('usuario_id')
+            if gdm.docente.id != docente_id:
+                return JsonResponse({'error': 'No tienes permiso para modificar esta materia'}, status=403)
+            
+            # Obtener todos los parciales de esta materia
+            parciales = Parcial.objects.filter(grupo_docente_materia=gdm)
+            parciales_dict = {p.numero_parcial: p for p in parciales}
+            
+            calificaciones_guardadas = 0
+            
+            for item in calificaciones:
+                alumno_id = item.get('alumno_id')
+                parcial_numero = item.get('parcial')
+                calificacion_valor = item.get('calificacion')
+                
+                # Validar que el alumno existe
+                try:
+                    alumno = Alumno.objects.get(id=alumno_id)
+                except Alumno.DoesNotExist:
+                    continue
+                
+                # Validar que el parcial existe
+                if parcial_numero not in parciales_dict:
+                    continue
+                
+                parcial = parciales_dict[parcial_numero]
+                
+                # Validar que la calificación es un número válido
+                if calificacion_valor is not None and calificacion_valor.strip() != '':
+                    try:
+                        calif_float = float(calificacion_valor)
+                        # Validar rango 0-100
+                        if calif_float < 0 or calif_float > 100:
+                            continue
+                    except ValueError:
+                        continue
+                else:
+                    calif_float = None
+                
+                # Crear o actualizar la calificación
+                CalificacionParcial.objects.update_or_create(
+                    alumno=alumno,
+                    parcial=parcial,
+                    defaults={
+                        'calificacion': calif_float,
+                        'comentario': ''  # Por ahora vacío, se puede implementar después
+                    }
+                )
+                
+                calificaciones_guardadas += 1
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'Calificaciones guardadas correctamente ({calificaciones_guardadas} actualizadas)',
+                'guardadas': calificaciones_guardadas
+            })
+            
+        except GrupoDocenteMateria.DoesNotExist:
+            return JsonResponse({'error': 'Materia no encontrada'}, status=404)
+        except Exception as e:
+            print(f"Error guardando calificaciones: {str(e)}")
+            return JsonResponse({'error': str(e)}, status=500)
+    
+    return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+def obtener_calificaciones(request):
+    """Endpoint para obtener las calificaciones de una materia"""
+    if request.method == 'GET':
+        gdm_id = request.GET.get('gdm_id')
+        
+        if not gdm_id:
+            return JsonResponse({'error': 'ID de materia no proporcionado'}, status=400)
+        
+        try:
+            # Obtener la relación GrupoDocenteMateria
+            gdm = GrupoDocenteMateria.objects.get(id=gdm_id)
+            
+            # Validar que el docente sea el mismo que está en sesión
+            docente_id = request.session.get('usuario_id')
+            if gdm.docente.id != docente_id:
+                return JsonResponse({'error': 'No tienes permiso para ver esta materia'}, status=403)
+            
+            # Obtener todas las calificaciones de esta materia
+            calificaciones = CalificacionParcial.objects.filter(
+                parcial__grupo_docente_materia=gdm
+            ).select_related('alumno', 'parcial')
+            
+            calificaciones_data = []
+            for cal in calificaciones:
+                calificaciones_data.append({
+                    'alumno_id': cal.alumno.id,
+                    'parcial': cal.parcial.numero_parcial,
+                    'calificacion': cal.calificacion
+                })
+            
+            return JsonResponse({
+                'success': True,
+                'calificaciones': calificaciones_data
+            })
+            
+        except GrupoDocenteMateria.DoesNotExist:
+            return JsonResponse({'error': 'Materia no encontrada'}, status=404)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    
+    return JsonResponse({'error': 'Método no permitido'}, status=405)
+
 def perfil_alumno(request, alumno_id):
     # Verificar si el usuario está autenticado
     if not request.session.get('usuario_id'):
