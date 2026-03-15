@@ -670,7 +670,7 @@ def new_group(request):
             archivo = request.FILES.get("archivo_alumnos")
 
             if archivo:
-                archivo_texto = TextIOWrapper(archivo, encoding="utf-8-sig")
+                archivo_texto = TextIOWrapper(archivo, encoding="utf-8", errors="replace")
                 reader = csv.DictReader(archivo_texto)
 
                 for fila in reader:
