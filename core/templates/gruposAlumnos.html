@@ -610,7 +610,7 @@
     .calificaciones-table {
         width: 100%;
         border-collapse: collapse;
-        min-width: 500px;
+        min-width: 800px;
         border: 1px solid #dee2e6;
     }
 
@@ -655,6 +655,19 @@
         font-weight: 500;
         color: #333;
         width: 200px;
+    }
+
+    .calificaciones-table th:last-child,
+    .calificaciones-table td:last-child {
+        position: sticky;
+        right: 0;
+        background-color: inherit;
+        z-index: 5;
+    }
+
+    .calificaciones-table th:last-child {
+        background-color: #f1f3f5;
+        z-index: 15;
     }
 
     /* Celda combinada de nombre y matrícula */
@@ -705,6 +718,30 @@
 
     .calificaciones-table td:first-child {
         text-align: left;
+    }
+
+    /* Estilos para la columna de sumatoria */
+    .sumatoria-cell {
+        font-weight: 600;
+        background-color: #f8fafc;
+        border-left: 2px solid #dee2e6;
+        text-align: center;
+        min-width: 80px;
+    }
+
+    .sumatoria-alta {
+        color: #059669;
+        background-color: #e8f5e9;
+    }
+
+    .sumatoria-media {
+        color: #b45309;
+        background-color: #fef3c7;
+    }
+
+    .sumatoria-baja {
+        color: #b91c1c;
+        background-color: #fee2e2;
     }
 
     /* Botón de guardar calificaciones */
@@ -1875,6 +1912,8 @@
                 html += `<th>Unidad ${parcial.numero}</th>`;
             });
             
+            // Columna de Sumatoria (vacía en la primera fila)
+            html += '<th></th>';
             html += '</tr>';
             
             // SEGUNDA FILA: Nombres de las unidades con porcentajes
@@ -1885,6 +1924,8 @@
                 html += `<th>${parcial.nombre} - ${parcial.porcentaje}%</th>`;
             });
             
+            // Columna de Sumatoria (aquí va el título)
+            html += '<th>Sumatoria</th>';
             html += '</tr>';
             html += '</thead>';
             
@@ -1902,20 +1943,45 @@
                     </div>
                 </td>`;
                 
+                // Variables para calcular la sumatoria
+                let sumatoria = 0;
+                let celdasCalificaciones = [];
+                
                 // Columnas para cada parcial
                 parciales.forEach(parcial => {
                     const key = `${alumno.id}-${parcial.numero}`;
                     const calificacionGuardada = calificacionesMap[key] || '';
                     
-                    html += `<td>
-                        <input type="text" class="calificacion-input" 
-                            value="${calificacionGuardada}"
-                            placeholder="0-100"
-                            data-alumno-id="${alumno.id}"
-                            data-parcial="${parcial.numero}"
-                            data-original-value="${calificacionGuardada}">
-                    </td>`;
+                    // Sumar si es un número válido
+                    if (calificacionGuardada !== '') {
+                        const num = parseFloat(calificacionGuardada);
+                        if (!isNaN(num)) {
+                            sumatoria += num;
+                        }
+                    }
+                    
+                    celdasCalificaciones.push(`
+                        <td>
+                            <input type="text" class="calificacion-input" 
+                                value="${calificacionGuardada}"
+                                placeholder="0-100"
+                                data-alumno-id="${alumno.id}"
+                                data-parcial="${parcial.numero}"
+                                data-original-value="${calificacionGuardada}"
+                                oninput="window.validarInputCalificacion(this); window.actualizarSumatoria(this);">
+                        </td>
+                    `);
                 });
+                
+                // Agregar las celdas de calificaciones
+                html += celdasCalificaciones.join('');
+                
+                // Columna de sumatoria con 2 decimales
+                let sumatoriaTexto = '-';
+                if (sumatoria > 0) {
+                    sumatoriaTexto = sumatoria.toFixed(2);
+                }
+                html += `<td class="sumatoria-cell" id="sumatoria-${alumno.id}">${sumatoriaTexto}</td>`;
                 
                 html += '</tr>';
             });
@@ -1925,7 +1991,7 @@
             
             // Agregar botón de guardar al final
             html += `
-                <div style="display: flex; justify-content: flex-end; margin: 20px 0 20px 0;">
+                <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
                     <button class="btn-guardar-calificaciones" onclick="window.guardarCalificaciones()">
                         <span class="mdi mdi-content-save"></span>
                         Guardar Calificaciones
@@ -1935,6 +2001,70 @@
             
             wrapper.innerHTML = html;
         };
+
+        // Función para actualizar la sumatoria cuando cambia un input
+        window.actualizarSumatoria = function(input) {
+            // Obtener la fila actual
+            const fila = input.closest('tr');
+            if (!fila) return;
+            
+            // Obtener el ID del alumno
+            const alumnoId = input.getAttribute('data-alumno-id');
+            
+            // Obtener todos los inputs de calificación en esta fila
+            const inputs = fila.querySelectorAll('.calificacion-input');
+            let sumatoria = 0;
+            
+            inputs.forEach(inp => {
+                const valor = inp.value.trim();
+                if (valor !== '') {
+                    const num = parseFloat(valor);
+                    if (!isNaN(num)) {
+                        sumatoria += num;
+                    }
+                }
+            });
+            
+            // Actualizar la celda de sumatoria con 2 decimales
+            const sumatoriaCell = document.getElementById(`sumatoria-${alumnoId}`);
+            if (sumatoriaCell) {
+                let sumatoriaTexto = '-';
+                if (sumatoria > 0) {
+                    sumatoriaTexto = sumatoria.toFixed(2);
+                }
+                sumatoriaCell.textContent = sumatoriaTexto;
+                
+                // Opcional: cambiar color según el valor
+                sumatoriaCell.classList.remove('sumatoria-alta', 'sumatoria-media', 'sumatoria-baja');
+                if (sumatoria >= 70) {
+                    sumatoriaCell.classList.add('sumatoria-alta');
+                } else if (sumatoria >= 60) {
+                    sumatoriaCell.classList.add('sumatoria-media');
+                } else if (sumatoria > 0) {
+                    sumatoriaCell.classList.add('sumatoria-baja');
+                }
+            }
+        };
+
+        // Función para redondear calificaciones a múltiplos de 10 (solo enteros)
+        function redondearCalificacion(calificacion) {
+            // Tomar solo la parte entera (ignorar decimales)
+            const entero = Math.floor(calificacion);
+            
+            // Obtener el último dígito
+            const ultimoDigito = entero % 10;
+            
+            if (ultimoDigito === 0) {
+                // Ya es múltiplo de 10
+                return entero;
+            } else if (ultimoDigito <= 4) {
+                // Redondear hacia abajo al múltiplo de 10 más cercano
+                return entero - ultimoDigito;
+            } else {
+                // 5,6,7,8,9 -> redondear hacia arriba al múltiplo de 10 más cercano
+                return entero + (10 - ultimoDigito);
+            }
+        }
 
         // Función para guardar calificaciones
         window.guardarCalificaciones = function() {
@@ -2047,12 +2177,31 @@
                     // Mostrar mensaje de éxito
                     alert('Calificaciones guardadas correctamente');
                     
+                    // REDONDEAR LOS VALORES EN LOS INPUTS
+                    inputs.forEach(input => {
+                        const valorActual = input.value.trim();
+                        if (valorActual !== '') {
+                            const num = parseFloat(valorActual);
+                            if (!isNaN(num)) {
+                                // Aplicar redondeo especial a múltiplos de 10
+                                const valorRedondeado = redondearCalificacion(num);
+                                if (valorRedondeado !== num) {
+                                    input.value = valorRedondeado;
+                                }
+                            }
+                        }
+                        
+                        // Actualizar el valor original
+                        input.setAttribute('data-original-value', input.value.trim());
+                        input.classList.remove('error');
+                        input.style.borderColor = '';
+                        input.style.backgroundColor = '';
+                    });
+                    
                     // ACTUALIZAR LOS DATOS EN window.materiasData
                     if (window.materiasData && window.materiasData.length > 0) {
-                        // Buscar la materia actual
                         const materiaIndex = window.materiasData.findIndex(m => m.id === window.gdmActualId);
                         if (materiaIndex !== -1) {
-                            // Crear o actualizar el objeto de calificaciones en la materia
                             if (!window.materiasData[materiaIndex].calificaciones) {
                                 window.materiasData[materiaIndex].calificaciones = [];
                             }
@@ -2063,24 +2212,28 @@
                                     c => c.alumno_id === cal.alumno_id && c.parcial === cal.parcial
                                 );
                                 
+                                // Buscar el input para obtener el valor redondeado
+                                let valorRedondeado = cal.calificacion;
+                                inputs.forEach(input => {
+                                    if (input.getAttribute('data-alumno-id') == cal.alumno_id && 
+                                        input.getAttribute('data-parcial') == cal.parcial) {
+                                        valorRedondeado = input.value.trim() || null;
+                                    }
+                                });
+                                
                                 if (calIndex !== -1) {
-                                    // Actualizar existente
-                                    window.materiasData[materiaIndex].calificaciones[calIndex].calificacion = cal.calificacion;
+                                    window.materiasData[materiaIndex].calificaciones[calIndex].calificacion = valorRedondeado;
                                 } else {
-                                    // Agregar nueva
+                                    cal.calificacion = valorRedondeado;
                                     window.materiasData[materiaIndex].calificaciones.push(cal);
                                 }
                             });
                         }
                     }
                     
-                    // Actualizar los valores originales en los inputs
-                    inputs.forEach(input => {
-                        const valorActual = input.value.trim();
-                        input.setAttribute('data-original-value', valorActual);
-                        input.classList.remove('error');
-                        input.style.borderColor = '';
-                        input.style.backgroundColor = '';
+                    // Actualizar las sumatorias
+                    document.querySelectorAll('.calificacion-input').forEach(input => {
+                        window.actualizarSumatoria(input);
                     });
                 } else {
                     alert('Error: ' + (data.error || 'Error desconocido'));
