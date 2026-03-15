@@ -4,7 +4,7 @@
 
 {% block content %}
 <style>
-    /* Estilos generales (manteniendo los tuyos) */
+    /* ===== ESTILOS GENERALES ===== */
     .page-title {
         margin-bottom: 30px;
     }
@@ -21,7 +21,7 @@
         font-size: 14px;
     }
     
-    /* Switch de vista */
+    /* ===== SWITCH DE VISTA PRINCIPAL ===== */
     .view-switch {
         display: inline-flex;
         background: #f5f5f5;
@@ -48,7 +48,7 @@
         color: #333;
     }
     
-    /* Grid de grupos */
+    /* ===== GRID DE GRUPOS ===== */
     .groups-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -57,7 +57,6 @@
         width: 100%;
     }
     
-    /* Grid de alumnos (inicialmente oculto) */
     .students-grid {
         display: none;
         grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -66,7 +65,7 @@
         width: 100%;
     }
     
-    /* Tarjetas de grupo y alumno */
+    /* ===== TARJETAS DE GRUPO ===== */
     .group-card, .student-card {
         background: white;
         border-radius: 12px;
@@ -75,13 +74,13 @@
         transition: transform 0.2s ease, box-shadow 0.2s ease;
         height: 100%;
         box-sizing: border-box;
-        cursor: pointer; /* Agregado: cursor pointer */
+        cursor: pointer;
     }
     
     .group-card:hover, .student-card:hover {
         border: 2px solid rgb(0, 0, 180);
         box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
-        transform: translateY(-2px); /* Efecto adicional en hover */
+        transform: translateY(-2px);
     }
     
     .group-header, .student-header {
@@ -97,7 +96,6 @@
         margin-bottom: 8px;
     }
     
-    /* Materia en negritas a la izquierda */
     .materia-principal {
         color: #333;
         font-size: 16px;
@@ -105,21 +103,18 @@
         margin-right: 8px;
     }
     
-    /* Separador */
     .group-separator {
         color: #666;
         margin-right: 8px;
         font-weight: 500;
     }
     
-    /* Grupo sin negritas a la derecha */
     .group-clave {
         color: #666;
         font-size: 16px;
         font-weight: 400;
     }
     
-    /* Número de alumnos */
     .group-meta {
         display: flex;
         gap: 5px;
@@ -128,7 +123,6 @@
         margin-top: 5px;
     }
     
-    /* Estadísticas */
     .group-stats {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
@@ -153,7 +147,6 @@
         color: #DC2626;
     }
     
-    /* Botón de atención */
     .attention-btn {
         display: flex;
         align-items: center;
@@ -165,7 +158,7 @@
         gap: 8px;
     }
     
-    /* ===== ESTILOS PARA EL MODAL ===== */
+    /* ===== MODAL ===== */
     .modal-overlay {
         display: none;
         position: fixed;
@@ -186,17 +179,17 @@
     .modal-container {
         background: white;
         border-radius: 16px;
-        width: 90%;
-        max-width: 850px; /* Ancho máximo reducido */
-        height: 70vh; /* Altura fija en 70% de la ventana */
-        max-height: 600px; /* Altura máxima */
+        width: 100%;
+        max-width: 1000px;
+        height: 100vh;
+        max-height: 600px;
         overflow: hidden;
         box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
         display: flex;
         flex-direction: column;
     }
     
-    /* Header del modal */
+    /* Header del modal simplificado */
     .modal-header {
         padding: 20px 24px;
         display: flex;
@@ -204,43 +197,41 @@
         align-items: center;
         background: #f8f9fa;
         gap: 20px;
-        flex-shrink: 0; /* No se reduce */
+        flex-shrink: 0;
         border-bottom: 1px solid #eaeaea;
     }
     
     .modal-title {
-        /* Ahora contiene la estructura group-header-main */
-        flex-grow: 1;
-        min-width: 0; /* Para que funcione el text-overflow */
+        flex: 1;
+        min-width: 0;
     }
-
-    /* Ajustes para el group-header-main dentro del modal */
+    
     .modal-title .group-header-main {
         margin-bottom: 0;
         align-items: center;
-        flex-wrap: nowrap; /* Para que no se rompa en múltiples líneas */
+        flex-wrap: nowrap;
     }
-
+    
     .modal-title .materia-principal {
         color: #333;
-        font-size: 18px; /* Un poco más grande que en las tarjetas */
+        font-size: 18px;
         font-weight: 600;
         margin-right: 8px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
     }
-
+    
     .modal-title .group-separator {
         color: #666;
         margin-right: 8px;
         font-weight: 500;
         font-size: 18px;
     }
-
+    
     .modal-title .group-clave {
         color: #666;
-        font-size: 18px; /* Un poco más grande que en las tarjetas */
+        font-size: 18px;
         font-weight: 400;
         white-space: nowrap;
     }
@@ -265,14 +256,13 @@
         background: #f0f0f0;
         color: #333;
     }
-
+    
     /* Switch interno del modal */
     .modal-switch-container {
         padding: 20px 24px;
-        flex-shrink: 0; /* No se reduce */
+        flex-shrink: 0;
     }
     
-    /* Switch interno del modal */
     .modal-switch {
         display: inline-flex;
         background: #f5f5f5;
@@ -299,29 +289,27 @@
         background: white;
         color: #333;
     }
-
-    /* Contenedor principal del contenido */
+    
+    /* Contenedor del contenido */
     .modal-content-wrapper {
-        flex: 1; /* Ocupa el espacio restante */
+        flex: 1;
         display: flex;
         flex-direction: column;
-        min-height: 0; /* Importante para el scroll interno */
+        min-height: 0;
     }
     
-    /* Contenido del modal - Área con scroll */
     .modal-content {
         padding: 0 24px 24px;
         overflow-y: auto;
-        flex: 1; /* Ocupa todo el espacio disponible */
+        flex: 1;
         display: flex;
         flex-direction: column;
     }
     
-    /* Vista dentro del contenido - Todas ocupan el mismo espacio */
     .modal-view {
         display: none;
-        flex: 1; /* Todas las vistas ocupan el mismo espacio */
-        min-height: 0; /* Importante para scroll interno */
+        flex: 1;
+        min-height: 0;
     }
     
     .modal-view.active {
@@ -329,13 +317,12 @@
         flex-direction: column;
     }
     
-    /* Estilos para las tablas/vistas internas */
+    /* ===== TABLA DE ALUMNOS ===== */
     .alumnos-table {
         width: 100%;
         border-collapse: collapse;
-        flex: 1;
     }
-
+    
     .alumnos-table-wrapper {
         flex: 1;
         overflow-y: auto;
@@ -344,7 +331,7 @@
     }
     
     .alumnos-table th {
-        text-align: left;
+        text-align: center;
         padding: 12px 16px;
         background: #f8f9fa;
         color: #666;
@@ -354,8 +341,6 @@
         position: sticky;
         top: 0;
         z-index: 10;
-        text-align: center;
-
     }
     
     .alumnos-table td {
@@ -365,241 +350,409 @@
         text-align: center;
     }
     
-    .alumnos-table tr:hover {
-        background: #f9f9f9;
-    }
-
-    /* Estilos para la fila expandible */
-    .expandable-row {
+    .clickable-row {
         cursor: pointer;
         transition: background-color 0.2s;
     }
-
-    .expandable-row:hover {
+    
+    .clickable-row:hover {
         background-color: #f0f7ff !important;
     }
 
-    /* Fila expandida - mantiene el color azul */
-    .expandable-row.expanded {
-        background-color: #f0f7ff !important;
-    }
-
-    .expandable-row td {
-        position: relative;
-    }
-
-    /* Contenedor para el contenido de la celda con flexbox */
-    .cell-content {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 100%;
-    }
-
-    /* Estilo para el texto del estado */
-    .status-text {
-        flex: 1;
-    }
-
-    /* Flecha a la derecha */
-    .expand-arrow {
-        font-size: 12px;
-        color: #999;
-        margin-left: 15px;
-        transition: transform 0.3s ease, color 0.2s ease;
-        display: inline-block;
-    }
-
-    .expandable-row.expanded .expand-arrow {
-        transform: rotate(90deg);
-        color: #0066cc;
-    }
-
-    /* Efecto hover en la flecha */
-    .expandable-row:hover .expand-arrow {
-        color: #0066cc;
-    }
-
-    /* Ajuste para la última celda */
-    .expandable-row td:last-child {
-        position: relative;
-    }
-
-    /* Quitar la flecha que pusimos antes en la primera celda */
-    .expandable-row td:first-child::before {
-        display: none;
-    }
-
-    /* Fila de perfil expandido */
-    .profile-row {
-        display: none;
-        opacity: 0;
-        transform: translateY(-10px);
-        transition: opacity 0.3s ease, transform 0.3s ease;
-    }
-    
-    .profile-row.show {
-        display: table-row;
-        opacity: 1;
-        transform: translateY(0);
-    }
-    
-    .profile-row td {
-        padding: 0 !important;
-        border-bottom: none !important;
-        background-color: #f9f9f9;
-    }
-
-    .profile-container {
-        padding: 20px 24px;
+    /* ===== CONFIGURACIÓN DE PARCIALES ===== */
+    .config-header {
+        margin-bottom: 25px;
+        padding-bottom: 15px;
         border-bottom: 1px solid #eaeaea;
-        border-top: 1px solid #eaeaea;
-        background: white;
-        margin: 10px;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        animation: slideIn 0.3s ease forwards;
     }
 
-    @keyframes slideIn {
-        0% {
-            opacity: 0;
-            transform: translateY(-10px);
-        }
-        100% {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    .profile-row.removing .profile-container {
-        animation: slideOut 0.3s ease forwards;
-    }
-
-    @keyframes slideOut {
-        0% {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        100% {
-            opacity: 0;
-            transform: translateY(-10px);
-        }
-    }
-
-    /* Tarjeta de perfil */
-    .profile-card {
-        display: flex;
-        gap: 24px;
-    }
-
-    .profile-avatar {
-        width: 80px;
-        height: 80px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 32px;
-        font-weight: 600;
-        flex-shrink: 0;
-    }
-
-    .profile-info {
-        flex: 1;
-    }
-
-    .profile-name {
+    .config-titulo {
         font-size: 18px;
         font-weight: 600;
         color: #333;
-        margin-bottom: 4px;
-        text-align: left;
+        margin-bottom: 5px;
     }
 
-    .profile-matricula {
+    .config-subtitulo {
         font-size: 14px;
         color: #666;
-        margin-bottom: 12px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
     }
 
-    .profile-badge {
-        background: #e8f5e9;
-        color: #2e7d32;
-        padding: 2px 8px;
+    .config-subtitulo span {
+        font-weight: 600;
+        color: #667eea;
+    }
+
+    .unidad-card {
+        background: #f8f9fa;
         border-radius: 12px;
-        font-size: 11px;
-        font-weight: 500;
+        padding: 20px;
+        margin-bottom: 20px;
+        border: 2px solid #e4e4e4;
+        position: relative;
     }
 
-    .profile-detail {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 16px;
-        margin-top: 12px;
-        padding-top: 12px;
-        border-top: 1px solid #eaeaea;
+    .unidad-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
     }
 
-    .profile-detail-item {
-        text-align: center;
-    }
-
-    .detail-label {
-        font-size: 11px;
-        color: #999;
-        margin-bottom: 2px;
-        text-transform: uppercase;
-    }
-
-    .detail-value {
+    .unidad-titulo {
         font-size: 16px;
         font-weight: 600;
         color: #333;
     }
 
-    .detail-value.small {
-        font-size: 14px;
+    .btn-eliminar-unidad {
+        background: none;
+        border: none;
+        color: #dc2626;
+        cursor: pointer;
+        font-size: 18px;
+        padding: 4px 8px;
+        border-radius: 4px;
     }
 
-    /* Estado en perfil */
-    .profile-status {
-        display: inline-block;
-        padding: 4px 12px;
-        border-radius: 20px;
+    .btn-eliminar-unidad:hover {
+        background: #fee2e2;
+    }
+
+    .unidad-form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+
+    .unidad-form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .unidad-form-group label {
         font-size: 12px;
+        font-weight: 500;
+        color: #666;
+    }
+
+    .unidad-form-group input {
+        padding: 10px 12px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.2s;
+    }
+
+    .unidad-form-group input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .unidad-form-group input[type="number"] {
+        -moz-appearance: textfield;
+    }
+
+    .unidad-form-group input[type="number"]::-webkit-outer-spin-button,
+    .unidad-form-group input[type="number"]::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    /* Estilos para inputs deshabilitados */
+    .unidad-fecha-inicio:disabled,
+    .unidad-fecha-fin:disabled {
+        background-color: #f5f5f5;
+        cursor: not-allowed;
+        opacity: 0.7;
+    }
+
+    .unidad-fecha-inicio:disabled:hover,
+    .unidad-fecha-fin:disabled:hover {
+        border-color: #ddd;
+    }
+
+    /* Tooltip para inputs deshabilitados */
+    .unidad-fecha-inicio:disabled::after,
+    .unidad-fecha-fin:disabled::after {
+        content: attr(title);
+        position: absolute;
+        background: #333;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        display: none;
+    }
+
+    .unidad-fecha-inicio:disabled:hover::after,
+    .unidad-fecha-fin:disabled:hover::after {
+        display: block;
+    }
+
+    .config-actions {
+        display: flex;
+        gap: 15px;
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+
+    .btn-unidad {
+        padding: 12px 24px;
+        background: white;
+        color: #667eea;
+        border: 2px solid #667eea;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s;
+    }
+
+    .btn-unidad:hover {
+        background: #667eea;
+        color: white;
+    }
+
+    .btn-unidad:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        background: #f5f5f5;
+        color: #999;
+        border-color: #ddd;
+    }
+
+    .btn-unidad:disabled:hover {
+        background: #f5f5f5;
+        color: #999;
+    }
+
+    .btn-guardar-unidades {
+        padding: 12px 24px;
+        background: #059669;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s;
+    }
+
+    .btn-guardar-unidades:hover {
+        background: #047857;
+    }
+
+    .btn-guardar-unidades:disabled {
+        background: #94a3b8;
+        cursor: not-allowed;
+    }
+
+    .porcentaje-total {
+        text-align: right;
+        font-size: 16px;
+        font-weight: 600;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        margin-top: 15px;
+    }
+
+    .porcentaje-total.error {
+        color: #dc2626;
+        background: #fee2e2;
+    }
+
+    .porcentaje-total.success {
+        color: #059669;
+        background: #e8f5e9;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .unidad-form-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .config-actions {
+            flex-direction: column;
+        }
+        
+        .btn-unidad, .btn-guardar-unidades {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+    
+    /* ===== VISTA DE CALIFICACIONES ===== */
+    .calificaciones-container {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+    }
+    
+    .calificaciones-table-wrapper {
+        flex: 1;
+        overflow-y: auto;
+        border: 1px solid #eaeaea;
+        border-radius: 8px;
+    }
+    
+    .calificaciones-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 500px;
+        border: 1px solid #dee2e6;
+    }
+
+    .calificaciones-table th,
+    .calificaciones-table td {
+        padding: 12px 16px;
+        border: 1px solid #dee2e6;
+        vertical-align: middle;
+    }
+
+    .calificaciones-table th {
+        background: #f8f9fa;
+        color: #666;
+        font-weight: 600;
+        font-size: 14px;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        text-align: center;
+    }
+
+    .calificaciones-table .calificaciones-header-row th {
+        background: #e9ecef;
+        color: #495057;
+        font-size: 15px;
+    }
+
+    .calificaciones-table .calificaciones-subheader-row th {
+        background: #f1f3f5;
+        color: #666;
+        font-size: 13px;
         font-weight: 500;
     }
 
-    .status-good {
-        background: #e8f5e9;
-        color: #2e7d32;
+    .calificaciones-table td {
+        background: white;
+        font-size: 14px;
     }
 
-    .status-warning {
-        background: #fff3e0;
-        color: #e65100;
+    .calificaciones-table td:first-child {
+        text-align: left;
+        font-weight: 500;
+        color: #333;
+        width: 200px;
     }
 
-    .status-danger {
-        background: #ffebee;
-        color: #c62828;
+    /* Celda combinada de nombre y matrícula */
+    .alumno-info-cell {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .alumno-nombre {
+        font-weight: 500;
+        color: #333;
+        font-size: 14px;
+    }
+
+    .alumno-matricula {
+        font-size: 12px;
+        color: #666;
+    }
+
+    /* Input de calificación */
+    .calificacion-input {
+        width: 100px;
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 14px;
+        text-align: center;
+        transition: all 0.2s;
+        margin: 0 auto;
+        display: block;
+    }
+
+    .calificacion-input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .calificacion-input:hover {
+        border-color: #999;
+    }
+
+    /* Centrar el contenido de las celdas */
+    .calificaciones-table td {
+        text-align: center;
+    }
+
+    .calificaciones-table td:first-child {
+        text-align: left;
+    }
+
+    /* Botón de guardar calificaciones */
+    .btn-guardar-calificaciones {
+        padding: 12px 24px;
+        background: #059669;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s;
+    }
+
+    .btn-guardar-calificaciones:hover {
+        background: #047857;
+    }
+
+    .btn-guardar-calificaciones:disabled {
+        background: #94a3b8;
+        cursor: not-allowed;
+    }
+
+    /* Estilo para inputs con error */
+    .calificacion-input.error {
+        border-color: #dc2626 !important;
+        background-color: #fee2e2 !important;
+    }
+
+    /* Estilo para el borde rojo cuando hay error */
+    .calificacion-input.error:focus {
+        border-color: #dc2626 !important;
+        box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1) !important;
     }
     
-    /* Contenedor para mensajes de contenido en desarrollo */
+    /* Mensajes de desarrollo */
     .dev-message-container {
         flex: 1;
         display: flex;
         align-items: center;
         justify-content: center;
-        min-height: 300px; /* Altura mínima para mantener tamaño */
+        min-height: 300px;
     }
-
+    
     .dev-message {
         text-align: center;
         padding: 40px;
@@ -618,7 +771,7 @@
         color: #999;
     }
     
-    /* Responsive */
+    /* ===== RESPONSIVE ===== */
     @media (max-width: 768px) {
         .groups-grid {
             grid-template-columns: 1fr;
@@ -626,14 +779,14 @@
         
         .modal-container {
             width: 95%;
-            height: 75vh; /* Un poco más alto en móviles */
+            height: 75vh;
             max-height: none;
         }
         
         .modal-header {
             padding: 16px 20px;
         }
-
+        
         .modal-switch-container {
             padding: 0 20px;
         }
@@ -657,49 +810,32 @@
             text-align: center;
             min-width: 100px;
         }
-
+        
         .alumnos-table th,
         .alumnos-table td {
             padding: 10px 12px;
             font-size: 13px;
         }
-
-        .profile-card {
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
+        
+        .calificaciones-table th,
+        .calificaciones-table td {
+            padding: 10px 12px;
+            font-size: 13px;
         }
         
-        .profile-detail {
-            grid-template-columns: 1fr;
-            gap: 8px;
+        .calificacion-input {
+            width: 80px;
+            padding: 6px 10px;
+            font-size: 13px;
         }
 
-        .cell-content {
-            flex-wrap: wrap;
-        }
-        
-        .expand-arrow {
-            margin-left: 10px;
+        .calificaciones-table td:first-child {
+            width: 150px;
         }
         
         .view-option {
             padding: 8px 40px;
             font-size: 13px;
-        }
-
-        .comentario-header {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 4px;
-        }
-        
-        .comentario-fecha {
-            font-size: 10px;
-        }
-        
-        .comentario-texto {
-            font-size: 12px;
         }
     }
     
@@ -708,19 +844,19 @@
             height: 80vh;
             border-radius: 12px;
         }
-
+        
         .modal-title .materia-principal,
         .modal-title .group-separator,
         .modal-title .group-clave {
             font-size: 16px;
         }
-
+        
         .close-btn {
             width: 32px;
             height: 32px;
             font-size: 20px;
         }
-
+        
         .view-option {
             padding: 8px 20px;
         }
@@ -742,92 +878,6 @@
             min-width: 80px;
         }
     }
-
-    /* Estilos para la sección de comentarios */
-    .profile-comentarios {
-        margin-top: 20px;
-        padding-top: 15px;
-        border-top: 1px solid #eaeaea;
-    }
-
-    .comentarios-title {
-        font-size: 14px;
-        font-weight: 600;
-        color: #333;
-        margin-bottom: 12px;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-
-    .comentarios-title .mdi {
-        color: #666;
-        font-size: 16px;
-    }
-
-    .comentarios-list {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-    }
-
-    .comentario-item {
-        background: #f8f9fa;
-        border-radius: 8px;
-        padding: 12px;
-        border-left: 3px solid #667eea;
-    }
-
-    .comentario-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 6px;
-    }
-
-    .comentario-tipo {
-        font-size: 12px;
-        font-weight: 600;
-        color: #667eea;
-        background: #eef2ff;
-        padding: 2px 8px;
-        border-radius: 12px;
-    }
-
-    .comentario-fecha {
-        font-size: 11px;
-        color: #999;
-    }
-
-    .comentario-texto {
-        font-size: 13px;
-        color: #333;
-        margin-bottom: 8px;
-        line-height: 1.4;
-    }
-
-    .comentario-docente {
-        font-size: 11px;
-        color: #666;
-        display: flex;
-        align-items: center;
-        gap: 4px;
-    }
-
-    .comentario-docente .mdi {
-        font-size: 12px;
-        color: #999;
-    }
-
-    .comentarios-empty {
-        text-align: center;
-        padding: 15px;
-        background: #f8f9fa;
-        border-radius: 8px;
-        color: #999;
-        font-size: 13px;
-        font-style: italic;
-    }
 </style>
 
 <!-- Switch de vista principal -->
@@ -836,19 +886,20 @@
     <button class="view-option" data-view="students">Todos mis Alumnos</button>
 </div>
 
-<!-- Vista de Mis Grupos (visible por defecto) -->
+<!-- Vista de Mis Grupos -->
 <div id="groupsView" class="view-content">
     <div class="groups-grid">
         {% for grupo in grupos %}
         <div class="group-card" 
             data-group-id="{{ grupo.grupo_id }}" 
-            data-materia="{{ grupo.materias.0 }}" 
+            data-materia="{{ grupo.materias.0.nombre }}" 
             data-clave="{{ grupo.clave }}"
-            data-alumnos="{{ grupo.alumnos_json }}">
+            data-alumnos="{{ grupo.alumnos_json }}"
+            data-materias='{{ grupo.materias_json }}'>
             <div class="group-header">
                 <div class="group-header-main">
                     {% if grupo.materias %}
-                        <span class="materia-principal">{{ grupo.materias.0 }}</span>
+                        <span class="materia-principal">{{ grupo.materias.0.nombre }}</span>
                         <span class="group-separator">|</span>
                         <span class="group-clave">{{ grupo.clave }}</span>
                     {% else %}
@@ -896,7 +947,7 @@
     </div>
 </div>
 
-<!-- Vista de Todos los Alumnos (oculta por defecto) -->
+<!-- Vista de Todos los Alumnos -->
 <div id="studentsView" class="view-content" style="display: none;">
     <div class="students-grid">
         <div style="text-align: center; padding: 40px;">
@@ -913,10 +964,10 @@
 <!-- ===== MODAL ===== -->
 <div class="modal-overlay" id="groupModal">
     <div class="modal-container">
-        <!-- Header con título y botón de cerrar -->
+        <!-- Header simplificado -->
         <div class="modal-header">
-            <div class="modal-title">
-                <div class="group-header-main">
+            <div class="modal-title" id="modalTitleContainer">
+                <div class="group-header-main" id="modalTitle">
                     <span class="materia-principal" id="modalMateria">Materia</span>
                     <span class="group-separator">|</span>
                     <span class="group-clave" id="modalClave">Grupo</span>
@@ -925,8 +976,8 @@
             <button class="close-btn" id="closeModal">&times;</button>
         </div>
         
-        <!-- Switch interno con 3 opciones -->
-        <div class="modal-switch-container">
+        <!-- Switch interno -->
+        <div class="modal-switch-container" id="modalSwitchContainer">
             <div class="modal-switch" id="modalSwitch">
                 <button class="modal-switch-option active" data-modal-view="alumnos">Alumnos</button>
                 <button class="modal-switch-option" data-modal-view="calificaciones">Calificaciones</button>
@@ -934,12 +985,11 @@
             </div>
         </div>
         
-        <!-- Contenedor principal del contenido -->
+        <!-- Contenido -->
         <div class="modal-content-wrapper">
-            <!-- Contenido del modal -->
             <div class="modal-content">
-                <!-- Vista de Alumnos -->
-                <div class="modal-view active" id="modalAlumnos">
+                <!-- Lista de Alumnos -->
+                <div class="modal-view active" id="modalListaAlumnos">
                     <div class="alumnos-table-wrapper">
                         <table class="alumnos-table">
                             <thead>
@@ -949,19 +999,52 @@
                                     <th>Estado</th>
                                 </tr>
                             </thead>
-                            <tbody id="modalAlumnosBody">
-                                <!-- Los datos se cargarán aquí dinámicamente -->
-                            </tbody>
+                            <tbody id="modalAlumnosBody"></tbody>
                         </table>
                     </div>
                 </div>
                 
                 <!-- Vista de Calificaciones -->
                 <div class="modal-view" id="modalCalificaciones">
-                    <div class="dev-message-container">
-                        <div class="dev-message">
-                            <h3>Calificaciones</h3>
-                            <p>Esta sección estará disponible próximamente</p>
+                    <div class="calificaciones-container">
+                        <!-- Vista de configuración de parciales (se muestra si no hay parciales) -->
+                        <div id="configuracionParciales" style="display: none;">
+                            <div class="config-header">
+                                <h3 class="config-titulo">Configurar Unidades (Parciales)</h3>
+                                <p class="config-subtitulo">Define las unidades para <span id="materiaNombre"></span></p>
+                            </div>
+                            
+                            <div id="unidades-container">
+                                <!-- Las unidades se agregarán aquí dinámicamente -->
+                            </div>
+                            
+                            <div class="config-actions">
+                                <button class="btn-unidad" onclick="agregarUnidad()">
+                                    <span class="mdi mdi-plus"></span>
+                                    Agregar Unidad
+                                </button>
+                                <button class="btn-guardar-unidades" onclick="guardarUnidades()">
+                                    <span class="mdi mdi-content-save"></span>
+                                    Guardar Configuración
+                                </button>
+                            </div>
+                            
+                            <div class="porcentaje-total" id="porcentajeTotal">
+                                Total: 0%
+                            </div>
+                        </div>
+                        
+                        <!-- Vista de tabla de calificaciones (se muestra si ya hay parciales) -->
+                        <div id="tablaCalificaciones" style="display: none;">
+                            <div class="calificaciones-table-wrapper" id="calificacionesTableWrapper">
+                                <!-- La tabla se generará dinámicamente -->
+                            </div>
+                        </div>
+                        
+                        <!-- Mensaje de carga -->
+                        <div id="cargandoCalificaciones" style="display: none; text-align: center; padding: 40px;">
+                            <span class="mdi mdi-loading mdi-spin" style="font-size: 40px; color: #667eea;"></span>
+                            <p style="margin-top: 10px; color: #666;">Cargando...</p>
                         </div>
                     </div>
                 </div>
@@ -981,332 +1064,1247 @@
 </div>
 
 <script>
-    // Script para manejar el cambio de vista principal
     document.addEventListener('DOMContentLoaded', function() {
+        // Elementos del DOM
         const viewSwitch = document.getElementById('viewSwitch');
         const viewOptions = viewSwitch.querySelectorAll('.view-option');
         const groupsView = document.getElementById('groupsView');
         const studentsView = document.getElementById('studentsView');
         
-        viewOptions.forEach(option => {
-            option.addEventListener('click', function() {
-                // Remover clase active de todos
-                viewOptions.forEach(opt => opt.classList.remove('active'));
-                
-                // Agregar clase active al botón clickeado
-                this.classList.add('active');
-                
-                // Ocultar todas las vistas
-                groupsView.style.display = 'none';
-                studentsView.style.display = 'none';
-                
-                // Mostrar la vista correspondiente
-                const viewType = this.getAttribute('data-view');
-                if (viewType === 'groups') {
-                    groupsView.style.display = 'block';
-                } else if (viewType === 'students') {
-                    studentsView.style.display = 'block';
-                }
-            });
-        });
-        
-        // ===== FUNCIONALIDAD DEL MODAL =====
+        // Elementos del modal
         const modal = document.getElementById('groupModal');
         const closeModalBtn = document.getElementById('closeModal');
         const modalSwitch = document.getElementById('modalSwitch');
         const modalSwitchOptions = modalSwitch.querySelectorAll('.modal-switch-option');
+        const modalSwitchContainer = document.getElementById('modalSwitchContainer');
         const modalViews = document.querySelectorAll('.modal-view');
         const modalMateria = document.getElementById('modalMateria');
         const modalClave = document.getElementById('modalClave');
-        const modalAlumnosTable = document.getElementById('modalAlumnosBody');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalAlumnosBody = document.getElementById('modalAlumnosBody');
+        const modalCalificacionesBody = document.getElementById('modalCalificacionesBody');
         
-        // Función para formatear datos
-        function formatValue(value) {
-            if (value === null || value === undefined || value === 'null') {
-                return 'No asignado';
-            }
-            return value;
-        }
+        window.currentGrupoData = null;
+        let currentGrupoId = null;
+        let currentMateria = null;
+        let currentClave = null;
+        let unidadActual = 1;
+        let parcialesData = [];
+        let materiaActualId = null;
+        let gdmActualId = null;
+        let fechasOcupadas = [];
         
-        // Función para determinar el estado con color
+        // Función para obtener HTML del estado
         function getEstadoHTML(estado) {
             const estadoStr = String(estado || '');
-            
             if (!estadoStr || estadoStr === 'null' || estadoStr === 'No asignado') {
                 return 'No asignado';
             }
-            
             return estadoStr;
         }
         
-        // Abrir modal al hacer click en una tarjeta de grupo
+        // Función para cargar la lista de alumnos
+        function cargarListaAlumnos() {
+            modalAlumnosBody.innerHTML = '';
+            
+            if (window.currentGrupoData && window.currentGrupoData.length > 0) {
+                window.currentGrupoData.forEach(alumno => {
+                    const row = document.createElement('tr');
+                    row.className = 'clickable-row';
+                    
+                    row.innerHTML = `
+                        <td>${alumno.nombre || 'No asignado'}</td>
+                        <td>${alumno.matricula || 'No asignado'}</td>
+                        <td>${getEstadoHTML(alumno.estado)}</td>
+                    `;
+                    
+                    // Evento para abrir perfil en nueva pestaña
+                    row.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const url = `/alumno/${alumno.id}/perfil/`;
+                        window.open(url, '_blank');
+                    });
+                    
+                    modalAlumnosBody.appendChild(row);
+                });
+            } else {
+                modalAlumnosBody.innerHTML = `
+                    <tr>
+                        <td colspan="3" style="text-align: center; padding: 40px; color: #666;">
+                            No hay alumnos registrados en este grupo
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+        
+        // Mostrar lista de alumnos
+        function showAlumnosList() {
+            modalTitle.style.display = 'flex';
+            modalSwitchContainer.style.display = 'block';
+            
+            // Asegurar que la pestaña "Alumnos" esté activa
+            modalSwitchOptions.forEach(opt => {
+                if (opt.getAttribute('data-modal-view') === 'alumnos') {
+                    opt.classList.add('active');
+                } else {
+                    opt.classList.remove('active');
+                }
+            });
+            
+            // Cargar la lista de alumnos
+            cargarListaAlumnos();
+            
+            modalViews.forEach(view => view.classList.remove('active'));
+            document.getElementById('modalListaAlumnos').classList.add('active');
+        }
+
+        // Asegurar que cargarCalificaciones sea global
+        window.cargarCalificaciones = function(grupoId, materiaId, materiaNombre, gdmId, tieneParciales, parcialesConfigurados, parcialesExistentes, calificacionesExistentes = []) {
+            console.log('Cargando calificaciones:', {
+                grupoId, materiaId, materiaNombre, gdmId, tieneParciales, parcialesConfigurados, parcialesExistentes, calificacionesExistentes
+            });
+            
+            // Validar que tenemos los datos necesarios
+            if (!materiaId || !gdmId) {
+                console.error('Faltan datos necesarios para cargar calificaciones');
+                document.getElementById('cargandoCalificaciones').style.display = 'none';
+                const configView = document.getElementById('configuracionParciales');
+                configView.style.display = 'block';
+                configView.innerHTML = `
+                    <div class="config-header">
+                        <h3 class="config-titulo">Error</h3>
+                        <p class="config-subtitulo">No se pudieron cargar los datos de la materia</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            window.materiaActualId = materiaId;
+            window.gdmActualId = gdmId;
+            
+            const configView = document.getElementById('configuracionParciales');
+            const tablaView = document.getElementById('tablaCalificaciones');
+            const cargando = document.getElementById('cargandoCalificaciones');
+            const materiaNombreSpan = document.getElementById('materiaNombre');
+            const unidadesContainer = document.getElementById('unidades-container');
+            
+            materiaNombreSpan.textContent = materiaNombre;
+            
+            // LIMPIAR TODO: Resetear variables y contenedores
+            window.unidadActual = 1;
+            window.parcialesData = [];
+            window.fechasOcupadas = [];
+            
+            // Limpiar el contenedor de unidades
+            if (unidadesContainer) {
+                unidadesContainer.innerHTML = '';
+            }
+            
+            // Ocultar carga
+            cargando.style.display = 'none';
+            
+            if (tieneParciales && parcialesConfigurados) {
+                console.log('Mostrando tabla de calificaciones');
+                configView.style.display = 'none';
+                tablaView.style.display = 'block';
+                
+                // PASAR LOS ALUMNOS Y CALIFICACIONES A LA FUNCIÓN
+                window.generarTablaCalificaciones(parcialesExistentes || [], window.currentGrupoData || [], calificacionesExistentes);
+                
+            } else if (tieneParciales && !parcialesConfigurados) {
+                console.log('Mostrando formulario con parciales existentes');
+                configView.style.display = 'block';
+                tablaView.style.display = 'none';
+                
+                // Cargar los parciales existentes en el formulario
+                window.cargarParcialesExistentes(parcialesExistentes || []);
+                
+            } else {
+                console.log('Mostrando formulario vacío');
+                configView.style.display = 'block';
+                tablaView.style.display = 'none';
+                
+                // Inicializar con una unidad por defecto
+                window.agregarUnidad();
+            }
+        };
+
+        // Hacer global la función cargarParcialesExistentes
+        window.cargarParcialesExistentes = function(parciales) {
+            console.log('Cargando parciales existentes:', parciales);
+            const container = document.getElementById('unidades-container');
+            
+            if (!container) {
+                console.error('No se encontró el contenedor de unidades');
+                return;
+            }
+            
+            // Limpiar el contenedor
+            container.innerHTML = '';
+            
+            // Resetear variables
+            window.parcialesData = [];
+            
+            // Si no hay parciales, salir
+            if (!parciales || parciales.length === 0) {
+                console.log('No hay parciales para cargar');
+                return;
+            }
+            
+            // Ordenar parciales por número
+            const parcialesOrdenados = [...parciales].sort((a, b) => a.numero - b.numero);
+            
+            // Crear una tarjeta por cada parcial existente
+            parcialesOrdenados.forEach((parcial, index) => {
+                const numeroUnidad = index + 1;
+                const unidadId = `unidad-${numeroUnidad}`;
+                
+                const unidadDiv = document.createElement('div');
+                unidadDiv.className = 'unidad-card';
+                unidadDiv.id = unidadId;
+                unidadDiv.dataset.unidad = numeroUnidad;
+                
+                // Formatear fechas si vienen en formato YYYY-MM-DD
+                const fechaInicio = parcial.fecha_inicio || '';
+                const fechaFin = parcial.fecha_fin || '';
+                
+                unidadDiv.innerHTML = `
+                    <div class="unidad-header">
+                        <span class="unidad-titulo">Unidad ${numeroUnidad}</span>
+                        ${index > 0 ? '<button class="btn-eliminar-unidad" onclick="window.eliminarUnidad(this)"><span class="mdi mdi-delete"></span></button>' : ''}
+                    </div>
+                    <div class="unidad-form-grid">
+                        <div class="unidad-form-group">
+                            <label>Nombre de la Unidad</label>
+                            <input type="text" class="unidad-nombre" value="${parcial.nombre || ''}" placeholder="Ej: Introducción" onchange="window.actualizarPorcentajeTotal()" onfocus="window.limpiarError(this)">
+                        </div>
+                        <div class="unidad-form-group">
+                            <label>Porcentaje (%)</label>
+                            <input type="number" class="unidad-porcentaje" value="${parcial.porcentaje || ''}" min="1" max="100" placeholder="0-100" onchange="window.validarPorcentaje(this)" oninput="window.actualizarPorcentajeTotal()" onfocus="window.limpiarError(this)">
+                        </div>
+                        <div class="unidad-form-group">
+                            <label>Fecha de Inicio</label>
+                            <input type="date" class="unidad-fecha-inicio" value="${fechaInicio}" onchange="window.actualizarFechas(); window.actualizarEstadoInputs();" onfocus="window.limpiarError(this)">
+                        </div>
+                        <div class="unidad-form-group">
+                            <label>Fecha de Término</label>
+                            <input type="date" class="unidad-fecha-fin" value="${fechaFin}" onchange="window.actualizarFechas(); window.actualizarEstadoInputs();" onfocus="window.limpiarError(this)">
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(unidadDiv);
+            });
+            
+            // Actualizar el contador global
+            window.unidadActual = parciales.length + 1;
+            
+            // Actualizar validaciones
+            window.actualizarFechas();
+            window.actualizarPorcentajeTotal();
+            window.actualizarEstadoInputs();
+            window.inicializarListenersFechas(); // <-- NUEVO
+        };
+
+        // Función para agregar una nueva unidad
+        window.agregarUnidad = function() {
+            console.log('Agregando unidad...');
+            
+            // Verificar el total actual antes de agregar
+            const porcentajes = document.querySelectorAll('.unidad-porcentaje');
+            let totalActual = 0;
+            porcentajes.forEach(input => {
+                totalActual += parseInt(input.value) || 0;
+            });
+            
+            // Si ya llegó al 100%, no permitir agregar más
+            if (totalActual >= 100) {
+                alert('No puedes agregar más unidades porque ya has alcanzado el 100%.\nModifica los porcentajes de las unidades existentes para agregar más.');
+                return;
+            }
+            
+            const container = document.getElementById('unidades-container');
+            
+            if (!container) {
+                console.error('No se encontró el contenedor de unidades');
+                return;
+            }
+            
+            // Obtener el número correcto basado en las unidades existentes
+            const cardsExistentes = document.querySelectorAll('.unidad-card');
+            const nuevoNumero = cardsExistentes.length + 1;
+            
+            const unidadId = `unidad-${nuevoNumero}`;
+            
+            const unidadDiv = document.createElement('div');
+            unidadDiv.className = 'unidad-card';
+            unidadDiv.id = unidadId;
+            unidadDiv.dataset.unidad = nuevoNumero;
+            
+            unidadDiv.innerHTML = `
+                <div class="unidad-header">
+                    <span class="unidad-titulo">Unidad ${nuevoNumero}</span>
+                    <button class="btn-eliminar-unidad" onclick="window.eliminarUnidad(this)"><span class="mdi mdi-delete"></span></button>
+                </div>
+                <div class="unidad-form-grid">
+                    <div class="unidad-form-group">
+                        <label>Nombre de la Unidad</label>
+                        <input type="text" class="unidad-nombre" placeholder="Ej: Introducción" onchange="window.actualizarPorcentajeTotal()" onfocus="window.limpiarError(this)">
+                    </div>
+                    <div class="unidad-form-group">
+                        <label>Porcentaje (%)</label>
+                        <input type="number" class="unidad-porcentaje" min="1" max="100" placeholder="0-100" onchange="window.validarPorcentaje(this)" oninput="window.actualizarPorcentajeTotal()" onfocus="window.limpiarError(this)">
+                    </div>
+                    <div class="unidad-form-group">
+                        <label>Fecha de Inicio</label>
+                        <input type="date" class="unidad-fecha-inicio" onchange="window.actualizarFechas(); window.actualizarEstadoInputs();" onfocus="window.limpiarError(this)">
+                    </div>
+                    <div class="unidad-form-group">
+                        <label>Fecha de Término</label>
+                        <input type="date" class="unidad-fecha-fin" onchange="window.actualizarFechas(); window.actualizarEstadoInputs();" onfocus="window.limpiarError(this)">
+                    </div>
+                </div>
+            `;
+            
+            container.appendChild(unidadDiv);
+            window.unidadActual = nuevoNumero + 1;
+            window.actualizarFechas();
+            window.actualizarPorcentajeTotal();
+            window.actualizarEstadoInputs();
+            window.inicializarListenersFechas(); // <-- NUEVO
+        };
+
+        // Función para eliminar unidad
+        window.eliminarUnidad = function(btn) {
+            console.log('Eliminando unidad...');
+            const unidadCard = btn.closest('.unidad-card');
+            if (unidadCard) {
+                unidadCard.remove();
+                
+                // Reordenar los números de las unidades restantes
+                const cards = document.querySelectorAll('.unidad-card');
+                cards.forEach((card, index) => {
+                    const nuevoNumero = index + 1;
+                    card.dataset.unidad = nuevoNumero;
+                    
+                    // Actualizar el título
+                    const titulo = card.querySelector('.unidad-titulo');
+                    if (titulo) {
+                        titulo.textContent = `Unidad ${nuevoNumero}`;
+                    }
+                });
+                
+                // Actualizar el contador global
+                window.unidadActual = cards.length + 1;
+                
+                // Actualizar validaciones
+                window.actualizarPorcentajeTotal();
+                window.actualizarFechas();
+                window.actualizarEstadoInputs();
+                
+                // Habilitar botón de agregar si el total es menor a 100
+                const porcentajes = document.querySelectorAll('.unidad-porcentaje');
+                let total = 0;
+                porcentajes.forEach(input => {
+                    total += parseInt(input.value) || 0;
+                });
+                
+                const btnAgregar = document.querySelector('.btn-unidad');
+                if (btnAgregar && total < 100) {
+                    btnAgregar.disabled = false;
+                    btnAgregar.style.opacity = '1';
+                    btnAgregar.style.cursor = 'pointer';
+                }
+            }
+        };
+
+        // Función para validar porcentaje
+        window.validarPorcentaje = function(input) {
+            const valor = parseInt(input.value) || 0;
+            if (valor > 100) {
+                input.value = 100;
+            } else if (valor < 0) {
+                input.value = 0;
+            }
+            window.actualizarPorcentajeTotal();
+        };
+
+        // Función para actualizar porcentaje total
+        window.actualizarPorcentajeTotal = function() {
+            const porcentajes = document.querySelectorAll('.unidad-porcentaje');
+            let total = 0;
+            
+            porcentajes.forEach(input => {
+                total += parseInt(input.value) || 0;
+            });
+            
+            const totalDiv = document.getElementById('porcentajeTotal');
+            const btnAgregar = document.querySelector('.btn-unidad');
+            const btnGuardar = document.querySelector('.btn-guardar-unidades');
+            
+            if (totalDiv) {
+                totalDiv.textContent = `Total: ${total}%`;
+                
+                if (total > 100) {
+                    totalDiv.classList.add('error');
+                    totalDiv.classList.remove('success');
+                    if (btnGuardar) btnGuardar.disabled = true;
+                    // Deshabilitar botón de agregar si se excede
+                    if (btnAgregar) {
+                        btnAgregar.disabled = true;
+                        btnAgregar.style.opacity = '0.5';
+                        btnAgregar.style.cursor = 'not-allowed';
+                    }
+                } else if (total === 100) {
+                    totalDiv.classList.remove('error');
+                    totalDiv.classList.add('success');
+                    if (btnGuardar) btnGuardar.disabled = false;
+                    // Deshabilitar botón de agregar al llegar al 100%
+                    if (btnAgregar) {
+                        btnAgregar.disabled = true;
+                        btnAgregar.style.opacity = '0.5';
+                        btnAgregar.style.cursor = 'not-allowed';
+                    }
+                } else {
+                    totalDiv.classList.remove('error', 'success');
+                    if (btnGuardar) btnGuardar.disabled = true;
+                    // Habilitar botón de agregar si hay espacio
+                    if (btnAgregar) {
+                        btnAgregar.disabled = false;
+                        btnAgregar.style.opacity = '1';
+                        btnAgregar.style.cursor = 'pointer';
+                    }
+                }
+            }
+        };
+
+        // Función para inicializar los listeners de los inputs de fecha
+        window.inicializarListenersFechas = function() {
+            document.querySelectorAll('.unidad-fecha-inicio, .unidad-fecha-fin').forEach(input => {
+                input.addEventListener('input', function() {
+                    // Si el campo se vacía, actualizar restricciones
+                    if (!this.value) {
+                        window.actualizarFechas();
+                        window.actualizarEstadoInputs();
+                    }
+                });
+            });
+        };
+
+        // Función para actualizar fechas (simplificada)
+        window.actualizarFechas = function() {
+            const cards = document.querySelectorAll('.unidad-card');
+            
+            cards.forEach((card, index) => {
+                const fechaInicioInput = card.querySelector('.unidad-fecha-inicio');
+                const fechaFinInput = card.querySelector('.unidad-fecha-fin');
+                
+                // Resetear restricciones básicas
+                fechaInicioInput.removeAttribute('max');
+                fechaInicioInput.removeAttribute('min');
+                fechaFinInput.removeAttribute('max');
+                fechaFinInput.removeAttribute('min');
+                
+                // Aplicar restricciones básicas (el resto lo maneja actualizarEstadoInputs)
+                if (fechaInicioInput.value) {
+                    fechaFinInput.min = fechaInicioInput.value;
+                }
+                
+                if (fechaFinInput.value) {
+                    fechaInicioInput.max = fechaFinInput.value;
+                }
+            });
+        };
+
+        // Función para actualizar el estado de los inputs según el orden secuencial
+        window.actualizarEstadoInputs = function() {
+            const cards = document.querySelectorAll('.unidad-card');
+            
+            // PRIMERO: Aplicar restricciones de atrás hacia adelante (prioridad)
+            for (let i = 0; i < cards.length; i++) {
+                const cardActual = cards[i];
+                const fechaInicioActual = cardActual.querySelector('.unidad-fecha-inicio');
+                const fechaFinActual = cardActual.querySelector('.unidad-fecha-fin');
+                
+                // Si no es la primera unidad, verificar con la anterior
+                if (i > 0) {
+                    const cardAnterior = cards[i - 1];
+                    const fechaFinAnterior = cardAnterior.querySelector('.unidad-fecha-fin')?.value;
+                    
+                    // Si la unidad anterior tiene fecha fin, la actual debe empezar después
+                    if (fechaFinAnterior) {
+                        const fechaMin = new Date(fechaFinAnterior);
+                        fechaMin.setDate(fechaMin.getDate() + 1);
+                        fechaInicioActual.min = fechaMin.toISOString().split('T')[0];
+                        
+                        // Si la fecha inicio actual es menor o igual a la fecha fin anterior, BORRARLA
+                        if (fechaInicioActual.value && new Date(fechaInicioActual.value) <= new Date(fechaFinAnterior)) {
+                            console.log(`Borrando fecha inicio de Unidad ${i+1} porque es anterior a fecha fin de Unidad ${i}`);
+                            fechaInicioActual.value = '';
+                            // También borrar la fecha fin de esta unidad si existe
+                            fechaFinActual.value = '';
+                        }
+                    }
+                }
+                
+                // Restricciones dentro de la misma unidad
+                if (fechaInicioActual.value) {
+                    fechaFinActual.min = fechaInicioActual.value;
+                    
+                    // Si fecha fin es menor que fecha inicio, BORRAR fecha fin
+                    if (fechaFinActual.value && new Date(fechaFinActual.value) < new Date(fechaInicioActual.value)) {
+                        console.log(`Borrando fecha fin de Unidad ${i+1} porque es menor que fecha inicio`);
+                        fechaFinActual.value = '';
+                    }
+                }
+            }
+            
+            // SEGUNDO: Aplicar restricciones hacia adelante (pero con menor prioridad)
+            for (let i = cards.length - 1; i >= 0; i--) {
+                const cardActual = cards[i];
+                const fechaInicioActual = cardActual.querySelector('.unidad-fecha-inicio');
+                const fechaFinActual = cardActual.querySelector('.unidad-fecha-fin');
+                
+                // Si no es la última unidad, verificar con la siguiente
+                if (i < cards.length - 1) {
+                    const cardSiguiente = cards[i + 1];
+                    const fechaInicioSiguiente = cardSiguiente.querySelector('.unidad-fecha-inicio')?.value;
+                    
+                    // Si la unidad siguiente tiene fecha inicio, la actual debe terminar antes
+                    if (fechaInicioSiguiente) {
+                        const fechaMax = new Date(fechaInicioSiguiente);
+                        fechaMax.setDate(fechaMax.getDate() - 1);
+                        fechaFinActual.max = fechaMax.toISOString().split('T')[0];
+                        
+                        // Si la fecha fin actual es mayor o igual a la fecha inicio siguiente, BORRARLA
+                        if (fechaFinActual.value && new Date(fechaFinActual.value) >= new Date(fechaInicioSiguiente)) {
+                            console.log(`Borrando fecha fin de Unidad ${i+1} porque interfiere con Unidad ${i+2}`);
+                            fechaFinActual.value = '';
+                        }
+                    }
+                }
+            }
+            
+            // TERCERO: Actualizar estados de habilitación/deshabilitación y limpiar inputs deshabilitados
+            cards.forEach((card, index) => {
+                const fechaInicioInput = card.querySelector('.unidad-fecha-inicio');
+                const fechaFinInput = card.querySelector('.unidad-fecha-fin');
+                const btnEliminar = card.querySelector('.btn-eliminar-unidad');
+                
+                // Resetear estilos
+                fechaInicioInput.style.backgroundColor = '';
+                fechaInicioInput.style.cursor = '';
+                fechaInicioInput.title = '';
+                fechaFinInput.style.backgroundColor = '';
+                fechaFinInput.style.cursor = '';
+                fechaFinInput.title = '';
+                
+                // Lógica de habilitación
+                if (index === 0) {
+                    // Unidad 1 siempre habilitada para fecha inicio
+                    fechaInicioInput.disabled = false;
+                    
+                    // Fecha fin habilitada solo si hay fecha inicio
+                    if (fechaInicioInput.value) {
+                        fechaFinInput.disabled = false;
+                    } else {
+                        fechaFinInput.disabled = true;
+                        fechaFinInput.style.backgroundColor = '#f5f5f5';
+                        fechaFinInput.style.cursor = 'not-allowed';
+                        fechaFinInput.title = 'Primero define la fecha de inicio';
+                        // BORRAR contenido si está deshabilitado
+                        if (fechaFinInput.value) {
+                            fechaFinInput.value = '';
+                        }
+                    }
+                } else {
+                    // Unidades siguientes dependen de la unidad anterior
+                    const cardAnterior = cards[index - 1];
+                    const fechaInicioAnterior = cardAnterior.querySelector('.unidad-fecha-inicio')?.value;
+                    const fechaFinAnterior = cardAnterior.querySelector('.unidad-fecha-fin')?.value;
+                    
+                    if (fechaInicioAnterior && fechaFinAnterior) {
+                        fechaInicioInput.disabled = false;
+                        
+                        if (fechaInicioInput.value) {
+                            fechaFinInput.disabled = false;
+                        } else {
+                            fechaFinInput.disabled = true;
+                            fechaFinInput.style.backgroundColor = '#f5f5f5';
+                            fechaFinInput.style.cursor = 'not-allowed';
+                            fechaFinInput.title = 'Primero define la fecha de inicio';
+                            // BORRAR contenido si está deshabilitado
+                            if (fechaFinInput.value) {
+                                fechaFinInput.value = '';
+                            }
+                        }
+                    } else {
+                        fechaInicioInput.disabled = true;
+                        fechaInicioInput.style.backgroundColor = '#f5f5f5';
+                        fechaInicioInput.style.cursor = 'not-allowed';
+                        fechaInicioInput.title = 'Primero completa la unidad anterior';
+                        // BORRAR contenido si está deshabilitado
+                        if (fechaInicioInput.value) {
+                            fechaInicioInput.value = '';
+                        }
+                        
+                        fechaFinInput.disabled = true;
+                        fechaFinInput.style.backgroundColor = '#f5f5f5';
+                        fechaFinInput.style.cursor = 'not-allowed';
+                        fechaFinInput.title = 'Primero completa la unidad anterior';
+                        // BORRAR contenido si está deshabilitado
+                        if (fechaFinInput.value) {
+                            fechaFinInput.value = '';
+                        }
+                    }
+                }
+                
+                // Botón eliminar solo para unidades que no sean la primera
+                if (btnEliminar) {
+                    btnEliminar.style.display = index === 0 ? 'none' : 'block';
+                }
+            });
+        };
+
+        window.guardarUnidades = function() {
+            console.log('Guardando unidades...');
+            
+            // VALIDACIÓN: Verificar que todos los campos estén completos
+            const cards = document.querySelectorAll('.unidad-card');
+            let camposIncompletos = false;
+            let primerCampoVacio = null;
+            
+            // Primero, limpiar todos los estilos de error anteriores
+            document.querySelectorAll('.unidad-nombre, .unidad-porcentaje, .unidad-fecha-inicio, .unidad-fecha-fin').forEach(input => {
+                input.style.borderColor = '';
+                input.style.backgroundColor = '';
+            });
+            
+            cards.forEach((card, index) => {
+                const nombre = card.querySelector('.unidad-nombre')?.value.trim();
+                const porcentaje = card.querySelector('.unidad-porcentaje')?.value;
+                const fechaInicio = card.querySelector('.unidad-fecha-inicio')?.value;
+                const fechaFin = card.querySelector('.unidad-fecha-fin')?.value;
+                
+                if (!nombre || !porcentaje || !fechaInicio || !fechaFin) {
+                    camposIncompletos = true;
+                    
+                    // Resaltar los campos vacíos
+                    if (!nombre) {
+                        const input = card.querySelector('.unidad-nombre');
+                        input.style.borderColor = '#dc2626';
+                        input.style.backgroundColor = '#fee2e2';
+                        if (!primerCampoVacio) primerCampoVacio = input;
+                    }
+                    if (!porcentaje) {
+                        const input = card.querySelector('.unidad-porcentaje');
+                        input.style.borderColor = '#dc2626';
+                        input.style.backgroundColor = '#fee2e2';
+                        if (!primerCampoVacio) primerCampoVacio = input;
+                    }
+                    if (!fechaInicio) {
+                        const input = card.querySelector('.unidad-fecha-inicio');
+                        input.style.borderColor = '#dc2626';
+                        input.style.backgroundColor = '#fee2e2';
+                        if (!primerCampoVacio) primerCampoVacio = input;
+                    }
+                    if (!fechaFin) {
+                        const input = card.querySelector('.unidad-fecha-fin');
+                        input.style.borderColor = '#dc2626';
+                        input.style.backgroundColor = '#fee2e2';
+                        if (!primerCampoVacio) primerCampoVacio = input;
+                    }
+                }
+            });
+            
+            if (camposIncompletos) {
+                // Hacer scroll al primer campo vacío
+                if (primerCampoVacio) {
+                    primerCampoVacio.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    primerCampoVacio.focus();
+                }
+                return; // No continuar con el guardado
+            }
+            
+            const unidades = [];
+            
+            cards.forEach((card, index) => {
+                const nombre = card.querySelector('.unidad-nombre')?.value.trim();
+                const porcentaje = card.querySelector('.unidad-porcentaje')?.value;
+                const fechaInicio = card.querySelector('.unidad-fecha-inicio')?.value;
+                const fechaFin = card.querySelector('.unidad-fecha-fin')?.value;
+                
+                // Ya validamos que todos existen, así que podemos agregarlos sin preocupación
+                unidades.push({
+                    numero: index + 1,
+                    nombre: nombre,
+                    porcentaje: parseInt(porcentaje),
+                    fecha_inicio: fechaInicio,
+                    fecha_fin: fechaFin
+                });
+            });
+            
+            // Validar que el total sea 100%
+            const total = unidades.reduce((sum, u) => sum + u.porcentaje, 0);
+            if (total !== 100) {
+                alert('El total de porcentajes debe ser 100%');
+                return;
+            }
+            
+            console.log('Unidades a guardar:', unidades);
+            
+            // Deshabilitar botón y mostrar carga
+            const btnGuardar = document.querySelector('.btn-guardar-unidades');
+            const textoOriginal = btnGuardar.innerHTML;
+            btnGuardar.innerHTML = '<span class="mdi mdi-loading mdi-spin"></span> Guardando...';
+            btnGuardar.disabled = true;
+            
+            // Enviar al servidor
+            fetch('/guardar-parciales/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    gdm_id: window.gdmActualId,
+                    unidades: unidades
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { throw new Error(err.error || 'Error en el servidor'); });
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Respuesta del servidor:', data);
+                
+                if (data.success) {
+                    // Mostrar mensaje de éxito
+                    alert('Unidades guardadas correctamente');
+                    
+                    // ACTUALIZAR LOS DATOS DE LA MATERIA EN window.materiasData
+                    // Buscar la materia que acabamos de configurar
+                    if (window.materiasData && window.materiasData.length > 0) {
+                        const materiaIndex = window.materiasData.findIndex(m => m.id === window.gdmActualId);
+                        if (materiaIndex !== -1) {
+                            // Actualizar los datos de la materia
+                            window.materiasData[materiaIndex].tiene_parciales = true;
+                            window.materiasData[materiaIndex].parciales_configurados = true;
+                            window.materiasData[materiaIndex].parciales = data.parciales;
+                        }
+                    }
+                    
+                    // Recargar la vista de calificaciones con los nuevos parciales
+                    const materiaNombre = document.getElementById('materiaNombre').textContent;
+                    
+                    window.cargarCalificaciones(
+                        null,
+                        window.materiaActualId,
+                        materiaNombre,
+                        window.gdmActualId,
+                        true,  // tieneParciales
+                        true,  // parcialesConfigurados (ahora ya están configurados)
+                        data.parciales
+                    );
+                } else {
+                    alert('Error: ' + (data.error || 'Error desconocido'));
+                    btnGuardar.innerHTML = textoOriginal;
+                    btnGuardar.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al guardar las unidades: ' + error.message);
+                btnGuardar.innerHTML = textoOriginal;
+                btnGuardar.disabled = false;
+            });
+        };
+
+        // Función para limpiar estilos de error al enfocar un campo
+        window.limpiarError = function(input) {
+            input.style.borderColor = '';
+            input.style.backgroundColor = '';
+        };
+
+        // Función para generar la tabla de calificaciones
+        window.generarTablaCalificaciones = function(parciales, alumnos, calificacionesGuardadas = []) {
+            console.log('Generando tabla con parciales:', parciales);
+            console.log('Alumnos:', alumnos);
+            console.log('Calificaciones guardadas:', calificacionesGuardadas);
+            
+            const wrapper = document.getElementById('calificacionesTableWrapper');
+            
+            if (!wrapper) {
+                console.error('No se encontró el wrapper de calificaciones');
+                return;
+            }
+            
+            // Si no hay alumnos, mostrar mensaje
+            if (!alumnos || alumnos.length === 0) {
+                wrapper.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #666;">
+                        <span class="mdi mdi-account-group" style="font-size: 48px; color: #ccc;"></span>
+                        <h3 style="margin-top: 10px;">No hay alumnos en este grupo</h3>
+                        <p>Agrega alumnos para poder registrar calificaciones</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Crear un mapa de calificaciones para acceso rápido
+            const calificacionesMap = {};
+            if (calificacionesGuardadas && calificacionesGuardadas.length > 0) {
+                calificacionesGuardadas.forEach(cal => {
+                    const key = `${cal.alumno_id}-${cal.parcial}`;
+                    calificacionesMap[key] = cal.calificacion;
+                });
+            }
+            
+            // Crear estructura de la tabla
+            let html = '<table class="calificaciones-table">';
+            
+            // PRIMERA FILA: Encabezado con los nombres de las unidades
+            html += '<thead>';
+            html += '<tr class="calificaciones-header-row">';
+            html += '<th></th>'; // Columna de alumnos
+            
+            parciales.forEach(parcial => {
+                html += `<th>Unidad ${parcial.numero}</th>`;
+            });
+            
+            html += '</tr>';
+            
+            // SEGUNDA FILA: Nombres de las unidades con porcentajes
+            html += '<tr class="calificaciones-subheader-row">';
+            html += '<th>Alumnos</th>';
+            
+            parciales.forEach(parcial => {
+                html += `<th>${parcial.nombre} - ${parcial.porcentaje}%</th>`;
+            });
+            
+            html += '</tr>';
+            html += '</thead>';
+            
+            // CUERPO DE LA TABLA: Alumnos
+            html += '<tbody id="calificacionesTableBody">';
+            
+            alumnos.forEach(alumno => {
+                html += '<tr>';
+                
+                // Columna de alumno (nombre + matrícula)
+                html += `<td>
+                    <div class="alumno-info-cell">
+                        <span class="alumno-nombre">${alumno.nombre || 'No asignado'}</span>
+                        <span class="alumno-matricula">${alumno.matricula || 'No asignado'}</span>
+                    </div>
+                </td>`;
+                
+                // Columnas para cada parcial
+                parciales.forEach(parcial => {
+                    const key = `${alumno.id}-${parcial.numero}`;
+                    const calificacionGuardada = calificacionesMap[key] || '';
+                    
+                    html += `<td>
+                        <input type="text" class="calificacion-input" 
+                            value="${calificacionGuardada}"
+                            placeholder="0-100"
+                            data-alumno-id="${alumno.id}"
+                            data-parcial="${parcial.numero}"
+                            data-original-value="${calificacionGuardada}">
+                    </td>`;
+                });
+                
+                html += '</tr>';
+            });
+            
+            html += '</tbody>';
+            html += '</table>';
+            
+            // Agregar botón de guardar al final
+            html += `
+                <div style="display: flex; justify-content: flex-end; margin: 20px 0 20px 0;">
+                    <button class="btn-guardar-calificaciones" onclick="window.guardarCalificaciones()">
+                        <span class="mdi mdi-content-save"></span>
+                        Guardar Calificaciones
+                    </button>
+                </div>
+            `;
+            
+            wrapper.innerHTML = html;
+        };
+
+        // Función para guardar calificaciones
+        window.guardarCalificaciones = function() {
+            console.log('Guardando calificaciones...');
+            
+            // Primero, limpiar todos los estilos de error anteriores
+            document.querySelectorAll('.calificacion-input').forEach(input => {
+                input.classList.remove('error');
+                input.style.borderColor = '';
+                input.style.backgroundColor = '';
+            });
+            
+            // Obtener todos los inputs de calificación
+            const inputs = document.querySelectorAll('.calificacion-input');
+            const calificacionesModificadas = [];
+            let hayErrores = false;
+            let primerError = null;
+            
+            // Validar inputs y recoger solo los modificados
+            inputs.forEach(input => {
+                const valorActual = input.value.trim();
+                const valorOriginal = input.getAttribute('data-original-value') || '';
+                const alumnoId = input.getAttribute('data-alumno-id');
+                const parcialNumero = input.getAttribute('data-parcial');
+                
+                // Validar que no exceda 100 (incluso antes de verificar si cambió)
+                if (valorActual !== '') {
+                    const num = parseFloat(valorActual);
+                    if (isNaN(num)) {
+                        // No es un número válido
+                        input.classList.add('error');
+                        input.style.borderColor = '#dc2626';
+                        input.style.backgroundColor = '#fee2e2';
+                        hayErrores = true;
+                        if (!primerError) primerError = input;
+                    } else if (num < 0) {
+                        // Número negativo
+                        input.classList.add('error');
+                        input.style.borderColor = '#dc2626';
+                        input.style.backgroundColor = '#fee2e2';
+                        hayErrores = true;
+                        if (!primerError) primerError = input;
+                    } else if (num > 100) {
+                        // Excede 100
+                        input.classList.add('error');
+                        input.style.borderColor = '#dc2626';
+                        input.style.backgroundColor = '#fee2e2';
+                        hayErrores = true;
+                        if (!primerError) primerError = input;
+                    }
+                }
+                
+                // Solo guardar si el valor cambió y no hay errores (por ahora)
+                if (valorActual !== valorOriginal && !hayErrores) {
+                    calificacionesModificadas.push({
+                        alumno_id: alumnoId,
+                        parcial: parseInt(parcialNumero),
+                        calificacion: valorActual || null
+                    });
+                }
+            });
+            
+            // Si hay errores, mostrar mensaje y hacer scroll al primero
+            if (hayErrores) {
+                alert('Hay calificaciones inválidas. Por favor verifica:\n- Deben ser números entre 0 y 100\n- No pueden ser negativas\n- No pueden exceder 100');
+                
+                if (primerError) {
+                    primerError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    primerError.focus();
+                }
+                return;
+            }
+            
+            // Si no hay cambios, mostrar mensaje
+            if (calificacionesModificadas.length === 0) {
+                alert('No hay cambios para guardar');
+                return;
+            }
+            
+            console.log('Calificaciones a guardar:', calificacionesModificadas);
+            
+            // Deshabilitar botón y mostrar carga
+            const btnGuardar = document.querySelector('.btn-guardar-calificaciones');
+            const textoOriginal = btnGuardar.innerHTML;
+            btnGuardar.innerHTML = '<span class="mdi mdi-loading mdi-spin"></span> Guardando...';
+            btnGuardar.disabled = true;
+            
+            // Enviar al servidor
+            fetch('/guardar-calificaciones/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    gdm_id: window.gdmActualId,
+                    calificaciones: calificacionesModificadas
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { throw new Error(err.error || 'Error en el servidor'); });
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Respuesta del servidor:', data);
+                
+                if (data.success) {
+                    // Mostrar mensaje de éxito
+                    alert('Calificaciones guardadas correctamente');
+                    
+                    // ACTUALIZAR LOS DATOS EN window.materiasData
+                    if (window.materiasData && window.materiasData.length > 0) {
+                        // Buscar la materia actual
+                        const materiaIndex = window.materiasData.findIndex(m => m.id === window.gdmActualId);
+                        if (materiaIndex !== -1) {
+                            // Crear o actualizar el objeto de calificaciones en la materia
+                            if (!window.materiasData[materiaIndex].calificaciones) {
+                                window.materiasData[materiaIndex].calificaciones = [];
+                            }
+                            
+                            // Actualizar cada calificación modificada
+                            calificacionesModificadas.forEach(cal => {
+                                const calIndex = window.materiasData[materiaIndex].calificaciones.findIndex(
+                                    c => c.alumno_id === cal.alumno_id && c.parcial === cal.parcial
+                                );
+                                
+                                if (calIndex !== -1) {
+                                    // Actualizar existente
+                                    window.materiasData[materiaIndex].calificaciones[calIndex].calificacion = cal.calificacion;
+                                } else {
+                                    // Agregar nueva
+                                    window.materiasData[materiaIndex].calificaciones.push(cal);
+                                }
+                            });
+                        }
+                    }
+                    
+                    // Actualizar los valores originales en los inputs
+                    inputs.forEach(input => {
+                        const valorActual = input.value.trim();
+                        input.setAttribute('data-original-value', valorActual);
+                        input.classList.remove('error');
+                        input.style.borderColor = '';
+                        input.style.backgroundColor = '';
+                    });
+                } else {
+                    alert('Error: ' + (data.error || 'Error desconocido'));
+                }
+                
+                // Restaurar botón
+                btnGuardar.innerHTML = textoOriginal;
+                btnGuardar.disabled = false;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al guardar las calificaciones: ' + error.message);
+                btnGuardar.innerHTML = textoOriginal;
+                btnGuardar.disabled = false;
+            });
+        };
+        
+        // Abrir modal desde tarjeta de grupo
         document.querySelectorAll('.group-card').forEach(card => {
             card.addEventListener('click', function() {
                 const materia = this.getAttribute('data-materia');
                 const clave = this.getAttribute('data-clave');
                 const alumnosJSON = this.getAttribute('data-alumnos');
+                const grupoId = this.getAttribute('data-group-id');
+                const materiasJSON = this.getAttribute('data-materias');
                 
-                // Actualizar título del modal con el mismo formato
-                modalMateria.textContent = materia || 'Sin materia';
-                modalClave.textContent = clave;
+                // Guardar datos del grupo actual
+                currentMateria = materia || 'Sin materia';
+                currentClave = clave;
+                currentGrupoId = grupoId;
                 
-                // Limpiar tabla anterior
-                modalAlumnosTable.innerHTML = '';
-                
-                // Parsear datos JSON de alumnos
-                let alumnosData = [];
+                // Guardar datos de materias en variable global
                 try {
-                    if (alumnosJSON && alumnosJSON !== 'null') {
-                        alumnosData = JSON.parse(alumnosJSON);
-                    }
+                    window.materiasData = materiasJSON ? JSON.parse(materiasJSON) : [];
+                    console.log('Materias cargadas al abrir modal:', window.materiasData);
+                } catch (error) {
+                    console.error('Error parsing materias JSON:', error);
+                    window.materiasData = [];
+                }
+                
+                modalMateria.textContent = currentMateria;
+                modalClave.textContent = currentClave;
+                
+                try {
+                    window.currentGrupoData = (alumnosJSON && alumnosJSON !== 'null') 
+                        ? JSON.parse(alumnosJSON) 
+                        : [];
                 } catch (error) {
                     console.error('Error parsing JSON:', error);
-                    alumnosData = [];
+                    window.currentGrupoData = [];
                 }
                 
-                // Modificar la parte donde se llena la tabla
-                if (alumnosData.length > 0) {
-                    alumnosData.forEach((alumno, index) => {
-                        const row = document.createElement('tr');
-                        row.className = 'expandable-row';
-                        row.setAttribute('data-alumno-index', index);
-                        
-                        // Generar el HTML del estado
-                        const estadoHTML = getEstadoHTML(alumno.estado);
-                        
-                        // Crear la fila con la estructura modificada
-                        row.innerHTML = `
-                            <td>
-                                <div class="cell-content">
-                                    <span>${alumno.nombre || 'No asignado'}</span>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="cell-content">
-                                    <span>${alumno.matricula || 'No asignado'}</span>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="cell-content">
-                                    <span class="status-text">${estadoHTML}</span>
-                                    <span class="expand-arrow">▶</span>
-                                </div>
-                            </td>
-                        `;
-                        
-                        modalAlumnosTable.appendChild(row);
-                        
-                        // Crear y agregar la fila de perfil
-                        const profileRow = createProfileRow(alumno, index);
-                        modalAlumnosTable.appendChild(profileRow);
-                        
-                        // Agregar evento de clic a la fila
-                        row.addEventListener('click', function(e) {
-                            e.stopPropagation(); // Evitar que el clic se propague al modal
-                            
-                            const isExpanded = this.classList.contains('expanded');
-                            const profileRow = document.getElementById(`profile-${index}`);
-                            
-                            // Función para cerrar con animación
-                            function closeWithAnimation(expandedRow, profileRowElement) {
-                                expandedRow.classList.remove('expanded');
-                                profileRowElement.classList.add('removing');
-                                
-                                // Esperar a que termine la animación antes de ocultar
-                                setTimeout(() => {
-                                    profileRowElement.classList.remove('show', 'removing');
-                                }, 200); // 200ms = duración de la animación de salida
-                            }
-                            
-                            // Cerrar todas las demás filas expandidas con animación
-                            document.querySelectorAll('.expandable-row.expanded').forEach(expandedRow => {
-                                if (expandedRow !== this) {
-                                    const expandedIndex = expandedRow.getAttribute('data-alumno-index');
-                                    const otherProfileRow = document.getElementById(`profile-${expandedIndex}`);
-                                    closeWithAnimation(expandedRow, otherProfileRow);
-                                }
-                            });
-                            
-                            // Toggle la fila actual
-                            if (isExpanded) {
-                                // Cerrar la fila actual con animación
-                                closeWithAnimation(this, profileRow);
-                            } else {
-                                // Abrir la fila actual
-                                this.classList.add('expanded');
-                                profileRow.classList.add('show');
-                                // Asegurar que no tenga la clase removing
-                                profileRow.classList.remove('removing');
-                            }
-                        });
-                    });
-                } else {
-                    // Mostrar mensaje si no hay alumnos
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td colspan="3" style="text-align: center; padding: 40px; color: #666;">
-                            No hay alumnos registrados en este grupo
-                        </td>
-                    `;
-                    modalAlumnosTable.appendChild(row);
-                }
+                // Resetear el switch a la pestaña "Alumnos"
+                modalSwitchOptions.forEach(opt => {
+                    if (opt.getAttribute('data-modal-view') === 'alumnos') {
+                        opt.classList.add('active');
+                    } else {
+                        opt.classList.remove('active');
+                    }
+                });
+                
+                // Mostrar lista de alumnos
+                showAlumnosList();
                 
                 // Mostrar modal
                 modal.classList.add('active');
                 document.body.style.overflow = 'hidden';
             });
         });
-
-        // Función para crear el perfil del alumno
-        function createProfileRow(alumno, rowIndex) {
-            const profileRow = document.createElement('tr');
-            profileRow.className = 'profile-row';
-            profileRow.id = `profile-${rowIndex}`;
-            
-            // Determinar clase de estado para el perfil
-            let statusClass = 'status-good';
-            let statusText = 'Estable';
-            
-            if (alumno.estado) {
-                const estadoStr = String(alumno.estado).toLowerCase();
-                if (estadoStr.includes('atención') || estadoStr.includes('atencion')) {
-                    statusClass = 'status-warning';
-                    statusText = 'Requiere atención';
-                } else if (estadoStr.includes('riesgo')) {
-                    statusClass = 'status-danger';
-                    statusText = 'En riesgo';
-                }
-            }
-            
-            // Obtener iniciales para el avatar
-            const iniciales = alumno.nombre
-                .split(' ')
-                .map(n => n[0])
-                .join('')
-                .toUpperCase()
-                .substring(0, 2);
-            
-            // Usar el grupo del alumno (si existe)
-            const grupoAlumno = alumno.grupo || 'Grupo no asignado';
-            
-            // Crear sección de comentarios
-            const comentariosHTML = createComentariosSection(alumno.comentarios || []);
-            
-            profileRow.innerHTML = `
-                <td colspan="3">
-                    <div class="profile-container">
-                        <div class="profile-card">
-                            <div class="profile-avatar">${iniciales}</div>
-                            <div class="profile-info">
-                                <div class="profile-name">${alumno.nombre || 'Nombre no disponible'}</div>
-                                <div class="profile-matricula">
-                                    ${alumno.matricula || 'Matrícula no disponible'}
-                                    <span class="profile-badge">${grupoAlumno}</span>
-                                </div>
-                                <div class="profile-detail">
-                                    <div class="profile-detail-item">
-                                        <div class="detail-label">Promedio General</div>
-                                        <div class="detail-value">--</div>
-                                    </div>
-                                    <div class="profile-detail-item">
-                                        <div class="detail-label">Asistencia</div>
-                                        <div class="detail-value">--</div>
-                                    </div>
-                                    <div class="profile-detail-item">
-                                        <div class="detail-label">Estado</div>
-                                        <div class="detail-value">
-                                            <span class="profile-status ${statusClass}">${statusText}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <!-- Sección de comentarios -->
-                                <div class="profile-comentarios">
-                                    <div class="comentarios-title">
-                                        <span class="mdi mdi-comment"></span>
-                                        Comentarios
-                                    </div>
-                                    ${comentariosHTML}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </td>
-            `;
-            
-            return profileRow;
-        }
         
         // Cerrar modal
-        closeModalBtn.addEventListener('click', function() {
+        closeModalBtn.addEventListener('click', () => {
             modal.classList.remove('active');
             document.body.style.overflow = 'auto';
+            
+            // Limpiar estado al cerrar el modal
+            unidadActual = 1;
+            parcialesData = [];
+            fechasOcupadas = [];
+            document.getElementById('unidades-container').innerHTML = '';
         });
         
-        // Cerrar modal al hacer click fuera del contenido
-        modal.addEventListener('click', function(e) {
+        modal.addEventListener('click', (e) => {
             if (e.target === modal) {
                 modal.classList.remove('active');
                 document.body.style.overflow = 'auto';
             }
         });
         
-        // Cerrar modal con tecla ESC
-        document.addEventListener('keydown', function(e) {
+        document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && modal.classList.contains('active')) {
                 modal.classList.remove('active');
                 document.body.style.overflow = 'auto';
             }
         });
         
-        // Cambiar vista dentro del modal
-        modalSwitchOptions.forEach(option => {
+        // Switch de vista principal
+        viewOptions.forEach(option => {
             option.addEventListener('click', function() {
-                // Remover clase active de todos
-                modalSwitchOptions.forEach(opt => opt.classList.remove('active'));
-                
-                // Agregar clase active al botón clickeado
+                viewOptions.forEach(opt => opt.classList.remove('active'));
                 this.classList.add('active');
                 
-                // Ocultar todas las vistas
-                modalViews.forEach(view => view.classList.remove('active'));
+                groupsView.style.display = 'none';
+                studentsView.style.display = 'none';
                 
-                // Mostrar la vista correspondiente
-                const viewType = this.getAttribute('data-modal-view');
-                document.getElementById(`modal${viewType.charAt(0).toUpperCase() + viewType.slice(1)}`).classList.add('active');
+                const viewType = this.getAttribute('data-view');
+                if (viewType === 'groups') {
+                    groupsView.style.display = 'block';
+                } else {
+                    studentsView.style.display = 'block';
+                }
+            });
+        });
+        
+        // Switch interno del modal
+        modalSwitchOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                // Solo permitir cambio si estamos en la vista de lista
+                if (modalTitle.style.display !== 'none') {
+                    const viewType = this.getAttribute('data-modal-view');
+                    
+                    // Actualizar clases active
+                    modalSwitchOptions.forEach(opt => opt.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Ocultar todas las vistas
+                    modalViews.forEach(view => view.classList.remove('active'));
+                    
+                    // Mostrar la vista correspondiente
+                    if (viewType === 'alumnos') {
+                        cargarListaAlumnos();
+                        document.getElementById('modalListaAlumnos').classList.add('active');
+                    } else if (viewType === 'calificaciones') {
+                        // Verificar si hay materias disponibles
+                        if (window.materiasData && window.materiasData.length > 0) {
+                            // Por ahora, tomamos la primera materia del grupo
+                            const materia = window.materiasData[0];
+                            
+                            console.log('Datos de materia al entrar a calificaciones:', materia);
+                            
+                            // Mostrar indicador de carga
+                            document.getElementById('cargandoCalificaciones').style.display = 'block';
+                            document.getElementById('configuracionParciales').style.display = 'none';
+                            document.getElementById('tablaCalificaciones').style.display = 'none';
+                            
+                            // Primero, obtener las calificaciones del servidor
+                            fetch(`/obtener-calificaciones/?gdm_id=${materia.id}`)
+                                .then(response => response.json())
+                                .then(data => {
+                                    console.log('Calificaciones obtenidas:', data);
+                                    
+                                    let calificacionesExistentes = [];
+                                    if (data.success && data.calificaciones) {
+                                        calificacionesExistentes = data.calificaciones;
+                                        
+                                        // Guardar en window.materiasData para futuras referencias
+                                        if (!window.materiasData[0].calificaciones) {
+                                            window.materiasData[0].calificaciones = calificacionesExistentes;
+                                        }
+                                    }
+                                    
+                                    // Llamar a cargarCalificaciones con los datos de la materia
+                                    window.cargarCalificaciones(
+                                        currentGrupoId,
+                                        materia.id,
+                                        materia.nombre,
+                                        materia.id,
+                                        materia.tiene_parciales || false,
+                                        materia.parciales_configurados || false,
+                                        materia.parciales || [],
+                                        calificacionesExistentes
+                                    );
+                                })
+                                .catch(error => {
+                                    console.error('Error al obtener calificaciones:', error);
+                                    // Si hay error, igual intentamos cargar sin calificaciones
+                                    window.cargarCalificaciones(
+                                        currentGrupoId,
+                                        materia.id,
+                                        materia.nombre,
+                                        materia.id,
+                                        materia.tiene_parciales || false,
+                                        materia.parciales_configurados || false,
+                                        materia.parciales || [],
+                                        []
+                                    );
+                                });
+                        } else {
+                            // Si no hay materias, mostrar mensaje
+                            alert('No hay materias configuradas para este grupo');
+                            
+                            // Ocultar carga y mostrar mensaje en el contenedor
+                            document.getElementById('cargandoCalificaciones').style.display = 'none';
+                            const configView = document.getElementById('configuracionParciales');
+                            configView.style.display = 'block';
+                            configView.innerHTML = `
+                                <div class="config-header">
+                                    <h3 class="config-titulo">Sin materias</h3>
+                                    <p class="config-subtitulo">Este grupo no tiene materias asignadas</p>
+                                </div>
+                            `;
+                        }
+                        document.getElementById('modalCalificaciones').classList.add('active');
+                    } else if (viewType === 'alertas') {
+                        document.getElementById('modalAlertas').classList.add('active');
+                    }
+                }
             });
         });
 
-        // Función para crear la sección de comentarios
-        function createComentariosSection(comentarios) {
-            if (!comentarios || comentarios.length === 0) {
-                return `
-                    <div class="comentarios-empty">
-                        <p>No hay comentarios para este alumno</p>
-                    </div>
-                `;
+        // Función para obtener el token CSRF
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
             }
-            
-            let comentariosHTML = '<div class="comentarios-list">';
-            
-            comentarios.forEach(comentario => {
-                comentariosHTML += `
-                    <div class="comentario-item">
-                        <div class="comentario-header">
-                            <span class="comentario-tipo">${comentario.tipo || 'Sin tipo'}</span>
-                            <span class="comentario-fecha">${comentario.fecha || 'Fecha no disponible'}</span>
-                        </div>
-                        <div class="comentario-texto">${comentario.texto || 'Sin texto'}</div>
-                        <div class="comentario-docente">
-                            <span class="mdi mdi-account"></span>
-                            ${comentario.docente || 'Docente no especificado'}
-                        </div>
-                    </div>
-                `;
-            });
-            
-            comentariosHTML += '</div>';
-            return comentariosHTML;
+            return cookieValue;
         }
     });
 </script>

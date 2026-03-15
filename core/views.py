@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.hashers import check_password
 from django.views.decorators.http import require_POST
@@ -10,6 +10,11 @@ from .forms import *
 from .models import *
 import json
 from .models import Grupo, Actividad, Entrega, Alumno, GrupoDocenteMateria, Parcial
+from django.db.models.functions import Coalesce
+from django.views.decorators.csrf import csrf_exempt
+from django.utils import timezone
+from datetime import datetime
+
 
 
 def home(request):
@@ -100,21 +105,46 @@ def gruposAlumnos(request):
                         'comentarios': comentarios_data,
                     })
                 
+                # Inicializar el grupo con una lista vacía de materias
                 grupos_dict[grupo.clave] = {
                     'clave': grupo.clave,
-                    'materias': [],
+                    'materias': [],  # Lista vacía que se llenará después
                     'num_alumnos': num_alumnos,
                     'grupo_id': grupo.id,
                     'alumnos': alumnos_data,
                     'alumnos_json': json.dumps(alumnos_data, ensure_ascii=False),
                 }
             
-            # Agregar la materia a la lista de materias del grupo
-            if materia.nombre not in grupos_dict[grupo.clave]['materias']:
-                grupos_dict[grupo.clave]['materias'].append(materia.nombre)
+            # Verificar si esta materia ya tiene parciales configurados
+            parciales = Parcial.objects.filter(grupo_docente_materia=gdm).order_by('numero_parcial')
+            tiene_parciales = parciales.exists()
+            
+            # Obtener datos de parciales si existen
+            parciales_data = []
+            if tiene_parciales:
+                for parcial in parciales:
+                    parciales_data.append({
+                        'numero': parcial.numero_parcial,
+                        'nombre': parcial.nombre,
+                        'porcentaje': parcial.porcentaje,
+                        'fecha_inicio': parcial.fecha_inicio.strftime('%Y-%m-%d'),
+                        'fecha_fin': parcial.fecha_cierre.strftime('%Y-%m-%d'),
+                    })
+            
+            # Agregar la materia con su información de parciales
+            grupos_dict[grupo.clave]['materias'].append({
+                'id': gdm.id,
+                'nombre': materia.nombre,
+                'tiene_parciales': tiene_parciales,
+                'parciales_configurados': gdm.parciales_configurados,
+                'parciales': parciales_data,
+            })
         
-        # Convertir el diccionario a lista
-        grupos_data = list(grupos_dict.values())
+        # Convertir el diccionario a lista y agregar materias_json a cada grupo
+        grupos_data = []
+        for clave, grupo_data in grupos_dict.items():
+            grupo_data['materias_json'] = json.dumps(grupo_data['materias'], ensure_ascii=False)
+            grupos_data.append(grupo_data)
         
         context = {
             'grupos': grupos_data,
@@ -126,6 +156,342 @@ def gruposAlumnos(request):
     
     return render(request, "gruposAlumnos.html", context)
 
+@csrf_exempt
+def guardar_parciales(request):
+    """Endpoint para guardar la configuración de parciales"""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            gdm_id = data.get('gdm_id')
+            unidades = data.get('unidades', [])
+            
+            # Validar datos
+            if not gdm_id:
+                return JsonResponse({'error': 'ID de materia no proporcionado'}, status=400)
+            
+            if not unidades:
+                return JsonResponse({'error': 'No se recibieron unidades'}, status=400)
+            
+            # Obtener la relación GrupoDocenteMateria
+            gdm = GrupoDocenteMateria.objects.get(id=gdm_id)
+            
+            # Validar que el docente sea el mismo que está en sesión
+            docente_id = request.session.get('usuario_id')
+            if gdm.docente.id != docente_id:
+                return JsonResponse({'error': 'No tienes permiso para modificar esta materia'}, status=403)
+            
+            # Validar que el total de porcentajes sea 100
+            total_porcentaje = sum(u['porcentaje'] for u in unidades)
+            if total_porcentaje != 100:
+                return JsonResponse({'error': 'El total de porcentajes debe ser 100%'}, status=400)
+            
+            # Validar fechas consecutivas
+            fechas_validas = validar_fechas_consecutivas(unidades)
+            if not fechas_validas:
+                return JsonResponse({'error': 'Las fechas no son consecutivas correctamente'}, status=400)
+            
+            # Eliminar parciales existentes
+            Parcial.objects.filter(grupo_docente_materia=gdm).delete()
+            
+            # Crear los nuevos parciales
+            parciales_creados = []
+            for unidad in unidades:
+                parcial = Parcial.objects.create(
+                    numero_parcial=unidad['numero'],
+                    nombre=unidad['nombre'],
+                    porcentaje=unidad['porcentaje'],
+                    grupo_docente_materia=gdm,
+                    fecha_inicio=datetime.strptime(unidad['fecha_inicio'], '%Y-%m-%d').date(),
+                    fecha_cierre=datetime.strptime(unidad['fecha_fin'], '%Y-%m-%d').date(),
+                    cerrado=False
+                )
+                parciales_creados.append({
+                    'numero': parcial.numero_parcial,
+                    'nombre': parcial.nombre,
+                    'porcentaje': parcial.porcentaje,
+                    'fecha_inicio': parcial.fecha_inicio.strftime('%Y-%m-%d'),
+                    'fecha_fin': parcial.fecha_cierre.strftime('%Y-%m-%d'),
+                })
+            
+            # Marcar como configurado
+            gdm.parciales_configurados = True
+            gdm.save()
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Parciales guardados correctamente',
+                'parciales': parciales_creados
+            })
+            
+        except GrupoDocenteMateria.DoesNotExist:
+            return JsonResponse({'error': 'Materia no encontrada'}, status=404)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    
+    return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+def validar_fechas_consecutivas(unidades):
+    """Valida que las fechas sean consecutivas independientemente del orden"""
+    if len(unidades) <= 1:
+        return True
+    
+    # Ordenar por fecha de inicio
+    unidades_ordenadas = sorted(unidades, key=lambda x: x['fecha_inicio'])
+    
+    # Verificar que los números de parcial correspondan al orden de fechas
+    for i in range(len(unidades_ordenadas) - 1):
+        fecha_fin_actual = datetime.strptime(unidades_ordenadas[i]['fecha_fin'], '%Y-%m-%d').date()
+        fecha_inicio_siguiente = datetime.strptime(unidades_ordenadas[i + 1]['fecha_inicio'], '%Y-%m-%d').date()
+        
+        # La fecha de inicio siguiente debe ser al menos 1 día después de la fecha fin actual
+        if fecha_inicio_siguiente <= fecha_fin_actual:
+            return False
+    
+    return True
+
+@csrf_exempt
+def guardar_calificaciones(request):
+    """Endpoint para guardar las calificaciones de los alumnos por parcial"""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            gdm_id = data.get('gdm_id')
+            calificaciones = data.get('calificaciones', [])
+            
+            # Validar datos
+            if not gdm_id:
+                return JsonResponse({'error': 'ID de materia no proporcionado'}, status=400)
+            
+            if not calificaciones:
+                return JsonResponse({'error': 'No se recibieron calificaciones'}, status=400)
+            
+            # Obtener la relación GrupoDocenteMateria
+            gdm = GrupoDocenteMateria.objects.get(id=gdm_id)
+            
+            # Validar que el docente sea el mismo que está en sesión
+            docente_id = request.session.get('usuario_id')
+            if gdm.docente.id != docente_id:
+                return JsonResponse({'error': 'No tienes permiso para modificar esta materia'}, status=403)
+            
+            # Obtener todos los parciales de esta materia
+            parciales = Parcial.objects.filter(grupo_docente_materia=gdm)
+            parciales_dict = {p.numero_parcial: p for p in parciales}
+            
+            calificaciones_guardadas = 0
+            
+            for item in calificaciones:
+                alumno_id = item.get('alumno_id')
+                parcial_numero = item.get('parcial')
+                calificacion_valor = item.get('calificacion')
+                
+                # Validar que el alumno existe
+                try:
+                    alumno = Alumno.objects.get(id=alumno_id)
+                except Alumno.DoesNotExist:
+                    continue
+                
+                # Validar que el parcial existe
+                if parcial_numero not in parciales_dict:
+                    continue
+                
+                parcial = parciales_dict[parcial_numero]
+                
+                # Validar que la calificación es un número válido
+                if calificacion_valor is not None and calificacion_valor.strip() != '':
+                    try:
+                        calif_float = float(calificacion_valor)
+                        # Validar rango 0-100
+                        if calif_float < 0 or calif_float > 100:
+                            continue
+                    except ValueError:
+                        continue
+                else:
+                    calif_float = None
+                
+                # Crear o actualizar la calificación
+                CalificacionParcial.objects.update_or_create(
+                    alumno=alumno,
+                    parcial=parcial,
+                    defaults={
+                        'calificacion': calif_float,
+                        'comentario': ''  # Por ahora vacío, se puede implementar después
+                    }
+                )
+                
+                calificaciones_guardadas += 1
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'Calificaciones guardadas correctamente ({calificaciones_guardadas} actualizadas)',
+                'guardadas': calificaciones_guardadas
+            })
+            
+        except GrupoDocenteMateria.DoesNotExist:
+            return JsonResponse({'error': 'Materia no encontrada'}, status=404)
+        except Exception as e:
+            print(f"Error guardando calificaciones: {str(e)}")
+            return JsonResponse({'error': str(e)}, status=500)
+    
+    return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+def obtener_calificaciones(request):
+    """Endpoint para obtener las calificaciones de una materia"""
+    if request.method == 'GET':
+        gdm_id = request.GET.get('gdm_id')
+        
+        if not gdm_id:
+            return JsonResponse({'error': 'ID de materia no proporcionado'}, status=400)
+        
+        try:
+            # Obtener la relación GrupoDocenteMateria
+            gdm = GrupoDocenteMateria.objects.get(id=gdm_id)
+            
+            # Validar que el docente sea el mismo que está en sesión
+            docente_id = request.session.get('usuario_id')
+            if gdm.docente.id != docente_id:
+                return JsonResponse({'error': 'No tienes permiso para ver esta materia'}, status=403)
+            
+            # Obtener todas las calificaciones de esta materia
+            calificaciones = CalificacionParcial.objects.filter(
+                parcial__grupo_docente_materia=gdm
+            ).select_related('alumno', 'parcial')
+            
+            calificaciones_data = []
+            for cal in calificaciones:
+                calificaciones_data.append({
+                    'alumno_id': cal.alumno.id,
+                    'parcial': cal.parcial.numero_parcial,
+                    'calificacion': cal.calificacion
+                })
+            
+            return JsonResponse({
+                'success': True,
+                'calificaciones': calificaciones_data
+            })
+            
+        except GrupoDocenteMateria.DoesNotExist:
+            return JsonResponse({'error': 'Materia no encontrada'}, status=404)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    
+    return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+def perfil_alumno(request, alumno_id):
+    # Verificar si el usuario está autenticado
+    if not request.session.get('usuario_id'):
+        return redirect('login')
+    
+    # Obtener el alumno
+    alumno = get_object_or_404(Alumno, id=alumno_id)
+    
+    # Obtener el docente actual
+    docente_id = request.session.get('usuario_id')
+    docente = get_object_or_404(Usuario, id=docente_id)
+    
+    # Obtener comentarios del alumno
+    comentarios = Comentario.objects.filter(
+        alumno=alumno
+    ).select_related('docente').order_by('-fecha')
+    
+    # Obtener las materias que este docente imparte en el grupo del alumno
+    materias_docente = GrupoDocenteMateria.objects.filter(
+        grupo=alumno.grupo,
+        docente=docente
+    ).select_related('materia')
+    
+    # Obtener las actividades relacionadas con estas materias
+    actividades_data = []
+    for gdm in materias_docente:
+        # Obtener los parciales de esta materia
+        parciales = Parcial.objects.filter(
+            grupo_docente_materia=gdm,
+            cerrado=False
+        )
+        
+        for parcial in parciales:
+            # Obtener actividades de este parcial
+            actividades = Actividad.objects.filter(
+                parcial=parcial
+            ).order_by('fecha_entrega')
+            
+            for actividad in actividades:
+                # Verificar si el alumno entregó esta actividad
+                entrega = Entrega.objects.filter(
+                    actividad=actividad,
+                    alumno=alumno
+                ).first()
+                
+                # Determinar estado de entrega
+                if entrega:
+                    estado_entrega = "Entregado" if entrega.entregado else "Pendiente"
+                    calificacion = entrega.calificacion if entrega.calificacion else None
+                else:
+                    estado_entrega = "No asignado"
+                    calificacion = None
+                
+                actividades_data.append({
+                    'id': actividad.id,
+                    'nombre': actividad.titulo,
+                    'materia': gdm.materia.nombre,
+                    'fecha_entrega': actividad.fecha_entrega.strftime('%d/%m/%Y'),
+                    'estado': estado_entrega,
+                    'calificacion': calificacion,
+                    'entregado': entrega.entregado if entrega else False,
+                })
+    
+    # Obtener historial de asistencia del alumno
+    asistencias = Asistencia.objects.filter(
+        alumno=alumno,
+        grupo_docente_materia__docente=docente  # Solo asistencias registradas por este docente
+    ).select_related('grupo_docente_materia__materia', 'estado').order_by('-fecha')
+    
+    # Procesar datos de asistencia
+    asistencia_data = []
+    total_asistencias = 0
+    total_retardos = 0
+    total_faltas = 0
+    
+    for asistencia in asistencias:
+        materia_nombre = asistencia.grupo_docente_materia.materia.nombre
+        estado_nombre = asistencia.estado.nombre
+        
+        # Contar para estadísticas
+        if estado_nombre == 'Asistió':
+            total_asistencias += 1
+        elif estado_nombre == 'Retardo':
+            total_retardos += 1
+        elif estado_nombre == 'No asistió':
+            total_faltas += 1
+        
+        asistencia_data.append({
+            'fecha': asistencia.fecha.strftime('%d/%m/%Y'),
+            'materia': materia_nombre,
+            'estado': estado_nombre,
+            'comentario': asistencia.comentario,
+        })
+    
+    # Calcular porcentaje de asistencia (considerando retardos como 0.5)
+    total_clases = len(asistencia_data)
+    if total_clases > 0:
+        porcentaje_asistencia = int(((total_asistencias + total_retardos * 0.5) / total_clases) * 100)
+    else:
+        porcentaje_asistencia = 0
+    
+    context = {
+        'alumno': alumno,
+        'comentarios': comentarios,
+        'actividades': actividades_data,
+        'asistencia_historial': asistencia_data,
+        'estadisticas_asistencia': {
+            'asistencias': total_asistencias,
+            'retardos': total_retardos,
+            'faltas': total_faltas,
+            'total_clases': total_clases,
+            'porcentaje': porcentaje_asistencia,
+        }
+    }
+    
+    return render(request, "perfilAlumno.html", context)
 
 def actividades(request):
 
