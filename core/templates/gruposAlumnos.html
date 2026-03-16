@@ -1046,6 +1046,116 @@
             min-width: 80px;
         }
     }
+
+    .alertas-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+ 
+.alertas-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 0 16px 0;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+ 
+.alertas-summary {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+ 
+.badge-riesgo {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+ 
+.badge-alto  { background: #fee2e2; color: #b91c1c; }
+.badge-medio { background: #fef3c7; color: #92400e; }
+.badge-bajo  { background: #dbeafe; color: #1e40af; }
+ 
+.alertas-list-wrapper {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+}
+ 
+.alerta-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 16px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    border-left: 4px solid;
+    transition: box-shadow 0.2s, opacity 0.3s, transform 0.3s;
+}
+ 
+.alerta-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+ 
+.alerta-card.alto  { background: #fff5f5; border-color: #ef4444; }
+.alerta-card.medio { background: #fffbeb; border-color: #f59e0b; }
+.alerta-card.bajo  { background: #eff6ff; border-color: #3b82f6; }
+ 
+.alerta-icono { font-size: 22px; margin-top: 2px; flex-shrink: 0; }
+.alerta-card.alto  .alerta-icono { color: #ef4444; }
+.alerta-card.medio .alerta-icono { color: #f59e0b; }
+.alerta-card.bajo  .alerta-icono { color: #3b82f6; }
+ 
+.alerta-body { flex: 1; min-width: 0; }
+ 
+.alerta-alumno    { font-weight: 600; font-size: 14px; color: #111; margin-bottom: 3px; }
+.alerta-matricula { font-size: 12px; color: #888; margin-bottom: 6px; }
+ 
+.alerta-motivos { list-style: none; padding: 0; margin: 0; }
+.alerta-motivos li {
+    font-size: 13px; color: #444; padding: 3px 0 3px 16px;
+    position: relative; line-height: 1.5;
+}
+.alerta-motivos li::before { content: "•"; position: absolute; left: 0; color: #999; }
+ 
+.alerta-footer {
+    display: flex; align-items: center;
+    justify-content: space-between;
+    margin-top: 10px; flex-wrap: wrap; gap: 6px;
+}
+ 
+.alerta-fecha { font-size: 11px; color: #aaa; }
+ 
+.btn-atender {
+    background: white; border: 1px solid #d1d5db;
+    border-radius: 6px; padding: 4px 12px;
+    font-size: 12px; font-weight: 500; color: #374151;
+    cursor: pointer; transition: all 0.2s;
+    display: inline-flex; align-items: center; gap: 5px;
+}
+.btn-atender:hover    { background: #f9fafb; border-color: #9ca3af; }
+.btn-atender:disabled { opacity: 0.5; cursor: not-allowed; }
+ 
+.alertas-empty {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 60px 20px; color: #9ca3af;
+    text-align: center; gap: 10px;
+}
+.alertas-empty .mdi  { font-size: 48px; color: #bbf7d0; }
+.alertas-empty h4    { font-size: 16px; color: #374151; margin: 0; }
+.alertas-empty p     { font-size: 13px; color: #9ca3af; margin: 0; }
+ 
+.alertas-loading {
+    display: flex; align-items: center; justify-content: center;
+    padding: 60px; flex-direction: column; gap: 12px; color: #667eea;
+}
 </style>
 
 <!-- Switch de vista principal -->
@@ -1227,11 +1337,31 @@
                 
                 <!-- Vista de Alertas -->
                 <div class="modal-view" id="modalAlertas">
-                    <div class="dev-message-container">
-                        <div class="dev-message">
-                            <h3>Alertas</h3>
-                            <p>Esta sección estará disponible próximamente</p>
+                    <div class="alertas-container">
+                
+                        <!-- Toolbar: badges resumen -->
+                        <div class="alertas-toolbar" id="alertasToolbar" style="display:none;">
+                            <div class="alertas-summary" id="alertasSummary"></div>
                         </div>
+                
+                        <!-- Loading -->
+                        <div class="alertas-loading" id="alertasLoading" style="display:none;">
+                            <span class="mdi mdi-loading mdi-spin" style="font-size:36px;"></span>
+                            <span style="font-size:14px;color:#666;">Cargando alertas…</span>
+                        </div>
+                
+                        <!-- Lista de alertas -->
+                        <div class="alertas-list-wrapper" id="alertasListWrapper" style="display:none;">
+                            <div id="alertasList"></div>
+                        </div>
+                
+                        <!-- Sin alertas -->
+                        <div class="alertas-empty" id="alertasEmpty" style="display:none;">
+                            <span class="mdi mdi-check-circle-outline"></span>
+                            <h4>Sin alertas activas</h4>
+                            <p>Todos los alumnos de este grupo están al día</p>
+                        </div>
+                
                     </div>
                 </div>
             </div>
@@ -2722,6 +2852,12 @@
                         document.getElementById('modalCalificaciones').classList.add('active');
                     } else if (viewType === 'alertas') {
                         document.getElementById('modalAlertas').classList.add('active');
+ 
+                        if (window.materiasData && window.materiasData.length > 0) {
+                            window.cargarAlertas(window.materiasData[0].id);
+                        } else {
+                            document.getElementById('alertasEmpty').style.display = 'flex';
+                        }
                     }
                 }
             });
@@ -2743,6 +2879,135 @@
             return cookieValue;
         }
     });
+
+    // ── Cargar alertas del grupo ──────────────────────────────────
+        window.cargarAlertas = function(gdmId) {
+            const toolbar     = document.getElementById('alertasToolbar');
+            const loading     = document.getElementById('alertasLoading');
+            const listWrapper = document.getElementById('alertasListWrapper');
+            const lista       = document.getElementById('alertasList');
+            const empty       = document.getElementById('alertasEmpty');
+            const summary     = document.getElementById('alertasSummary');
+ 
+            // Reset
+            toolbar.style.display     = 'none';
+            loading.style.display     = 'flex';
+            listWrapper.style.display = 'none';
+            empty.style.display       = 'none';
+            lista.innerHTML           = '';
+            summary.innerHTML         = '';
+ 
+            fetch(`/obtener-alertas-grupo/?gdm_id=${gdmId}`)
+                .then(r => r.json())
+                .then(data => {
+                    loading.style.display = 'none';
+ 
+                    if (!data.success || !data.alertas || data.alertas.length === 0) {
+                        empty.style.display = 'flex';
+                        return;
+                    }
+ 
+                    const alertas = data.alertas;
+ 
+                    // Conteo por nivel para badges
+                    const conteo = { Alto: 0, Medio: 0, Bajo: 0 };
+                    alertas.forEach(a => {
+                        if (conteo[a.nivel_riesgo] !== undefined) conteo[a.nivel_riesgo]++;
+                    });
+ 
+                    let badgesHtml = '';
+                    if (conteo.Alto  > 0) badgesHtml += `<span class="badge-riesgo badge-alto"><span class="mdi mdi-alert-circle"></span>${conteo.Alto} Alto</span>`;
+                    if (conteo.Medio > 0) badgesHtml += `<span class="badge-riesgo badge-medio"><span class="mdi mdi-alert"></span>${conteo.Medio} Medio</span>`;
+                    if (conteo.Bajo  > 0) badgesHtml += `<span class="badge-riesgo badge-bajo"><span class="mdi mdi-information"></span>${conteo.Bajo} Bajo</span>`;
+                    summary.innerHTML     = badgesHtml;
+                    toolbar.style.display = 'flex';
+ 
+                    // Tarjetas
+                    alertas.forEach(alerta => {
+                        const nivel  = alerta.nivel_riesgo.toLowerCase();
+                        const icono  = nivel === 'alto'
+                            ? 'mdi-alert-circle'
+                            : nivel === 'medio'
+                                ? 'mdi-alert'
+                                : 'mdi-information-outline';
+ 
+                        const motivos    = alerta.motivo.split(' | ').filter(m => m.trim());
+                        const motivosHtml = motivos.map(m => `<li>${m}</li>`).join('');
+ 
+                        const card = document.createElement('div');
+                        card.className = `alerta-card ${nivel}`;
+                        card.id        = `alerta-card-${alerta.alerta_id}`;
+                        card.innerHTML = `
+                            <span class="alerta-icono mdi ${icono}"></span>
+                            <div class="alerta-body">
+                                <div class="alerta-alumno">${alerta.alumno_nombre}</div>
+                                <div class="alerta-matricula">${alerta.alumno_matricula}</div>
+                                <ul class="alerta-motivos">${motivosHtml}</ul>
+                                <div class="alerta-footer">
+                                    <span class="alerta-fecha">
+                                        <span class="mdi mdi-calendar-outline"></span> ${alerta.fecha}
+                                    </span>
+                                    <button class="btn-atender"
+                                            onclick="window.atenderAlerta(${alerta.alerta_id}, this)">
+                                        <span class="mdi mdi-check"></span> Atender
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                        lista.appendChild(card);
+                    });
+ 
+                    listWrapper.style.display = 'block';
+                })
+                .catch(err => {
+                    loading.style.display = 'none';
+                    empty.style.display   = 'flex';
+                    console.error('Error cargando alertas:', err);
+                });
+        };
+ 
+        // ── Marcar alerta como atendida ──────────────────────────────
+        window.atenderAlerta = function(alertaId, btn) {
+            btn.disabled  = true;
+            btn.innerHTML = '<span class="mdi mdi-loading mdi-spin"></span> Atendiendo…';
+ 
+            fetch('/marcar-alerta-atendida/', {
+                method:  'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ alerta_id: alertaId })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    const card = document.getElementById(`alerta-card-${alertaId}`);
+                    if (card) {
+                        card.style.opacity   = '0';
+                        card.style.transform = 'translateX(20px)';
+                        setTimeout(() => {
+                            card.remove();
+                            // Si ya no hay tarjetas → empty state
+                            if (document.getElementById('alertasList').children.length === 0) {
+                                document.getElementById('alertasListWrapper').style.display = 'none';
+                                document.getElementById('alertasToolbar').style.display     = 'none';
+                                document.getElementById('alertasEmpty').style.display       = 'flex';
+                            }
+                        }, 300);
+                    }
+                } else {
+                    btn.disabled  = false;
+                    btn.innerHTML = '<span class="mdi mdi-check"></span> Atender';
+                    window.mostrarSnackbar('Error al atender la alerta', 'error');
+                }
+            })
+            .catch(() => {
+                btn.disabled  = false;
+                btn.innerHTML = '<span class="mdi mdi-check"></span> Atender';
+                window.mostrarSnackbar('Error de conexión', 'error');
+            });
+        };
 </script>
 
 {% endblock %}
