@@ -6,9 +6,10 @@
  
 <div class="header-actions">
     <div class="view-switch" id="viewSwitch">
-        <button class="view-option active" data-view="groups">Grupos</button>
-        <button class="view-option" data-view="students">Histórico</button>
-    </div>
+    <button class="view-option active" data-view="groups">Grupos</button>
+    <button class="view-option" data-view="students">Histórico</button>
+    <button class="view-option" data-view="docentes">Docentes</button>
+</div>
 
     <div class="actions-dropdown">
 
@@ -333,6 +334,120 @@
     </div>
 </div>
 
+<!-- Vista: Docentes -->
+<div id="docentesView" class="view-content" style="display: none;">
+
+    <div class="docentes-header">
+        <div class="groups-search" style="margin-bottom: 0;">
+            <span class="mdi mdi-magnify search-icon"></span>
+            <input type="text" id="searchDocentes" placeholder="Buscar docente o correo...">
+        </div>
+        <p class="docentes-count">
+            <span id="totalDocentes">{{ docentes_data|length }}</span> docentes registrados
+        </p>
+    </div>
+
+    <div class="tabla-docentes-wrapper">
+        <table class="tabla-docentes">
+            <thead>
+                <tr>
+                    <th>Docente</th>
+                    <th>Correo</th>
+                    <th>Materias asignadas</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="tablaDocentesBody">
+                {% for docente in docentes_data %}
+                <tr class="docente-row">
+                    <td>
+                        <div class="docente-nombre">
+                            <div class="docente-avatar">
+                                {{ docente.nombre|slice:":1" }}
+                            </div>
+                            <div>
+                                <div>{{ docente.nombre }}</div>
+                                <div style="font-size:12px; font-weight:400; color:#9ca3af;">
+                                    {{ docente.total_grupos }} grupo{{ docente.total_grupos|pluralize }}
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="docente-correo">{{ docente.correo }}</td>
+                    <td>
+                        {% if docente.materias_grupos %}
+                            <div class="materias-tags">
+                                {% for mg in docente.materias_grupos %}
+                                    <span class="materia-tag">{{ mg }}</span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <span style="color:#d1d5db; font-size:13px;">Sin asignaciones</span>
+                        {% endif %}
+                    </td>
+                    <td style="text-align:right;">
+                        <button class="btn-editar-docente"
+                            data-id="{{ docente.id }}"
+                            data-nombre="{{ docente.nombre }}"
+                            data-correo="{{ docente.correo }}">
+                            <span class="mdi mdi-pencil-outline"></span>
+                            Editar
+                        </button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" style="text-align:center; color:#9ca3af; padding: 50px 0;">
+                        <span class="mdi mdi-account-off" style="font-size:32px; display:block; margin-bottom:8px;"></span>
+                        No hay docentes registrados
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal Editar Docente -->
+<div class="modal" id="modalEditarDocente">
+    <div class="modal-content">
+        <form method="POST" id="formEditarDocente" action="">
+            {% csrf_token %}
+
+            <div class="modal-header">
+                <h3>Editar Docente</h3>
+                <span class="modal-close" id="closeModalEditarDocente">&times;</span>
+            </div>
+
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Nombre completo</label>
+                    <input type="text" name="nombre" id="editNombre" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Correo electrónico</label>
+                    <input type="email" name="correo" id="editCorreo" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Nueva contraseña <span style="color:#9ca3af; font-weight:400;">(dejar vacío para no cambiar)</span></label>
+                    <input type="password" name="password" id="editPassword" placeholder="••••••••">
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" id="cancelarModalEditarDocente">
+                    Cancelar
+                </button>
+                <button type="submit" class="btn-primary">
+                    Guardar cambios
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
@@ -374,17 +489,54 @@ document.addEventListener("DOMContentLoaded", () => {
     const groupsView = document.getElementById('groupsView');
     const studentsView = document.getElementById('studentsView');
 
+    // ===== VIEW SWITCH =====
     viewOptions.forEach(option => {
         option.addEventListener('click', function() {
             viewOptions.forEach(opt => opt.classList.remove('active'));
             this.classList.add('active');
             groupsView.style.display = 'none';
             studentsView.style.display = 'none';
+            document.getElementById('docentesView').style.display = 'none';
+
             if (this.dataset.view === 'groups') {
                 groupsView.style.display = 'block';
-            } else {
+            } else if (this.dataset.view === 'students') {
                 studentsView.style.display = 'block';
+            } else if (this.dataset.view === 'docentes') {
+                document.getElementById('docentesView').style.display = 'block';
             }
+        });
+    });
+
+    // ===== MODAL EDITAR DOCENTE =====
+    const modalEditarDocente = document.getElementById('modalEditarDocente');
+    const formEditarDocente = document.getElementById('formEditarDocente');
+
+    document.querySelectorAll('.btn-editar-docente').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.getElementById('editNombre').value = this.dataset.nombre;
+            document.getElementById('editCorreo').value = this.dataset.correo;
+            document.getElementById('editPassword').value = '';
+            formEditarDocente.action = `/director/editar-docente/${this.dataset.id}/`;
+            modalEditarDocente.style.display = 'flex';
+        });
+    });
+
+    document.getElementById('closeModalEditarDocente').addEventListener('click', () => {
+        modalEditarDocente.style.display = 'none';
+    });
+    document.getElementById('cancelarModalEditarDocente').addEventListener('click', () => {
+        modalEditarDocente.style.display = 'none';
+    });
+    modalEditarDocente.addEventListener('click', (e) => {
+        if (e.target === modalEditarDocente) modalEditarDocente.style.display = 'none';
+    });
+
+    // ===== BUSCADOR DOCENTES =====
+    document.getElementById('searchDocentes').addEventListener('keyup', function() {
+        const filter = this.value.toLowerCase();
+        document.querySelectorAll('.docente-row').forEach(row => {
+            row.style.display = row.textContent.toLowerCase().includes(filter) ? '' : 'none';
         });
     });
 
@@ -924,6 +1076,141 @@ function cerrarModalMateria() { modalMateria.style.display = "none"; }
     .group-clave {
         margin-bottom: 2px;
     }
+}
+/* ===== TABLA DOCENTES ===== */
+.tabla-docentes-wrapper {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid #e8eaf0;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+.tabla-docentes {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.tabla-docentes thead {
+    background: #f8f9fb;
+    border-bottom: 1px solid #e8eaf0;
+}
+
+.tabla-docentes th {
+    padding: 14px 20px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.tabla-docentes td {
+    padding: 16px 20px;
+    border-bottom: 1px solid #f3f4f6;
+    color: #374151;
+    vertical-align: middle;
+}
+
+.tabla-docentes tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.tabla-docentes tbody tr {
+    transition: background 0.15s ease;
+}
+
+.tabla-docentes tbody tr:hover {
+    background: #f8f9fb;
+}
+
+.docente-nombre {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 600;
+    color: #1a1d23;
+    font-size: 14px;
+}
+
+.docente-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #e8eeff;
+    color: #2563eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    flex-shrink: 0;
+    text-transform: uppercase;
+}
+
+.docente-correo {
+    color: #6b7280;
+    font-size: 13px;
+}
+
+.materias-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.materia-tag {
+    background: #eff6ff;
+    color: #2563eb;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+    border: 1px solid #dbeafe;
+}
+
+.btn-editar-docente {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 7px 14px;
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+    background: white;
+    color: #374151;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-editar-docente:hover {
+    border-color: #2563eb;
+    color: #2563eb;
+    background: #eff6ff;
+}
+
+.docentes-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.docentes-count {
+    font-size: 13px;
+    color: #9ca3af;
+    margin: 0;
+}
+
+.docentes-count span {
+    font-weight: 600;
+    color: #374151;
 }
 </style>
 {% endblock %}
