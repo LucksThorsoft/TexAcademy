@@ -917,6 +917,25 @@ def director(request):
                 'tutor': grupo.tutor.nombre if grupo.tutor else 'Sin tutor',
             })
 
+    # Docentes
+    rol_docente = Rol.objects.filter(nombre="Docente").first()
+    docentes_data = []
+    if rol_docente:
+        relaciones_docentes = UsuarioRol.objects.filter(rol=rol_docente).select_related('usuario')
+        for rel in relaciones_docentes:
+            u = rel.usuario
+            gdms = GrupoDocenteMateria.objects.filter(
+                docente=u
+            ).select_related('grupo', 'materia')
+            materias_grupos = [f"{g.materia.nombre} / {g.grupo.clave}" for g in gdms]
+            docentes_data.append({
+                'id': u.id,
+                'nombre': u.nombre,
+                'correo': u.correo,
+                'materias_grupos': materias_grupos,
+                'total_grupos': gdms.count(),
+            })
+
     return render(request, "director.html", {
         "form": form,
         "grupo_form": grupo_form,
@@ -924,6 +943,7 @@ def director(request):
         "grupos": grupos_data,
         "sin_cuatrimestre": cuatrimestre_activo is None,
         "cuatrimestres_data": cuatrimestres_data,
+        "docentes_data": docentes_data,
     })
 
 
@@ -1164,3 +1184,28 @@ def new_cuatrimestre(request):
         messages.success(request, f"Cuatrimestre '{nombre}' creado correctamente")
 
     return redirect("director")
+
+def editar_docente(request, docente_id):
+    if not request.session.get('usuario_id'):
+        return redirect('login')
+
+    roles = request.session.get('usuario_roles', [])
+    if 'Director' not in roles:
+        return redirect('dashboard')
+
+    if request.method == 'POST':
+        try:
+            docente = Usuario.objects.get(id=docente_id)
+            docente.nombre = request.POST.get('nombre')
+            docente.correo = request.POST.get('correo')
+
+            nueva_password = request.POST.get('password')
+            if nueva_password:
+                docente.password = nueva_password
+
+            docente.save()
+            messages.success(request, 'Docente actualizado correctamente')
+        except Usuario.DoesNotExist:
+            messages.error(request, 'Docente no encontrado')
+
+    return redirect('director')
