@@ -158,6 +158,68 @@
             background: #ffebee;
             color: #c62828;
         }
+
+        /* ===== TÍTULO DE SECCIÓN UNIFICADO ===== */
+        .section-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .section-title-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title-left .mdi {
+            color: #667eea;
+            font-size: 24px;
+        }
+
+        .section-title-right {
+            display: flex;
+            align-items: center;
+            margin-left: auto;
+        }
+
+        /* Switch más grande para las secciones */
+        .view-switch-small {
+            display: inline-flex;
+            background: #f5f5f5;
+            border-radius: 8px;
+            padding: 4px;
+            border: 1px solid #e0e0e0;
+            box-shadow: none;
+        }
+
+        .view-option-small {
+            padding: 8px 40px; /* Reducido de 60px a 30px para que quepa mejor */
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #666;
+            border: none;
+            background: transparent;
+            white-space: nowrap;
+        }
+
+        .view-option-small.active {
+            background: white;
+            color: #333;
+            box-shadow: none; /* Sin sombra extra */
+            font-weight: 500; /* Mismo peso que el original */
+        }
         
         /* ===== SECCIÓN DE ACTIVIDADES Y TAREAS ===== */
         .actividades-section {
@@ -418,23 +480,6 @@
             border-radius: 16px;
             padding: 25px;
             border: 2px solid #e4e4e4;
-        }
-        
-        .section-title {
-            font-size: 20px;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .section-title .mdi {
-            color: #667eea;
-            font-size: 24px;
         }
         
         .comentarios-grid {
@@ -799,7 +844,13 @@
     <div class="stats-grid">
         <div class="stat-card">
             <div class="stat-label">Promedio de la Materia</div>
-            <div class="stat-value">--</div>
+            <div class="stat-value">
+                {% if promedio_materia %}
+                    {{ promedio_materia|floatformat:0 }}
+                {% else %}
+                    --
+                {% endif %}
+            </div>
         </div>
         <div class="stat-card">
             <div class="stat-label">Promedio General</div>
@@ -816,8 +867,10 @@
     <!-- Sección de Actividades y Tareas -->
     <div class="actividades-section">
         <div class="section-title">
-            <span class="mdi mdi-clipboard-list"></span>
-            Actividades y Tareas
+            <div class="section-title-left">
+                <span class="mdi mdi-clipboard-list"></span>
+                Actividades y Tareas
+            </div>
         </div>
         
         {% if actividades %}
@@ -883,114 +936,57 @@
     <!-- Sección de Historial de Asistencia -->
     <div class="asistencia-section">
         <div class="section-title">
-            <span class="mdi mdi-calendar-check"></span>
-            Historial de Asistencia
+            <div class="section-title-left">
+                <span class="mdi mdi-calendar-check"></span>
+                Historial de Asistencia
+            </div>
+            <div class="section-title-right">
+                <div class="view-switch-small" id="switchAsistencia">
+                    <button class="view-option-small active" data-view="esta-materia">Esta Materia</button>
+                    <button class="view-option-small" data-view="todas-materias">Todas las Materias</button>
+                </div>
+            </div>
         </div>
         
         <!-- Mini estadísticas de asistencia -->
-        <div class="asistencia-stats-mini">
-            <div class="stat-mini-item">
-                <span class="stat-mini-label">Asistencias</span>
-                <span class="stat-mini-value" style="color: #16a34a;">{{ estadisticas_asistencia.asistencias }}</span>
-            </div>
-            <div class="stat-mini-item">
-                <span class="stat-mini-label">Retardos</span>
-                <span class="stat-mini-value" style="color: #d97706;">{{ estadisticas_asistencia.retardos }}</span>
-            </div>
-            <div class="stat-mini-item">
-                <span class="stat-mini-label">Faltas</span>
-                <span class="stat-mini-value" style="color: #dc2626;">{{ estadisticas_asistencia.faltas }}</span>
-            </div>
-            <div class="stat-mini-item">
-                <span class="stat-mini-label">Porcentaje</span>
-                <span class="stat-mini-value {% if estadisticas_asistencia.porcentaje >= 80 %}status-good{% elif estadisticas_asistencia.porcentaje >= 60 %}status-warning{% else %}status-danger{% endif %}">
-                    {{ estadisticas_asistencia.porcentaje }}%
-                </span>
-            </div>
-            <div class="stat-mini-item">
-                <span class="stat-mini-label">Total clases</span>
-                <span class="stat-mini-value">{{ estadisticas_asistencia.total_clases }}</span>
-            </div>
+        <div class="asistencia-stats-mini" id="statsAsistencia">
+            <!-- Se actualizará dinámicamente -->
         </div>
         
-        {% if asistencia_historial %}
         <div class="asistencia-table-wrapper">
             <table class="asistencia-table">
                 <thead>
                     <tr>
-                        <th>Fecha</th>
-                        <th>Materia</th>
-                        <th>Estado</th>
+                        <th class="text-center">Fecha</th>
+                        <th class="text-center">Materia</th>
+                        <th class="text-center">Estado</th>
                     </tr>
                 </thead>
-                <tbody>
-                    {% for registro in asistencia_historial %}
-                    <tr>
-                        <td>
-                            <div class="fecha-cell">
-                                <span class="mdi mdi-calendar"></span>
-                                {{ registro.fecha }}
-                            </div>
-                        </td>
-                        <td>{{ registro.materia }}</td>
-                        <td>
-                            {% if registro.estado == "Asistió" %}
-                                <span class="estado-badge estado-asistio">
-                                    <span class="mdi mdi-check-circle"></span>
-                                    {{ registro.estado }}
-                                </span>
-                            {% elif registro.estado == "Retardo" %}
-                                <span class="estado-badge estado-retardo">
-                                    <span class="mdi mdi-clock"></span>
-                                    {{ registro.estado }}
-                                </span>
-                            {% elif registro.estado == "No asistió" %}
-                                <span class="estado-badge estado-falta">
-                                    <span class="mdi mdi-close-circle"></span>
-                                    {{ registro.estado }}
-                                </span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
+                <tbody id="tablaAsistenciaBody">
+                    <!-- Los datos se cargarán aquí dinámicamente -->
                 </tbody>
             </table>
         </div>
-        {% else %}
-        <div class="empty-message">
-            No hay registros de asistencia para este alumno
-        </div>
-        {% endif %}
     </div>
     
     <!-- Sección de comentarios -->
     <div class="comentarios-section">
         <div class="section-title">
-            <span class="mdi mdi-comment"></span>
-            Comentarios
-        </div>
-        
-        {% if comentarios %}
-        <div class="comentarios-grid">
-            {% for comentario in comentarios %}
-            <div class="comentario-card">
-                <div class="comentario-header">
-                    <span class="comentario-tipo">{{ comentario.tipo }}</span>
-                    <span class="comentario-fecha">{{ comentario.fecha|date:"d/m/Y" }}</span>
-                </div>
-                <div class="comentario-texto">{{ comentario.texto }}</div>
-                <div class="comentario-docente">
-                    <span class="mdi mdi-account"></span>
-                    {{ comentario.docente.nombre }}
+            <div class="section-title-left">
+                <span class="mdi mdi-comment"></span>
+                Comentarios de Asistencia
+            </div>
+            <div class="section-title-right">
+                <div class="view-switch-small" id="switchComentarios">
+                    <button class="view-option-small active" data-view="esta-materia">Esta Materia</button>
+                    <button class="view-option-small" data-view="todas-materias">Todas las Materias</button>
                 </div>
             </div>
-            {% endfor %}
         </div>
-        {% else %}
-        <div class="empty-message">
-            No hay comentarios para este alumno
+        
+        <div id="comentariosContainer">
+            <!-- Los comentarios se cargarán aquí dinámicamente -->
         </div>
-        {% endif %}
     </div>
     
     <!-- Botones de acción -->
@@ -1001,35 +997,216 @@
         </button>
     </div>
 
+    {{ asistencia_esta_materia|json_script:"asistencia-esta-materia" }}
+    {{ asistencia_todas_materias|json_script:"asistencia-todas-materias" }}
+    {{ stats_esta_materia|json_script:"stats-esta-materia" }}
+    {{ stats_todas_materias|json_script:"stats-todas-materias" }}
+    {{ comentarios_esta_materia|json_script:"comentarios-esta-materia" }}
+    {{ comentarios_todas_materias|json_script:"comentarios-todas-materias" }}
+
     <script>
-        function descargarPDF() {
-            const btn = event.target.closest('button');
-            const textoOriginal = btn.innerHTML;
-            btn.innerHTML = '<span class="mdi mdi-loading mdi-spin"></span> Generando PDF...';
-            btn.disabled = true;
+        document.addEventListener('DOMContentLoaded', function() {
+            // Datos desde Django usando json_script
+            const asistenciaEstaMateria = JSON.parse(document.getElementById('asistencia-esta-materia').textContent);
+            const asistenciaTodasMaterias = JSON.parse(document.getElementById('asistencia-todas-materias').textContent);
+            const statsEstaMateria = JSON.parse(document.getElementById('stats-esta-materia').textContent);
+            const statsTodasMaterias = JSON.parse(document.getElementById('stats-todas-materias').textContent);
+            const comentariosEstaMateria = JSON.parse(document.getElementById('comentarios-esta-materia').textContent);
+            const comentariosTodasMaterias = JSON.parse(document.getElementById('comentarios-todas-materias').textContent);
             
-            const opciones = {
-                margin:        [0.5, 0.5, 0.5, 0.5],
-                filename:      'perfil_{{ alumno.matricula }}.pdf',
-                image:         { type: 'jpeg', quality: 0.98 },
-                html2canvas:   { scale: 2, letterRendering: true, useCORS: true, logging: false },
-                jsPDF:         { unit: 'in', format: 'a4', orientation: 'portrait' }
-            };
+            console.log('Datos cargados correctamente');
             
-            const elemento = document.body;
-            
-            html2pdf().set(opciones).from(elemento).save()
-                .then(() => {
-                    btn.innerHTML = textoOriginal;
-                    btn.disabled = false;
-                })
-                .catch(error => {
-                    console.error('Error al generar PDF:', error);
-                    btn.innerHTML = textoOriginal;
-                    btn.disabled = false;
-                    alert('Error al generar el PDF. Por favor intenta de nuevo.');
+            // Función para actualizar tabla de asistencia
+            function actualizarTablaAsistencia(datos) {
+                const tbody = document.getElementById('tablaAsistenciaBody');
+                tbody.innerHTML = '';
+                
+                if (datos.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="3" style="text-align: center; padding: 30px; color: #999;">
+                                No hay registros de asistencia
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                datos.forEach(registro => {
+                    const row = document.createElement('tr');
+                    
+                    let estadoClass = '';
+                    let estadoIcon = '';
+                    
+                    if (registro.estado === 'Asistió') {
+                        estadoClass = 'estado-asistio';
+                        estadoIcon = 'mdi-check-circle';
+                    } else if (registro.estado === 'Retardo') {
+                        estadoClass = 'estado-retardo';
+                        estadoIcon = 'mdi-clock';
+                    } else {
+                        estadoClass = 'estado-falta';
+                        estadoIcon = 'mdi-close-circle';
+                    }
+                    
+                    row.innerHTML = `
+                        <td>
+                            <div class="fecha-cell">
+                                <span class="mdi mdi-calendar"></span>
+                                ${registro.fecha}
+                            </div>
+                        </td>
+                        <td>${registro.materia}</td>
+                        <td>
+                            <span class="estado-badge ${estadoClass}">
+                                <span class="mdi ${estadoIcon}"></span>
+                                ${registro.estado}
+                            </span>
+                        </td>
+                    `;
+                    
+                    tbody.appendChild(row);
                 });
-        }
+            }
+            
+            // Función para actualizar mini estadísticas
+            function actualizarStats(stats) {
+                const statsContainer = document.getElementById('statsAsistencia');
+                statsContainer.innerHTML = `
+                    <div class="stat-mini-item">
+                        <span class="stat-mini-label">Asistencias</span>
+                        <span class="stat-mini-value" style="color: #16a34a;">${stats.asistencias}</span>
+                    </div>
+                    <div class="stat-mini-item">
+                        <span class="stat-mini-label">Retardos</span>
+                        <span class="stat-mini-value" style="color: #d97706;">${stats.retardos}</span>
+                    </div>
+                    <div class="stat-mini-item">
+                        <span class="stat-mini-label">Faltas</span>
+                        <span class="stat-mini-value" style="color: #dc2626;">${stats.faltas}</span>
+                    </div>
+                    <div class="stat-mini-item">
+                        <span class="stat-mini-label">Porcentaje</span>
+                        <span class="stat-mini-value ${stats.porcentaje >= 80 ? 'status-good' : (stats.porcentaje >= 60 ? 'status-warning' : 'status-danger')}">
+                            ${stats.porcentaje}%
+                        </span>
+                    </div>
+                    <div class="stat-mini-item">
+                        <span class="stat-mini-label">Total clases</span>
+                        <span class="stat-mini-value">${stats.total_clases}</span>
+                    </div>
+                `;
+            }
+            
+            // Función para actualizar comentarios
+            function actualizarComentarios(comentarios) {
+                const container = document.getElementById('comentariosContainer');
+                
+                if (comentarios.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-message">
+                            No hay comentarios para este alumno
+                        </div>
+                    `;
+                    return;
+                }
+                
+                let html = '<div class="comentarios-grid">';
+                
+                comentarios.forEach(com => {
+                    html += `
+                        <div class="comentario-card">
+                            <div class="comentario-header">
+                                <span class="comentario-tipo">${com.tipo}</span>
+                                <span class="comentario-fecha">${com.fecha}</span>
+                            </div>
+                            <div class="comentario-texto">${com.texto}</div>
+                            <div class="comentario-docente">
+                                <span class="mdi mdi-account"></span>
+                                ${com.docente} - ${com.materia}
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+                container.innerHTML = html;
+            }
+            
+            // Inicializar con "Esta Materia"
+            actualizarTablaAsistencia(asistenciaEstaMateria);
+            actualizarStats(statsEstaMateria);
+            actualizarComentarios(comentariosEstaMateria);
+            
+            // Switch de asistencia
+            const switchAsistencia = document.getElementById('switchAsistencia');
+            const opcionesAsistencia = switchAsistencia.querySelectorAll('.view-option-small');
+            
+            opcionesAsistencia.forEach(option => {
+                option.addEventListener('click', function() {
+                    opcionesAsistencia.forEach(opt => opt.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const view = this.getAttribute('data-view');
+                    
+                    if (view === 'esta-materia') {
+                        actualizarTablaAsistencia(asistenciaEstaMateria);
+                        actualizarStats(statsEstaMateria);
+                    } else {
+                        actualizarTablaAsistencia(asistenciaTodasMaterias);
+                        actualizarStats(statsTodasMaterias);
+                    }
+                });
+            });
+            
+            // Switch de comentarios
+            const switchComentarios = document.getElementById('switchComentarios');
+            const opcionesComentarios = switchComentarios.querySelectorAll('.view-option-small');
+            
+            opcionesComentarios.forEach(option => {
+                option.addEventListener('click', function() {
+                    opcionesComentarios.forEach(opt => opt.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const view = this.getAttribute('data-view');
+                    
+                    if (view === 'esta-materia') {
+                        actualizarComentarios(comentariosEstaMateria);
+                    } else {
+                        actualizarComentarios(comentariosTodasMaterias);
+                    }
+                });
+            });
+
+            function descargarPDF() {
+                const btn = event.target.closest('button');
+                const textoOriginal = btn.innerHTML;
+                btn.innerHTML = '<span class="mdi mdi-loading mdi-spin"></span> Generando PDF...';
+                btn.disabled = true;
+                
+                const opciones = {
+                    margin:        [0.5, 0.5, 0.5, 0.5],
+                    filename:      'perfil_{{ alumno.matricula }}.pdf',
+                    image:         { type: 'jpeg', quality: 0.98 },
+                    html2canvas:   { scale: 2, letterRendering: true, useCORS: true, logging: false },
+                    jsPDF:         { unit: 'in', format: 'a4', orientation: 'portrait' }
+                };
+                
+                const elemento = document.body;
+                
+                html2pdf().set(opciones).from(elemento).save()
+                    .then(() => {
+                        btn.innerHTML = textoOriginal;
+                        btn.disabled = false;
+                    })
+                    .catch(error => {
+                        console.error('Error al generar PDF:', error);
+                        btn.innerHTML = textoOriginal;
+                        btn.disabled = false;
+                        alert('Error al generar el PDF. Por favor intenta de nuevo.');
+                    });
+            }
+        });
     </script>
 </body>
 </html>
