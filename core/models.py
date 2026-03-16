@@ -168,11 +168,12 @@ class Comentario(models.Model):
 
 
 class Alerta(models.Model):
-    alumno = models.ForeignKey(Alumno, on_delete=models.CASCADE)
-    motivo = models.TextField()
+    alumno       = models.ForeignKey(Alumno, on_delete=models.CASCADE)
+    parcial      = models.ForeignKey('Parcial', on_delete=models.CASCADE, null=True, blank=True)  # NUEVO
+    motivo       = models.TextField()
     nivel_riesgo = models.CharField(max_length=20)
-    fecha = models.DateField(auto_now_add=True)
-    atendida = models.BooleanField(default=False)
+    fecha        = models.DateField(auto_now_add=True)
+    atendida     = models.BooleanField(default=False)
 
 
 class Notificacion(models.Model):
