@@ -1,4 +1,3 @@
-
 {% extends 'sidebar.html' %}
 
 {% block header_title %}Direccion{% endblock %}
@@ -7,30 +6,43 @@
  
 <div class="header-actions">
     <div class="view-switch" id="viewSwitch">
-        <button class="view-option active" data-view="groups">Grupos</button>
-        <button class="view-option" data-view="students">Todos los Alumnos</button>
-    </div>
+    <button class="view-option active" data-view="groups">Grupos</button>
+    <button class="view-option" data-view="students">Histórico</button>
+    <button class="view-option" data-view="docentes">Docentes</button>
+</div>
 
-    <div class="botons-header">
+    <div class="actions-dropdown">
 
-        <button class="btn-secondary" id="btnNuevaMateria">
+        <button class="btn-primary dropdown-toggle" id="toggleActions">
             <span class="mdi mdi-plus"></span>
-            Nueva Materia
+            Nuevo
+            <span class="mdi mdi-chevron-down"></span>
         </button>
 
-        <button class="btn-tercerio" id="btnNuevoGrupo">
-            <span class="mdi mdi-plus"></span>
-            Nuevo Grupo
-        </button>
+        <div class="dropdown-menu" id="actionsMenu">
 
-        <button class="btn-primary" id="btnNuevoDocente">
-            <span class="mdi mdi-plus"></span>
-            Nuevo Docente
-        </button>
+            <button class="dropdown-item" id="btnNuevaMateria">
+                <span class="mdi mdi-book-plus"></span>
+                Nueva Materia
+            </button>
+
+            <button class="dropdown-item" id="btnNuevoGrupo">
+                <span class="mdi mdi-account-group"></span>
+                Nuevo Grupo
+            </button>
+
+            <button class="dropdown-item" id="btnNuevoDocente">
+                <span class="mdi mdi-account-plus"></span>
+                Nuevo Docente
+            </button>
+
+        </div>
+
     </div>
 
 </div>
 
+<!-- Modal Docente -->
 <div class="modal" id="modalDocente">
     <div class="modal-content">
 
@@ -69,10 +81,10 @@
             </div>
         </form>
 
-
     </div>
 </div>
 
+<!-- Modal Grupo -->
 <div class="modal" id="modalGrupo">
     <div class="modal-content">
 
@@ -96,19 +108,19 @@
                 </div>
 
                 <div class="form-group">
-            <label>Lista de alumnos (CSV)</label>
+                    <label>Lista de alumnos (CSV)</label>
 
-            <label class="file-input-wrapper">
-                <span class="file-btn">
-                    <span class="mdi mdi-upload"></span>
-                    Seleccionar archivo
-                </span>
-                {{ grupo_form.archivo_alumnos }}
-                <span class="file-name" id="fileName">Ningún archivo seleccionado</span>
-            </label>
+                    <label class="file-input-wrapper">
+                        <span class="file-btn">
+                            <span class="mdi mdi-upload"></span>
+                            Seleccionar archivo
+                        </span>
+                        {{ grupo_form.archivo_alumnos }}
+                        <span class="file-name" id="fileName">Ningún archivo seleccionado</span>
+                    </label>
 
-            <small>Solo se permiten formatos CSV</small>
-        </div>
+                    <small>Solo se permiten formatos CSV</small>
+                </div>
 
             </div>
 
@@ -122,10 +134,10 @@
             </div>
         </form>
 
-
     </div>
 </div>
 
+<!-- Modal Materia -->
 <div class="modal" id="modalMateria">
     <div class="modal-content">
 
@@ -170,11 +182,54 @@
     </div>
 </div>
 
+<!-- ===== MODAL CUATRIMESTRE (se abre automáticamente si no hay activo) ===== -->
+<div class="modal" id="modalCuatrimestre">
+    <div class="modal-content">
+        <form method="POST" action="{% url 'new_cuatrimestre' %}">
+            {% csrf_token %}
+
+            <div class="modal-header">
+                <h3>⚠️ Nuevo Cuatrimestre</h3>
+            </div>
+
+            <div class="modal-body">
+                <p style="color:#666; font-size:13px; margin-bottom:16px;">
+                    No hay un cuatrimestre activo. Crea uno para comenzar a operar.
+                </p>
+
+                <div class="form-group">
+                    <label>Nombre del cuatrimestre</label>
+                    <input type="text" name="nombre" id="nombreCuatrimestre" readonly
+                        style="background:#f3f4f6; color:#6b7280; cursor:not-allowed;">
+                </div>
+
+                <div class="form-group">
+                    <label>Fecha de inicio</label>
+                    <input type="date" name="fecha_inicio" id="fechaInicio" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Fecha de fin</label>
+                    <input type="date" name="fecha_fin" id="fechaFin" required>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="submit" class="btn-primary">Crear Cuatrimestre</button>
+            </div>
+        </form>
+    </div>
+</div>
 
 
-
-
+<!-- Vista: Grupos del cuatrimestre activo -->
 <div id="groupsView" class="view-content">
+
+    <div class="groups-search">
+        <span class="mdi mdi-magnify search-icon"></span>
+        <input type="text" id="searchGroups" placeholder="Buscar grupo, materia o docente...">
+    </div>
+
     <div class="groups-grid">
         {% for grupo in grupos %}
         <div class="group-card">
@@ -183,34 +238,31 @@
                     <span class="materia-principal">{{ grupo.materia }}</span>
                     <span class="group-separator">|</span>
                     <span class="group-clave">{{ grupo.clave }}</span>
-
                 </div>
-                
+
                 <div class="group-meta">
                     <span>{{ grupo.num_alumnos }} alumnos</span>
-
                 </div>
-                <div class="group-meta" >
+                <div class="group-meta">
                     <strong>Docente:</strong> {{ grupo.docente }}
                 </div>
-
                 <div class="group-meta">
                     <strong>Tutor:</strong> {{ grupo.tutor }}
                 </div>
             </div>
-            
+
             <div class="group-stats">
                 <div class="stat-item promedio">
                     <div class="stat-label">Promedio Grupal</div>
                     <div class="stat-value">--</div>
                 </div>
-                
+
                 <div class="stat-item riesgo">
                     <div class="stat-label">En Riesgo</div>
                     <div class="stat-value">--</div>
                 </div>
             </div>
-            
+
             <div class="attention-btn">
                 <span>-- alumnos requieren atención</span>
             </div>
@@ -219,10 +271,10 @@
         <div class="no-groups">
             <div style="text-align: center; padding: 40px;">
                 <p style="color: #666; font-size: 16px; margin-bottom: 10px;">
-                    No tienes grupos asignados
+                    No hay grupos en el cuatrimestre actual
                 </p>
                 <p style="color: #999; font-size: 14px;">
-                    Contacta con el administrador para que te asigne grupos y materias
+                    Usa el botón "Nuevo" para agregar grupos y materias
                 </p>
             </div>
         </div>
@@ -230,48 +282,193 @@
     </div>
 </div>
 
+<!-- Vista: Histórico de cuatrimestres -->
 <div id="studentsView" class="view-content" style="display: none;">
-    <div class="students-grid">
-        <div style="text-align: center; padding: 40px;">
-            <p style="color: #666; font-size: 16px;">
-                Vista de todos los alumnos (en desarrollo)
-            </p>
-            <p style="color: #999; font-size: 14px;">
-                Esta funcionalidad estará disponible próximamente
-            </p>
+
+    <div class="groups-search">
+        <span class="mdi mdi-magnify search-icon"></span>
+        <input type="text" id="searchHistorico" placeholder="Buscar cuatrimestre...">
+    </div>
+
+    <div class="groups-grid" id="historico-grid">
+        {% for c in cuatrimestres_data %}
+        <div class="group-card historico-card">
+            <div class="group-header">
+                <div class="group-header-main">
+                    <span class="materia-principal">{{ c.nombre }}</span>
+                    {% if c.activo %}
+                        <span class="badge-activo">Activo</span>
+                    {% endif %}
+                </div>
+                <div class="group-meta">
+                    <strong>Inicio:</strong> {{ c.fecha_inicio|date:"d/m/Y" }}
+                </div>
+                <div class="group-meta">
+                    <strong>Fin:</strong> {{ c.fecha_fin|date:"d/m/Y" }}
+                </div>
+                <div class="group-meta">
+                    <strong>Grupos:</strong> {{ c.total_grupos }}
+                </div>
+            </div>
+
+            <div class="group-stats">
+                <div class="stat-item">
+                    <div class="stat-label">Total Alumnos</div>
+                    <div class="stat-value">{{ c.total_alumnos }}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Grupos</div>
+                    <div class="stat-value">{{ c.total_grupos }}</div>
+                </div>
+            </div>
+
+            <div class="attention-btn" style="background:#eff6ff; color:#2563eb;">
+                <span>{{ c.total_grupos }} grupos registrados</span>
+            </div>
         </div>
+        {% empty %}
+        <div style="text-align: center; padding: 40px;">
+            <p style="color: #666; font-size: 16px;">No hay cuatrimestres registrados</p>
+        </div>
+        {% endfor %}
     </div>
 </div>
+
+<!-- Vista: Docentes -->
+<div id="docentesView" class="view-content" style="display: none;">
+
+    <div class="docentes-header">
+        <div class="groups-search" style="margin-bottom: 0;">
+            <span class="mdi mdi-magnify search-icon"></span>
+            <input type="text" id="searchDocentes" placeholder="Buscar docente o correo...">
+        </div>
+        <p class="docentes-count">
+            <span id="totalDocentes">{{ docentes_data|length }}</span> docentes registrados
+        </p>
+    </div>
+
+    <div class="tabla-docentes-wrapper">
+        <table class="tabla-docentes">
+            <thead>
+                <tr>
+                    <th>Docente</th>
+                    <th>Correo</th>
+                    <th>Materias asignadas</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="tablaDocentesBody">
+                {% for docente in docentes_data %}
+                <tr class="docente-row">
+                    <td>
+                        <div class="docente-nombre">
+                            <div class="docente-avatar">
+                                {{ docente.nombre|slice:":1" }}
+                            </div>
+                            <div>
+                                <div>{{ docente.nombre }}</div>
+                                <div style="font-size:12px; font-weight:400; color:#9ca3af;">
+                                    {{ docente.total_grupos }} grupo{{ docente.total_grupos|pluralize }}
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="docente-correo">{{ docente.correo }}</td>
+                    <td>
+                        {% if docente.materias_grupos %}
+                            <div class="materias-tags">
+                                {% for mg in docente.materias_grupos %}
+                                    <span class="materia-tag">{{ mg }}</span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <span style="color:#d1d5db; font-size:13px;">Sin asignaciones</span>
+                        {% endif %}
+                    </td>
+                    <td style="text-align:right;">
+                        <button class="btn-editar-docente"
+                            data-id="{{ docente.id }}"
+                            data-nombre="{{ docente.nombre }}"
+                            data-correo="{{ docente.correo }}">
+                            <span class="mdi mdi-pencil-outline"></span>
+                            Editar
+                        </button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" style="text-align:center; color:#9ca3af; padding: 50px 0;">
+                        <span class="mdi mdi-account-off" style="font-size:32px; display:block; margin-bottom:8px;"></span>
+                        No hay docentes registrados
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal Editar Docente -->
+<div class="modal" id="modalEditarDocente">
+    <div class="modal-content">
+        <form method="POST" id="formEditarDocente" action="">
+            {% csrf_token %}
+
+            <div class="modal-header">
+                <h3>Editar Docente</h3>
+                <span class="modal-close" id="closeModalEditarDocente">&times;</span>
+            </div>
+
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Nombre completo</label>
+                    <input type="text" name="nombre" id="editNombre" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Correo electrónico</label>
+                    <input type="email" name="correo" id="editCorreo" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Nueva contraseña <span style="color:#9ca3af; font-weight:400;">(dejar vacío para no cambiar)</span></label>
+                    <input type="password" name="password" id="editPassword" placeholder="••••••••">
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" id="cancelarModalEditarDocente">
+                    Cancelar
+                </button>
+                <button type="submit" class="btn-primary">
+                    Guardar cambios
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
 
+    // ===== MODAL CUATRIMESTRE (automático) =====
+    {% if sin_cuatrimestre %}
+        document.getElementById("modalCuatrimestre").style.display = "flex";
+    {% endif %}
+
+    // ===== MODAL DOCENTE =====
     const btnNuevoDocente = document.getElementById("btnNuevoDocente");
     const modalDocente = document.getElementById("modalDocente");
     const closeModal = document.getElementById("closeModal");
     const cancelarModal = document.getElementById("cancelarModal");
 
-    btnNuevoDocente.addEventListener("click", () => {
-        modalDocente.style.display = "flex";
-    });
+    btnNuevoDocente.addEventListener("click", () => modalDocente.style.display = "flex");
+    closeModal.addEventListener("click", () => cerrarModal());
+    cancelarModal.addEventListener("click", () => cerrarModal());
+    modalDocente.addEventListener("click", (e) => { if (e.target === modalDocente) cerrarModal(); });
 
-    closeModal.addEventListener("click", () => {
-        cerrarModal();
-    });
-
-    cancelarModal.addEventListener("click", () => {
-        cerrarModal();
-    });
-
-    modalDocente.addEventListener("click", (e) => {
-        if (e.target === modalDocente) {
-            cerrarModal();
-        }
-    });
-
-    function cerrarModal() {
-        modalDocente.style.display = "none";
-    }
+    function cerrarModal() { modalDocente.style.display = "none"; }
 
     // ===== MODAL GRUPO =====
     const btnNuevoGrupo = document.getElementById("btnNuevoGrupo");
@@ -279,74 +476,93 @@ document.addEventListener("DOMContentLoaded", () => {
     const closeModalGrupo = document.getElementById("closeModalGrupo");
     const cancelarModalGrupo = document.getElementById("cancelarModalGrupo");
 
-    btnNuevoGrupo.addEventListener("click", () => {
-        modalGrupo.style.display = "flex";
-    });
-
+    btnNuevoGrupo.addEventListener("click", () => modalGrupo.style.display = "flex");
     closeModalGrupo.addEventListener("click", cerrarModalGrupo);
     cancelarModalGrupo.addEventListener("click", cerrarModalGrupo);
+    modalGrupo.addEventListener("click", (e) => { if (e.target === modalGrupo) cerrarModalGrupo(); });
 
-    modalGrupo.addEventListener("click", (e) => {
-        if (e.target === modalGrupo) {
-            cerrarModalGrupo();
-        }
-    });
+    function cerrarModalGrupo() { modalGrupo.style.display = "none"; }
 
-    function cerrarModalGrupo() {
-        modalGrupo.style.display = "none";
-    }
-});
-
-// ===== MODAL MATERIA =====
-const btnNuevaMateria = document.getElementById("btnNuevaMateria");
-const modalMateria = document.getElementById("modalMateria");
-const closeModalMateria = document.getElementById("closeModalMateria");
-const cancelarModalMateria = document.getElementById("cancelarModalMateria");
-
-btnNuevaMateria.addEventListener("click", () => {
-    modalMateria.style.display = "flex";
-});
-
-closeModalMateria.addEventListener("click", cerrarModalMateria);
-cancelarModalMateria.addEventListener("click", cerrarModalMateria);
-
-modalMateria.addEventListener("click", (e) => {
-    if (e.target === modalMateria) {
-        cerrarModalMateria();
-    }
-});
-
-function cerrarModalMateria() {
-    modalMateria.style.display = "none";
-}
-
-
-document.addEventListener('DOMContentLoaded', function() {
+    // ===== VIEW SWITCH =====
     const viewSwitch = document.getElementById('viewSwitch');
     const viewOptions = viewSwitch.querySelectorAll('.view-option');
     const groupsView = document.getElementById('groupsView');
     const studentsView = document.getElementById('studentsView');
 
+    // ===== VIEW SWITCH =====
     viewOptions.forEach(option => {
         option.addEventListener('click', function() {
             viewOptions.forEach(opt => opt.classList.remove('active'));
-
             this.classList.add('active');
-
             groupsView.style.display = 'none';
             studentsView.style.display = 'none';
+            document.getElementById('docentesView').style.display = 'none';
 
-            const viewType = this.dataset.view;
-            if (viewType === 'groups') {
+            if (this.dataset.view === 'groups') {
                 groupsView.style.display = 'block';
-            } else {
+            } else if (this.dataset.view === 'students') {
                 studentsView.style.display = 'block';
+            } else if (this.dataset.view === 'docentes') {
+                document.getElementById('docentesView').style.display = 'block';
             }
         });
     });
-});
 
-document.addEventListener("DOMContentLoaded", () => {
+    // ===== MODAL EDITAR DOCENTE =====
+    const modalEditarDocente = document.getElementById('modalEditarDocente');
+    const formEditarDocente = document.getElementById('formEditarDocente');
+
+    document.querySelectorAll('.btn-editar-docente').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.getElementById('editNombre').value = this.dataset.nombre;
+            document.getElementById('editCorreo').value = this.dataset.correo;
+            document.getElementById('editPassword').value = '';
+            formEditarDocente.action = `/director/editar-docente/${this.dataset.id}/`;
+            modalEditarDocente.style.display = 'flex';
+        });
+    });
+
+    document.getElementById('closeModalEditarDocente').addEventListener('click', () => {
+        modalEditarDocente.style.display = 'none';
+    });
+    document.getElementById('cancelarModalEditarDocente').addEventListener('click', () => {
+        modalEditarDocente.style.display = 'none';
+    });
+    modalEditarDocente.addEventListener('click', (e) => {
+        if (e.target === modalEditarDocente) modalEditarDocente.style.display = 'none';
+    });
+
+    // ===== BUSCADOR DOCENTES =====
+    document.getElementById('searchDocentes').addEventListener('keyup', function() {
+        const filter = this.value.toLowerCase();
+        document.querySelectorAll('.docente-row').forEach(row => {
+            row.style.display = row.textContent.toLowerCase().includes(filter) ? '' : 'none';
+        });
+    });
+
+    // ===== BUSCADOR GRUPOS =====
+    const searchInput = document.getElementById("searchGroups");
+    const groupCards = document.querySelectorAll("#groupsView .group-card");
+
+    searchInput.addEventListener("keyup", function() {
+        const filter = this.value.toLowerCase();
+        groupCards.forEach(card => {
+            card.style.display = card.textContent.toLowerCase().includes(filter) ? "block" : "none";
+        });
+    });
+
+    // ===== BUSCADOR HISTÓRICO =====
+    const searchHistorico = document.getElementById("searchHistorico");
+    const historicoCards = document.querySelectorAll("#historico-grid .group-card");
+
+    searchHistorico.addEventListener("keyup", function() {
+        const filter = this.value.toLowerCase();
+        historicoCards.forEach(card => {
+            card.style.display = card.textContent.toLowerCase().includes(filter) ? "block" : "none";
+        });
+    });
+
+    // ===== FILE INPUT =====
     const fileInput = document.querySelector('input[type="file"]');
     const fileName = document.getElementById('fileName');
 
@@ -357,10 +573,64 @@ document.addEventListener("DOMContentLoaded", () => {
                 : 'Ningún archivo seleccionado';
         });
     }
+
+    // ===== DROPDOWN ACCIONES =====
+    const toggle = document.getElementById("toggleActions");
+    const menu = document.getElementById("actionsMenu");
+
+    toggle.addEventListener("click", () => {
+        menu.style.display = menu.style.display === "flex" ? "none" : "flex";
+    });
+
+    document.addEventListener("click", (e) => {
+        if (!toggle.contains(e.target) && !menu.contains(e.target)) {
+            menu.style.display = "none";
+        }
+    });
+
+    // ===== NOMBRE AUTOMÁTICO CUATRIMESTRE =====
+const hoy = new Date();
+const mes = hoy.getMonth() + 1; // getMonth() empieza en 0
+const anio = hoy.getFullYear();
+let nombreCuat = "";
+
+if (mes >= 1 && mes <= 4) {
+    nombreCuat = `Enero-Abril ${anio}`;
+} else if (mes >= 5 && mes <= 8) {
+    nombreCuat = `Mayo-Agosto ${anio}`;
+} else {
+    nombreCuat = `Septiembre-Diciembre ${anio}`;
+}
+
+const inputNombre = document.getElementById("nombreCuatrimestre");
+if (inputNombre) inputNombre.value = nombreCuat;
+
+// ===== VALIDACIÓN FECHAS CUATRIMESTRE =====
+const fechaInicio = document.getElementById("fechaInicio");
+const fechaFin = document.getElementById("fechaFin");
+
+fechaInicio.addEventListener("change", function() {
+    fechaFin.min = this.value;
+    if (fechaFin.value && fechaFin.value < this.value) {
+        fechaFin.value = "";
+    }
 });
+});
+
+// ===== MODAL MATERIA =====
+const btnNuevaMateria = document.getElementById("btnNuevaMateria");
+const modalMateria = document.getElementById("modalMateria");
+const closeModalMateria = document.getElementById("closeModalMateria");
+const cancelarModalMateria = document.getElementById("cancelarModalMateria");
+
+btnNuevaMateria.addEventListener("click", () => modalMateria.style.display = "flex");
+closeModalMateria.addEventListener("click", cerrarModalMateria);
+cancelarModalMateria.addEventListener("click", cerrarModalMateria);
+modalMateria.addEventListener("click", (e) => { if (e.target === modalMateria) cerrarModalMateria(); });
+
+function cerrarModalMateria() { modalMateria.style.display = "none"; }
 </script>
 
-    
 {% endblock %}
 
 
@@ -376,30 +646,6 @@ document.addEventListener("DOMContentLoaded", () => {
     gap: 15px;
 }
 
-
-
-.botons-header {
-    display: flex;
-    gap: 10px;
-    margin-left: auto;
-}
-
-
-.botons-header button {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 14px;
-    height: 34px;
-    border-radius: 10px;
-    border: 1px solid transparent;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-
 .btn-primary {
     background: #2563eb;
     color: white;
@@ -411,7 +657,6 @@ document.addEventListener("DOMContentLoaded", () => {
     border-color: #1e40af;
 }
 
-
 .btn-secondary {
     background: #f5f5f5;
     color: #333;
@@ -421,7 +666,6 @@ document.addEventListener("DOMContentLoaded", () => {
 .btn-secondary:hover {
     background: #eaeaea;
 }
-
 
 .mdi {
     font-size: 16px;
@@ -479,195 +723,142 @@ document.addEventListener("DOMContentLoaded", () => {
 }
 
 @keyframes fadeIn {
-    from {
-        transform: translateY(-10px);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
+    from { transform: translateY(-10px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
 }
 
-    .page-title {
-        margin-bottom: 30px;
-    }
-    
-    .page-title h1 {
-        color: #333;
-        font-size: 24px;
-        font-weight: 600;
-        margin-bottom: 5px;
-    }
-    
-    .page-title .subtitle {
-        color: #666;
-        font-size: 14px;
-    }
-    
-    .view-switch {
-        display: inline-flex;
-        background: #f5f5f5;
-        border-radius: 12px;
-        padding: 4px;
-        margin-bottom: 25px;
-        border: 1px solid #e0e0e0;
-    }
-    
-    .view-option {
-        padding: 5px 60px;
-        border-radius: 10px;
-        font-weight: 500;
-        font-size: 14px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        color: #666;
-        border: none;
-        background: transparent;
-    }
-    
-    .view-option.active {
-        background: white;
-        color: #333;
-    }
-    
-    .groups-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 20px;
-        margin-bottom: 40px;
-        width: 100%;
-    }
-    
-    .students-grid {
-        display: none;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 20px;
-        margin-bottom: 40px;
-        width: 100%;
-    }
-    
-    .group-card, .student-card {
-        background: white;
-        border-radius: 12px;
-        padding: 20px;
-        border: 2px solid #e4e4e4;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-        height: 100%;
-        box-sizing: border-box;
-    }
-    
-    .group-card:hover, .student-card:hover {
-        border: 2px solid rgb(0, 0, 180);
-        box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
-    }
-    
-    .group-header, .student-header {
-        border-bottom: 1px solid #eee;
-        padding-bottom: 15px;
-        margin-bottom: 15px;
-    }
-    
-    .group-header-main {
-        display: flex;
-        align-items: center;
-        flex-wrap: wrap;
-        margin-bottom: 8px;
-    }
-    
-    .materia-principal {
-        color: #333;
-        font-size: 16px;
-        font-weight: 600;
-        margin-right: 8px;
-    }
-    
-    .group-separator {
-        color: #666;
-        margin-right: 8px;
-        font-weight: 500;
-    }
-    
-    .group-clave {
-        color: #666;
-        font-size: 16px;
-        font-weight: 400;
-    }
-    
-    .group-meta {
-        display: flex;
-        justify-content: flex-start;
-        gap: 3px;
-        color: #666;
-        font-size: 14px;
-        margin-top: 6px
-    }
-    
-    .group-stats {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 15px;
-        margin-bottom: 20px;
-    }
-    
-    .stat-value {
-        font-size: 22px;
-        color: #333;
-        line-height: 1.2;
-        font-weight: 600;
-    }
-    
-    .stat-label {
-        font-size: 12px;
-        color: #666;
-        margin-bottom: 4px;
-    }
-    
-    .riesgo .stat-value {
-        color: #DC2626;
-    }
-    
-    .attention-btn {
-        display: flex;
-        align-items: center;
-        background: #dc26261a;
-        border-radius: 8px;
-        padding: 8px;
-        color: #DC2626;
-        font-size: 12px;
-    }
-    
-    @media (max-width: 768px) {
-        .groups-grid {
-            grid-template-columns: 1fr;
-        }
-        
-        .group-stats {
-            grid-template-columns: repeat(2, 1fr);
-        }
-        
-        .view-option {
-            padding: 8px 40px;
-            font-size: 13px;
-        }
-    }
-    
-    @media (max-width: 480px) {
-        .view-option {
-            padding: 8px 20px;
-        }
-        
-        .group-header-main {
-            flex-direction: column;
-            align-items: flex-start;
-        }
-        
-        .materia-principal,
-        .group-separator,
-        .group-clave {
-            margin-bottom: 2px;
-        }
-    }
+.view-switch {
+    display: inline-flex;
+    background: #f5f5f5;
+    border-radius: 12px;
+    padding: 4px;
+    border: 1px solid #e0e0e0;
+}
+
+.view-option {
+    padding: 5px 60px;
+    border-radius: 10px;
+    font-weight: 500;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #666;
+    border: none;
+    background: transparent;
+}
+
+.view-option.active {
+    background: white;
+    color: #333;
+}
+
+.groups-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-bottom: 40px;
+    width: 100%;
+}
+
+.group-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    border: 2px solid #e4e4e4;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+.group-card:hover {
+    border: 2px solid rgb(0, 0, 180);
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+}
+
+.group-header {
+    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+    margin-bottom: 15px;
+}
+
+.group-header-main {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+}
+
+.materia-principal {
+    color: #333;
+    font-size: 16px;
+    font-weight: 600;
+    margin-right: 8px;
+}
+
+.group-separator {
+    color: #666;
+    margin-right: 8px;
+    font-weight: 500;
+}
+
+.group-clave {
+    color: #666;
+    font-size: 16px;
+    font-weight: 400;
+}
+
+.group-meta {
+    display: flex;
+    justify-content: flex-start;
+    gap: 3px;
+    color: #666;
+    font-size: 14px;
+    margin-top: 6px;
+}
+
+.group-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.stat-value {
+    font-size: 22px;
+    color: #333;
+    line-height: 1.2;
+    font-weight: 600;
+}
+
+.stat-label {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 4px;
+}
+
+.riesgo .stat-value {
+    color: #DC2626;
+}
+
+.attention-btn {
+    display: flex;
+    align-items: center;
+    background: #dc26261a;
+    border-radius: 8px;
+    padding: 8px;
+    color: #DC2626;
+    font-size: 12px;
+}
+
+.badge-activo {
+    background: #dcfce7;
+    color: #16a34a;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 20px;
+    margin-left: 8px;
+}
 
 .form-group {
     display: flex;
@@ -703,10 +894,6 @@ document.addEventListener("DOMContentLoaded", () => {
     box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
 }
 
-.form-group input.error {
-    border-color: #dc2626;
-}
-
 .modal-footer .btn-primary,
 .modal-footer .btn-secondary {
     height: 36px;
@@ -732,14 +919,11 @@ document.addEventListener("DOMContentLoaded", () => {
     box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
 }
 
-/* ===== FILE INPUT CUSTOM ===== */
-
 .file-input-wrapper {
     display: flex;
     align-items: center;
     gap: 10px;
     height: 38px;
-    padding: 0 12px;
     border-radius: 10px;
     border: 1px solid #e5e7eb;
     cursor: pointer;
@@ -776,6 +960,256 @@ document.addEventListener("DOMContentLoaded", () => {
     white-space: nowrap;
 }
 
+.groups-search {
+    position: relative;
+    margin-bottom: 20px;
+    max-width: 360px;
+}
 
+.groups-search input {
+    width: 100%;
+    height: 38px;
+    padding: 8px 12px 8px 36px;
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+    font-size: 14px;
+    outline: none;
+    background: #fff;
+    transition: all 0.2s ease;
+}
+
+.groups-search input:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+}
+
+.search-icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 18px;
+    color: #6b7280;
+    pointer-events: none;
+}
+
+.actions-dropdown {
+    position: relative;
+}
+
+.dropdown-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 38px;
+    padding: 0 16px;
+    border-radius: 12px;
+    border: 1px solid #2563eb;
+    background: #2563eb;
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all .2s ease;
+}
+
+.dropdown-toggle:hover {
+    background: #1e40af;
+    border-color: #1e40af;
+}
+
+.dropdown-menu {
+    position: absolute;
+    right: 0;
+    top: 42px;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    display: none;
+    flex-direction: column;
+    min-width: 180px;
+    overflow: hidden;
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    font-size: 14px;
+    background: white;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.dropdown-item:hover {
+    background: #f3f4f6;
+}
+
+@media (max-width: 768px) {
+    .groups-grid {
+        grid-template-columns: 1fr;
+    }
+    .group-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .view-option {
+        padding: 8px 40px;
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 480px) {
+    .view-option {
+        padding: 8px 20px;
+    }
+    .group-header-main {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .materia-principal,
+    .group-separator,
+    .group-clave {
+        margin-bottom: 2px;
+    }
+}
+/* ===== TABLA DOCENTES ===== */
+.tabla-docentes-wrapper {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid #e8eaf0;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+.tabla-docentes {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.tabla-docentes thead {
+    background: #f8f9fb;
+    border-bottom: 1px solid #e8eaf0;
+}
+
+.tabla-docentes th {
+    padding: 14px 20px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.tabla-docentes td {
+    padding: 16px 20px;
+    border-bottom: 1px solid #f3f4f6;
+    color: #374151;
+    vertical-align: middle;
+}
+
+.tabla-docentes tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.tabla-docentes tbody tr {
+    transition: background 0.15s ease;
+}
+
+.tabla-docentes tbody tr:hover {
+    background: #f8f9fb;
+}
+
+.docente-nombre {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 600;
+    color: #1a1d23;
+    font-size: 14px;
+}
+
+.docente-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #e8eeff;
+    color: #2563eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    flex-shrink: 0;
+    text-transform: uppercase;
+}
+
+.docente-correo {
+    color: #6b7280;
+    font-size: 13px;
+}
+
+.materias-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.materia-tag {
+    background: #eff6ff;
+    color: #2563eb;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+    border: 1px solid #dbeafe;
+}
+
+.btn-editar-docente {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 7px 14px;
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+    background: white;
+    color: #374151;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-editar-docente:hover {
+    border-color: #2563eb;
+    color: #2563eb;
+    background: #eff6ff;
+}
+
+.docentes-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.docentes-count {
+    font-size: 13px;
+    color: #9ca3af;
+    margin: 0;
+}
+
+.docentes-count span {
+    font-weight: 600;
+    color: #374151;
+}
 </style>
 {% endblock %}
