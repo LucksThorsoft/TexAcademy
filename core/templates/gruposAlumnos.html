@@ -289,6 +289,116 @@
         background: white;
         color: #333;
     }
+
+    /* ===== SNACKBAR ===== */
+    .snackbar {
+        display: none; /* Cambiado de visibility a display */
+        width: calc(100% - 48px); /* Restamos los márgenes izquierdo y derecho (24px + 24px) */
+        margin: 0 24px 20px 24px; /* margin-top 0, margin-bottom 20px */
+        padding: 12px 16px;
+        border-radius: 8px;
+        align-items: center;
+        gap: 12px;
+        position: relative;
+        z-index: 1001;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        opacity: 0;
+        transform: translateY(-10px);
+        transition: opacity 0.3s ease, transform 0.3s ease;
+        box-sizing: border-box;
+    }
+
+    .snackbar.show {
+        display: flex; /* Mostrar como flex */
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    /* Tipos de snackbar */
+    .snackbar.success {
+        background-color: #e8f5e9;
+        border-left: 4px solid #2e7d32;
+        color: #1e4620;
+    }
+
+    .snackbar.error {
+        background-color: #ffebee;
+        border-left: 4px solid #c62828;
+        color: #621b1b;
+    }
+
+    .snackbar.warning {
+        background-color: #fff3e0;
+        border-left: 4px solid #ef6c00;
+        color: #663c00;
+    }
+
+    .snackbar.info {
+        background-color: #e3f2fd;
+        border-left: 4px solid #1565c0;
+        color: #0d3c6f;
+    }
+
+    /* Iconos del snackbar */
+    .snackbar-icon {
+        font-size: 20px;
+        display: flex;
+        align-items: center;
+        min-width: 24px;
+    }
+
+    .snackbar.success .snackbar-icon::before {
+        content: "✓";
+        font-family: 'Material Design Icons';
+        color: #2e7d32;
+        font-size: 20px;
+    }
+
+    .snackbar.error .snackbar-icon::before {
+        content: "✗";
+        font-family: 'Material Design Icons';
+        color: #c62828;
+        font-size: 20px;
+    }
+
+    .snackbar.warning .snackbar-icon::before {
+        content: "⚠";
+        font-family: 'Material Design Icons';
+        color: #ef6c00;
+        font-size: 20px;
+    }
+
+    .snackbar.info .snackbar-icon::before {
+        content: "ℹ";
+        font-family: 'Material Design Icons';
+        color: #1565c0;
+        font-size: 20px;
+    }
+
+    /* Mensaje del snackbar */
+    .snackbar-message {
+        flex: 1;
+        font-size: 14px;
+        font-weight: 500;
+        word-break: break-word;
+    }
+
+    /* Botón de cerrar */
+    .snackbar-close {
+        background: none;
+        border: none;
+        color: inherit;
+        font-size: 20px;
+        cursor: pointer;
+        padding: 0 4px;
+        opacity: 0.7;
+        transition: opacity 0.2s;
+        min-width: 24px;
+    }
+
+    .snackbar-close:hover {
+        opacity: 1;
+    }
     
     /* Contenedor del contenido */
     .modal-content-wrapper {
@@ -598,6 +708,20 @@
         display: flex;
         flex-direction: column;
         min-height: 0;
+        height: 100%;
+    }
+
+    /* Asegurar que la vista de tabla use flexbox */
+    #tablaCalificaciones {
+        display: none;
+        flex: 1;
+        flex-direction: column;
+        min-height: 0;
+        height: 100%;
+    }
+
+    #tablaCalificaciones.active {
+        display: flex;
     }
     
     .calificaciones-table-wrapper {
@@ -605,8 +729,10 @@
         overflow-y: auto;
         border: 1px solid #eaeaea;
         border-radius: 8px;
+        margin-bottom: 0; /* Eliminar cualquier margen inferior */
     }
     
+    /* Estilos para la tabla de calificaciones */
     .calificaciones-table {
         width: 100%;
         border-collapse: collapse;
@@ -632,17 +758,26 @@
         text-align: center;
     }
 
+    /* Estilos específicos para la primera fila de encabezado */
     .calificaciones-table .calificaciones-header-row th {
         background: #e9ecef;
         color: #495057;
         font-size: 15px;
     }
 
+    /* Estilos específicos para la segunda fila de encabezado */
     .calificaciones-table .calificaciones-subheader-row th {
         background: #f1f3f5;
         color: #666;
         font-size: 13px;
         font-weight: 500;
+    }
+
+    /* La última columna de la primera fila debe tener el mismo estilo */
+    .calificaciones-table .calificaciones-header-row th:last-child {
+        background: #e9ecef;
+        color: #495057;
+        font-size: 15px;
     }
 
     .calificaciones-table td {
@@ -655,19 +790,6 @@
         font-weight: 500;
         color: #333;
         width: 200px;
-    }
-
-    .calificaciones-table th:last-child,
-    .calificaciones-table td:last-child {
-        position: sticky;
-        right: 0;
-        background-color: inherit;
-        z-index: 5;
-    }
-
-    .calificaciones-table th:last-child {
-        background-color: #f1f3f5;
-        z-index: 15;
     }
 
     /* Celda combinada de nombre y matrícula */
@@ -711,6 +833,18 @@
         border-color: #999;
     }
 
+    /* Estilo para inputs con error */
+    .calificacion-input.error {
+        border-color: #dc2626 !important;
+        background-color: #fee2e2 !important;
+    }
+
+    /* Estilo para el borde rojo cuando hay error */
+    .calificacion-input.error:focus {
+        border-color: #dc2626 !important;
+        box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1) !important;
+    }
+
     /* Centrar el contenido de las celdas */
     .calificaciones-table td {
         text-align: center;
@@ -727,6 +861,7 @@
         border-left: 2px solid #dee2e6;
         text-align: center;
         min-width: 100px;
+        font-size: 16px;
     }
 
     .promedio-alto {
@@ -742,6 +877,14 @@
     .promedio-bajo {
         color: #b91c1c;
         background-color: #fee2e2;
+    }
+    
+    /* Contenedor del botón de guardar */
+    .boton-guardar-container {
+        display: flex;
+        justify-content: flex-end;
+        padding: 20px 0 20px 0; /* padding-bottom de 20px */
+        flex-shrink: 0;
     }
 
     /* Botón de guardar calificaciones */
@@ -767,18 +910,6 @@
     .btn-guardar-calificaciones:disabled {
         background: #94a3b8;
         cursor: not-allowed;
-    }
-
-    /* Estilo para inputs con error */
-    .calificacion-input.error {
-        border-color: #dc2626 !important;
-        background-color: #fee2e2 !important;
-    }
-
-    /* Estilo para el borde rojo cuando hay error */
-    .calificacion-input.error:focus {
-        border-color: #dc2626 !important;
-        box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1) !important;
     }
     
     /* Mensajes de desarrollo */
@@ -1021,6 +1152,13 @@
                 <button class="modal-switch-option" data-modal-view="alertas">Alertas</button>
             </div>
         </div>
+
+        <!-- SNACKBAR PARA MENSAJES -->
+        <div id="snackbar" class="snackbar">
+            <span class="snackbar-icon"></span>
+            <span class="snackbar-message"></span>
+            <button class="snackbar-close" onclick="cerrarSnackbar()">&times;</button>
+        </div>
         
         <!-- Contenido -->
         <div class="modal-content-wrapper">
@@ -1071,11 +1209,12 @@
                             </div>
                         </div>
                         
-                        <!-- Vista de tabla de calificaciones (se muestra si ya hay parciales) -->
-                        <div id="tablaCalificaciones" style="display: none;">
+                        <!-- Vista de tabla de calificaciones -->
+                        <div id="tablaCalificaciones" style="display: none; flex: 1; flex-direction: column; min-height: 0;">
                             <div class="calificaciones-table-wrapper" id="calificacionesTableWrapper">
-                                <!-- La tabla se generará dinámicamente -->
+                                <!-- La tabla se generará aquí -->
                             </div>
+                            <!-- El botón se agregará aquí dinámicamente -->
                         </div>
                         
                         <!-- Mensaje de carga -->
@@ -1130,6 +1269,7 @@
         let materiaActualId = null;
         let gdmActualId = null;
         let fechasOcupadas = [];
+        let snackbarTimeout;
         
         // Función para obtener HTML del estado
         function getEstadoHTML(estado) {
@@ -1139,6 +1279,55 @@
             }
             return estadoStr;
         }
+
+        // Función para mostrar snackbar
+        window.mostrarSnackbar = function(mensaje, tipo = 'info', duracion = 3000) {
+            const snackbar = document.getElementById('snackbar');
+            const icono = snackbar.querySelector('.snackbar-icon');
+            const mensajeEl = snackbar.querySelector('.snackbar-message');
+            
+            // Limpiar cualquier timeout anterior
+            if (snackbarTimeout) {
+                clearTimeout(snackbarTimeout);
+            }
+            
+            // Remover clases anteriores
+            snackbar.classList.remove('success', 'error', 'warning', 'info', 'show');
+            
+            // Agregar nueva clase según el tipo
+            snackbar.classList.add(tipo);
+            
+            // Actualizar mensaje
+            mensajeEl.textContent = mensaje;
+            
+            // Mostrar snackbar
+            snackbar.classList.add('show');
+            
+            // Ocultar después de la duración
+            snackbarTimeout = setTimeout(() => {
+                cerrarSnackbar();
+            }, duracion);
+        };
+
+        // Función para cerrar snackbar
+        window.cerrarSnackbar = function() {
+            const snackbar = document.getElementById('snackbar');
+            snackbar.classList.remove('show');
+            
+            // Opcional: limpiar el timeout
+            if (snackbarTimeout) {
+                clearTimeout(snackbarTimeout);
+            }
+        };
+
+        // Función para ocultar instantáneamente (útil cuando se cierra el modal)
+        window.ocultarSnackbar = function() {
+            const snackbar = document.getElementById('snackbar');
+            snackbar.classList.remove('show');
+            if (snackbarTimeout) {
+                clearTimeout(snackbarTimeout);
+            }
+        };
         
         // Función para cargar la lista de alumnos
         function cargarListaAlumnos() {
@@ -1357,7 +1546,7 @@
             
             // Si ya llegó al 100%, no permitir agregar más
             if (totalActual >= 100) {
-                alert('No puedes agregar más unidades porque ya has alcanzado el 100%.\nModifica los porcentajes de las unidades existentes para agregar más.');
+                window.mostrarSnackbar('No puedes agregar más unidades. Ya alcanzaste el 100%', 'warning');
                 return;
             }
             
@@ -1785,7 +1974,7 @@
             // Validar que el total sea 100%
             const total = unidades.reduce((sum, u) => sum + u.porcentaje, 0);
             if (total !== 100) {
-                alert('El total de porcentajes debe ser 100%');
+                window.mostrarSnackbar('El total de porcentajes debe ser 100%', 'warning');
                 return;
             }
             
@@ -1820,7 +2009,7 @@
                 
                 if (data.success) {
                     // Mostrar mensaje de éxito
-                    alert('Unidades guardadas correctamente');
+                    window.mostrarSnackbar('Unidades guardadas correctamente', 'success');
                     
                     // ACTUALIZAR LOS DATOS DE LA MATERIA EN window.materiasData
                     // Buscar la materia que acabamos de configurar
@@ -1900,8 +2089,6 @@
                 });
             }
             
-            const numUnidades = parciales.length;
-            
             // Crear estructura de la tabla
             let html = '<table class="calificaciones-table">';
             
@@ -1914,7 +2101,7 @@
                 html += `<th>Unidad ${parcial.numero}</th>`;
             });
             
-            // Columna de Promedio (vacía en la primera fila)
+            // Columna de Promedio
             html += '<th></th>';
             html += '</tr>';
             
@@ -1926,7 +2113,7 @@
                 html += `<th>${parcial.nombre} - ${parcial.porcentaje}%</th>`;
             });
             
-            // Columna de Promedio (aquí va el título)
+            // Columna de Promedio
             html += '<th>Promedio</th>';
             html += '</tr>';
             html += '</thead>';
@@ -1954,6 +2141,7 @@
                 parciales.forEach(parcial => {
                     const key = `${alumno.id}-${parcial.numero}`;
                     const calificacionGuardada = calificacionesMap[key] || '';
+                    const porcentajeMaximo = parcial.porcentaje;
                     
                     // Verificar si esta unidad tiene calificación
                     if (calificacionGuardada === '') {
@@ -1969,11 +2157,12 @@
                         <td>
                             <input type="text" class="calificacion-input" 
                                 value="${calificacionGuardada}"
-                                placeholder="0-100"
+                                placeholder="0-${porcentajeMaximo}"
                                 data-alumno-id="${alumno.id}"
                                 data-parcial="${parcial.numero}"
+                                data-porcentaje-max="${porcentajeMaximo}"
                                 data-original-value="${calificacionGuardada}"
-                                oninput="window.validarInputCalificacion(this); window.actualizarPromedio(this, ${numUnidades});">
+                                oninput="window.validarInputCalificacion(this); window.actualizarPromedio(this);">
                         </td>
                     `);
                 });
@@ -1981,11 +2170,12 @@
                 // Agregar las celdas de calificaciones
                 html += celdasCalificaciones.join('');
                 
-                // Calcular promedio SOLO si todas las unidades están completas
+                // Calcular promedio
                 let promedioTexto = '-';
-                if (todasCompletas && suma > 0 && numUnidades > 0) {
-                    const promedio = suma / numUnidades;
-                    promedioTexto = promedio.toFixed(2);
+                if (todasCompletas && suma > 0) {
+                    const sumaRedondeada = window.redondearCalificacion(suma);
+                    const promedio = sumaRedondeada / 10;
+                    promedioTexto = promedio.toString();
                 }
                 
                 html += `<td class="promedio-cell" id="promedio-${alumno.id}">${promedioTexto}</td>`;
@@ -1996,17 +2186,54 @@
             html += '</tbody>';
             html += '</table>';
             
-            // Agregar botón de guardar al final
-            html += `
-                <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
+            // SOLO LA TABLA DENTRO DEL WRAPPER
+            wrapper.innerHTML = html;
+            
+            // ACTUALIZAR O CREAR EL BOTÓN (si no existe)
+            const calificacionesContainer = document.querySelector('.calificaciones-container');
+            const tablaView = document.getElementById('tablaCalificaciones');
+            
+            if (calificacionesContainer) {
+                // Buscar si ya existe el contenedor del botón
+                let botonContainer = tablaView.querySelector('.boton-guardar-container');
+                
+                if (!botonContainer) {
+                    botonContainer = document.createElement('div');
+                    botonContainer.className = 'boton-guardar-container';
+                    tablaView.appendChild(botonContainer);
+                }
+                
+                botonContainer.innerHTML = `
                     <button class="btn-guardar-calificaciones" onclick="window.guardarCalificaciones()">
                         <span class="mdi mdi-content-save"></span>
                         Guardar Calificaciones
                     </button>
-                </div>
-            `;
+                `;
+            }
+        };
+
+        // Función para validar en tiempo real
+        window.validarInputCalificacion = function(input) {
+            const valor = input.value.trim();
+            const porcentajeMax = parseInt(input.getAttribute('data-porcentaje-max')) || 100;
             
-            wrapper.innerHTML = html;
+            if (valor === '') {
+                input.classList.remove('error');
+                input.style.borderColor = '';
+                input.style.backgroundColor = '';
+                return;
+            }
+            
+            const num = parseFloat(valor);
+            if (isNaN(num) || num < 0 || num > porcentajeMax) {
+                input.classList.add('error');
+                input.style.borderColor = '#dc2626';
+                input.style.backgroundColor = '#fee2e2';
+            } else {
+                input.classList.remove('error');
+                input.style.borderColor = '';
+                input.style.backgroundColor = '';
+            }
         };
 
         // Función para actualizar la sumatoria cuando cambia un input
@@ -2054,7 +2281,7 @@
         };
 
         // Función para actualizar el promedio cuando cambia un input
-        window.actualizarPromedio = function(input, numUnidades) {
+        window.actualizarPromedio = function(input) {
             // Obtener la fila actual
             const fila = input.closest('tr');
             if (!fila) return;
@@ -2085,24 +2312,27 @@
             const promedioCell = document.getElementById(`promedio-${alumnoId}`);
             if (promedioCell) {
                 let promedioTexto = '-';
-                if (todasCompletas && suma > 0 && numUnidades > 0) {
-                    const promedio = suma / numUnidades;
-                    promedioTexto = promedio.toFixed(2);
+                if (todasCompletas && suma > 0) {
+                    // Redondear la suma usando la función de redondeo
+                    const sumaRedondeada = window.redondearCalificacion(suma);
+                    // Convertir a escala 1-10 (dividir entre 10)
+                    const promedio = sumaRedondeada / 10;
+                    promedioTexto = promedio.toString();
                 }
                 
                 promedioCell.textContent = promedioTexto;
                 
-                // Actualizar clases
+                // Actualizar clases para colorear
                 promedioCell.classList.remove('promedio-alto', 'promedio-medio', 'promedio-bajo');
                 
                 if (todasCompletas) {
-                    const promedio = parseFloat(promedioTexto);
-                    if (!isNaN(promedio)) {
-                        if (promedio >= 70) {
+                    const prom = parseFloat(promedioTexto);
+                    if (!isNaN(prom)) {
+                        if (prom >= 7) {
                             promedioCell.classList.add('promedio-alto');
-                        } else if (promedio >= 60) {
+                        } else if (prom >= 6) {
                             promedioCell.classList.add('promedio-medio');
-                        } else if (promedio > 0) {
+                        } else if (prom > 0) {
                             promedioCell.classList.add('promedio-bajo');
                         }
                     }
@@ -2110,7 +2340,7 @@
             }
         };
 
-        // Función para redondear calificaciones a múltiplos de 10 (solo enteros)
+        // Función para redondear calificaciones a múltiplos de 10 (solo para la calificación final)
         window.redondearCalificacion = function(calificacion) {
             // Tomar solo la parte entera (ignorar decimales)
             const entero = Math.floor(calificacion);
@@ -2153,8 +2383,9 @@
                 const valorOriginal = input.getAttribute('data-original-value') || '';
                 const alumnoId = input.getAttribute('data-alumno-id');
                 const parcialNumero = input.getAttribute('data-parcial');
+                const porcentajeMax = parseInt(input.getAttribute('data-porcentaje-max')) || 100;
                 
-                // Validar que no exceda 100 (incluso antes de verificar si cambió)
+                // Validar que no exceda el porcentaje máximo
                 if (valorActual !== '') {
                     const num = parseFloat(valorActual);
                     if (isNaN(num)) {
@@ -2171,8 +2402,8 @@
                         input.style.backgroundColor = '#fee2e2';
                         hayErrores = true;
                         if (!primerError) primerError = input;
-                    } else if (num > 100) {
-                        // Excede 100
+                    } else if (num > porcentajeMax) {
+                        // Excede el porcentaje máximo de la unidad
                         input.classList.add('error');
                         input.style.borderColor = '#dc2626';
                         input.style.backgroundColor = '#fee2e2';
@@ -2181,29 +2412,20 @@
                     }
                 }
                 
-                // Solo guardar si el valor cambió y no hay errores (por ahora)
+                // Solo guardar si el valor cambió y no hay errores
                 if (valorActual !== valorOriginal && !hayErrores) {
-                    // REDONDEAR EL VALOR ANTES DE GUARDAR
-                    let valorAGuardar = valorActual;
-                    if (valorActual !== '') {
-                        const num = parseFloat(valorActual);
-                        if (!isNaN(num)) {
-                            // Aplicar redondeo especial
-                            valorAGuardar = redondearCalificacion(num).toString();
-                        }
-                    }
-                    
+                    // Guardar el valor EXACTO sin redondear
                     calificacionesModificadas.push({
                         alumno_id: alumnoId,
                         parcial: parseInt(parcialNumero),
-                        calificacion: valorAGuardar || null
+                        calificacion: valorActual || null
                     });
                 }
             });
             
             // Si hay errores, mostrar mensaje y hacer scroll al primero
             if (hayErrores) {
-                alert('Hay calificaciones inválidas. Por favor verifica:\n- Deben ser números entre 0 y 100\n- No pueden ser negativas\n- No pueden exceder 100');
+                window.mostrarSnackbar('Calificaciones inválidas: deben ser números entre 0 y el porcentaje de cada unidad', 'error');
                 
                 if (primerError) {
                     primerError.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -2214,11 +2436,11 @@
             
             // Si no hay cambios, mostrar mensaje
             if (calificacionesModificadas.length === 0) {
-                alert('No hay cambios para guardar');
+                window.mostrarSnackbar('No hay cambios para guardar', 'info');
                 return;
             }
             
-            console.log('Calificaciones a guardar (redondeadas):', calificacionesModificadas);
+            console.log('Calificaciones a guardar (valores exactos):', calificacionesModificadas);
             
             // Deshabilitar botón y mostrar carga
             const btnGuardar = document.querySelector('.btn-guardar-calificaciones');
@@ -2249,25 +2471,12 @@
                 
                 if (data.success) {
                     // Mostrar mensaje de éxito
-                    alert('Calificaciones guardadas correctamente');
+                    window.mostrarSnackbar('Calificaciones guardadas correctamente', 'success');
                     
-                    // ACTUALIZAR LOS INPUTS CON LOS VALORES REDONDEADOS
+                    // ACTUALIZAR LOS VALORES ORIGINALES EN LOS INPUTS
                     inputs.forEach(input => {
-                        const alumnoId = input.getAttribute('data-alumno-id');
-                        const parcialNumero = input.getAttribute('data-parcial');
-                        
-                        // Buscar si esta calificación fue modificada y redondeada
-                        const calModificada = calificacionesModificadas.find(
-                            c => c.alumno_id == alumnoId && c.parcial == parcialNumero
-                        );
-                        
-                        if (calModificada) {
-                            // Actualizar el input con el valor redondeado
-                            input.value = calModificada.calificacion || '';
-                        }
-                        
-                        // Actualizar el valor original
-                        input.setAttribute('data-original-value', input.value.trim());
+                        const valorActual = input.value.trim();
+                        input.setAttribute('data-original-value', valorActual);
                         input.classList.remove('error');
                         input.style.borderColor = '';
                         input.style.backgroundColor = '';
@@ -2296,15 +2505,9 @@
                         }
                     }
                     
-                    // Actualizar las sumatorias
+                    // Actualizar los promedios
                     document.querySelectorAll('.calificacion-input').forEach(input => {
-                        window.actualizarSumatoria(input);
-                    });
-
-                    // Actualizar los promedios después de guardar
-                    const numUnidades = document.querySelectorAll('.calificaciones-subheader-row th').length - 2; // Restamos las columnas de Alumnos y Promedio
-                    document.querySelectorAll('.calificacion-input').forEach(input => {
-                        window.actualizarPromedio(input, numUnidades);
+                        window.actualizarPromedio(input);
                     });
                 } else {
                     alert('Error: ' + (data.error || 'Error desconocido'));
@@ -2316,7 +2519,7 @@
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Error al guardar las calificaciones: ' + error.message);
+                window.mostrarSnackbar('Error: ' + error.message, 'error');
                 btnGuardar.innerHTML = textoOriginal;
                 btnGuardar.disabled = false;
             });
@@ -2385,12 +2588,18 @@
             parcialesData = [];
             fechasOcupadas = [];
             document.getElementById('unidades-container').innerHTML = '';
+            
+            // Ocultar snackbar al cerrar modal
+            window.ocultarSnackbar();
         });
         
         modal.addEventListener('click', (e) => {
             if (e.target === modal) {
                 modal.classList.remove('active');
                 document.body.style.overflow = 'auto';
+                
+                // Ocultar snackbar al cerrar modal
+                window.ocultarSnackbar();
             }
         });
         
@@ -2398,6 +2607,9 @@
             if (e.key === 'Escape' && modal.classList.contains('active')) {
                 modal.classList.remove('active');
                 document.body.style.overflow = 'auto';
+                
+                // Ocultar snackbar al cerrar modal
+                window.ocultarSnackbar();
             }
         });
         
@@ -2494,7 +2706,7 @@
                                 });
                         } else {
                             // Si no hay materias, mostrar mensaje
-                            alert('No hay materias configuradas para este grupo');
+                            window.mostrarSnackbar('No hay materias configuradas para este grupo', 'warning');
                             
                             // Ocultar carga y mostrar mensaje en el contenedor
                             document.getElementById('cargandoCalificaciones').style.display = 'none';
