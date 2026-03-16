@@ -713,154 +713,138 @@ def guardar_asistencia(request):
     return JsonResponse({'error': 'Método no permitido'}, status=405)
 
 def obtener_historial_asistencia(request):
-    """Endpoint AJAX para obtener el historial de asistencia de un grupo"""
     if request.method == 'GET':
-        grupo_id = request.GET.get('grupo_id')
+        gdm_id     = request.GET.get('gdm_id')
         docente_id = request.session.get('usuario_id')
-        
-        print(f"Obteniendo historial - Grupo ID: {grupo_id}, Docente ID: {docente_id}")
-        
-        if not grupo_id:
-            return JsonResponse({'error': 'ID de grupo no proporcionado'}, status=400)
-        
+
+        if not gdm_id:
+            return JsonResponse({'error': 'ID de materia no proporcionado'}, status=400)
+
         if not docente_id:
             return JsonResponse({'error': 'Usuario no autenticado'}, status=401)
-        
+
         try:
-            # Obtener el grupo y el docente
-            grupo = Grupo.objects.get(id=grupo_id)
-            docente = Usuario.objects.get(id=docente_id)
-            
-            # Obtener el GDM (relación grupo-docente-materia)
-            gdm = GrupoDocenteMateria.objects.filter(
-                grupo=grupo,
-                docente=docente
-            ).first()
-            
-            if not gdm:
-                return JsonResponse({'error': 'No tienes materias asignadas en este grupo'}, status=400)
-            
-            # Obtener todos los alumnos del grupo
-            alumnos = Alumno.objects.filter(grupo=grupo).order_by('nombre')
-            
+            gdm = GrupoDocenteMateria.objects.get(id=gdm_id, docente_id=docente_id)
+            alumnos = Alumno.objects.filter(grupo=gdm.grupo).order_by('nombre')
+
             if not alumnos.exists():
                 return JsonResponse({'historial': [], 'message': 'No hay alumnos en este grupo'})
-            
+
             historial = []
             for alumno in alumnos:
-                # Obtener asistencias de este alumno
-                asistencias = Asistencia.objects.filter(
-                    alumno=alumno,
-                    grupo_docente_materia=gdm
-                )
-                
+                asistencias  = Asistencia.objects.filter(alumno=alumno, grupo_docente_materia=gdm)
                 total_clases = asistencias.count()
-                
+
                 if total_clases > 0:
                     total_asistencias = asistencias.filter(estado__nombre='Asistió').count()
-                    total_retardos = asistencias.filter(estado__nombre='Retardo').count()
-                    total_faltas = asistencias.filter(estado__nombre='No asistió').count()
-                    
-                    # Calcular porcentaje (los retardos cuentan como 0.5)
-                    porcentaje = int(((total_asistencias + total_retardos * 0.5) / total_clases) * 100)
-                    
-                    # Determinar estado basado en porcentaje
-                    if porcentaje >= 80:
-                        estado_alumno = "Bueno"
-                    elif porcentaje >= 60:
-                        estado_alumno = "Regular"
-                    else:
-                        estado_alumno = "Crítico"
+                    total_retardos    = asistencias.filter(estado__nombre='Retardo').count()
+                    total_faltas      = asistencias.filter(estado__nombre='No asistió').count()
+                    porcentaje        = int(((total_asistencias + total_retardos * 0.5) / total_clases) * 100)
+
+                    if porcentaje >= 80:   estado_alumno = "Bueno"
+                    elif porcentaje >= 60: estado_alumno = "Regular"
+                    else:                  estado_alumno = "Crítico"
                 else:
-                    total_asistencias = 0
-                    total_retardos = 0
-                    total_faltas = 0
-                    porcentaje = 0
+                    total_asistencias = total_retardos = total_faltas = porcentaje = 0
                     estado_alumno = "Sin datos"
-                
+
                 historial.append({
-                    'alumno_id': alumno.id,
-                    'nombre': alumno.nombre,
-                    'matricula': alumno.matricula,
-                    'asistencias': total_asistencias,
-                    'retardos': total_retardos,
-                    'faltas': total_faltas,
+                    'alumno_id':    alumno.id,
+                    'nombre':       alumno.nombre,
+                    'matricula':    alumno.matricula,
+                    'asistencias':  total_asistencias,
+                    'retardos':     total_retardos,
+                    'faltas':       total_faltas,
                     'total_clases': total_clases,
-                    'porcentaje': porcentaje,
-                    'estado': estado_alumno
+                    'porcentaje':   porcentaje,
+                    'estado':       estado_alumno
                 })
-            
-            print(f"Historial generado para {len(historial)} alumnos")
+
             return JsonResponse({'historial': historial})
-                
-        except Grupo.DoesNotExist:
-            return JsonResponse({'error': 'Grupo no encontrado'}, status=404)
-        except Usuario.DoesNotExist:
-            return JsonResponse({'error': 'Usuario no encontrado'}, status=404)
+
+        except GrupoDocenteMateria.DoesNotExist:
+            return JsonResponse({'error': 'Materia no encontrada'}, status=404)
         except Exception as e:
-            print(f"Error al obtener historial: {str(e)}")
             return JsonResponse({'error': str(e)}, status=500)
-    
+
     return JsonResponse({'error': 'Método no permitido'}, status=405)
 
 def asistencia(request):
-    # Verificar si el usuario está autenticado
     if not request.session.get('usuario_id'):
         return redirect('login')
-    
-    # Obtener el usuario actual desde la sesión
+
     usuario_id = request.session.get('usuario_id')
-    
+
     try:
-        # Obtener el usuario
         usuario = Usuario.objects.get(id=usuario_id)
-        
-        # Obtener todos los grupos donde este docente imparte alguna materia
-        grupos_docente = GrupoDocenteMateria.objects.filter(
-            docente=usuario
-        ).select_related('grupo', 'materia').values('grupo').distinct()
-        
-        # Obtener los IDs de los grupos
-        grupo_ids = [g['grupo'] for g in grupos_docente]
-        
-        # Obtener los grupos completos
-        grupos = Grupo.objects.filter(id__in=grupo_ids)
-        
-        # Preparar datos de grupos para el template
-        grupos_data = []
-        for grupo in grupos:
-            # Obtener los alumnos de este grupo
-            alumnos = Alumno.objects.filter(grupo=grupo).order_by('nombre')
-            
-            # Obtener materias que el docente imparte en este grupo
-            materias = GrupoDocenteMateria.objects.filter(
-                docente=usuario,
-                grupo=grupo
-            ).select_related('materia')
-            
-            materias_list = [{'id': m.materia.id, 'nombre': m.materia.nombre} for m in materias]
-            
-            grupos_data.append({
-                'id': grupo.id,
-                'clave': grupo.clave,
-                'alumnos': [{'id': a.id, 'nombre': a.nombre, 'matricula': a.matricula} for a in alumnos],
-                'materias': materias_list,
-                'total_alumnos': alumnos.count()
-            })
-        
-        # También obtener estados de asistencia disponibles
-        estados_asistencia = EstadoAsistencia.objects.all()
-        estados_data = [{'id': e.id, 'nombre': e.nombre} for e in estados_asistencia]
-        
-        context = {
-            'docente': usuario,
-            'grupos': grupos_data,
-            'estados_asistencia': estados_data
-        }
-        
     except Usuario.DoesNotExist:
         return redirect('login')
-    
+
+    # Selector: todos los GDM del docente
+    gdms = GrupoDocenteMateria.objects.filter(
+        docente=usuario
+    ).select_related('grupo', 'materia').order_by('grupo__clave', 'materia__nombre')
+
+    grupos_materia = [
+        {'gdm_id': gdm.id, 'label': f"{gdm.grupo.clave} — {gdm.materia.nombre}"}
+        for gdm in gdms
+    ]
+
+    alumnos_con_estado = []
+    gdm_id_sel = request.GET.get('gdm_id') or request.POST.get('gdm_id')
+    fecha_sel  = request.GET.get('fecha')  or request.POST.get('fecha')
+
+    # ── GET: cargar lista de alumnos ──────────────────────────────────────
+    if request.method == 'GET' and gdm_id_sel and fecha_sel:
+        gdm = get_object_or_404(GrupoDocenteMateria, id=gdm_id_sel, docente=usuario)
+        alumnos = Alumno.objects.filter(grupo=gdm.grupo).order_by('nombre')
+
+        for alumno in alumnos:
+            previa = Asistencia.objects.filter(
+                alumno=alumno,
+                grupo_docente_materia=gdm,
+                fecha=fecha_sel
+            ).first()
+
+            alumnos_con_estado.append({
+                'alumno':      alumno,
+                'estado':      previa.estado.nombre if previa else 'Asistió',
+                'comentario':  previa.comentario    if previa else '',
+            })
+
+    # ── POST: guardar asistencia ──────────────────────────────────────────
+    elif request.method == 'POST':
+        gdm = get_object_or_404(GrupoDocenteMateria, id=gdm_id_sel, docente=usuario)
+        alumnos = Alumno.objects.filter(grupo=gdm.grupo).order_by('nombre')
+        estados_validos = {'Asistió', 'Retardo', 'No asistió'}
+
+        for alumno in alumnos:
+            estado_nombre = request.POST.get(f'estado_{alumno.id}', 'Asistió')
+            if estado_nombre not in estados_validos:
+                estado_nombre = 'Asistió'
+
+            estado_obj = EstadoAsistencia.objects.get(nombre=estado_nombre)
+
+            Asistencia.objects.update_or_create(
+                alumno=alumno,
+                grupo_docente_materia=gdm,
+                fecha=fecha_sel,
+                defaults={
+                    'estado':     estado_obj,
+                    'comentario': request.POST.get(f'comentario_{alumno.id}', '')
+                }
+            )
+
+        messages.success(request, f'Asistencia guardada para {alumnos.count()} alumnos.')
+        return redirect(f'/asistencia/?gdm_id={gdm_id_sel}&fecha={fecha_sel}')
+
+    context = {
+        'docente':            usuario,
+        'grupos_materia':     grupos_materia,
+        'gdm_id_sel':         str(gdm_id_sel) if gdm_id_sel else '',
+        'fecha_sel':          fecha_sel or timezone.now().date().isoformat(),
+        'alumnos_con_estado': alumnos_con_estado,
+    }
     return render(request, "asistencia.html", context)
 
 def estadisticas(request):
@@ -1209,3 +1193,27 @@ def editar_docente(request, docente_id):
             messages.error(request, 'Docente no encontrado')
 
     return redirect('director')
+
+def obtener_materias_por_grupo(request):
+    """Retorna las materias que el docente imparte en un grupo específico"""
+    if request.method == 'GET':
+        grupo_id = request.GET.get('grupo_id')
+        docente_id = request.session.get('usuario_id')
+
+        if not grupo_id:
+            return JsonResponse({'error': 'ID de grupo no proporcionado'}, status=400)
+
+        try:
+            gdms = GrupoDocenteMateria.objects.filter(
+                grupo_id=grupo_id,
+                docente_id=docente_id
+            ).select_related('materia')
+
+            materias = [{'id': gdm.id, 'nombre': gdm.materia.nombre} for gdm in gdms]
+
+            return JsonResponse({'success': True, 'materias': materias})
+
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+    return JsonResponse({'error': 'Método no permitido'}, status=405)

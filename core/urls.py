@@ -9,7 +9,6 @@ urlpatterns = [
     path('actividades/', views.actividades),
     path('actividades/<int:id>/detalle', views.detalleActividad),
     path('guardar-entregas/', views.guardar_entregas),
-    path('asistencia', views.asistencia),
     path('estadisticas', views.estadisticas),
     path('alertas', views.alertas),
     path('sidebar', views.sidebar),
@@ -29,4 +28,5 @@ urlpatterns = [
     path('obtener-calificaciones/', views.obtener_calificaciones, name='obtener_calificaciones'),
     path('cuatrimestre/nuevo/', views.new_cuatrimestre, name='new_cuatrimestre'),
     path('director/editar-docente/<int:docente_id>/', views.editar_docente, name='editar_docente'),
+    path('asistencia/', views.asistencia, name='asistencia'),
 ]
