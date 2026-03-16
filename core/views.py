@@ -10,6 +10,7 @@ from .forms import *
 from .models import *
 import json
 from .models import Grupo, Actividad, Entrega, Alumno, GrupoDocenteMateria, Parcial
+from datetime import datetime
 
 
 def home(request):
@@ -17,8 +18,163 @@ def home(request):
 
 
 def dashboard(request):
-    return render(request, "dashboard.html")
-
+    # Verificar si el usuario está autenticado
+    if not request.session.get('usuario_id'):
+        return redirect('login')
+    
+    # Obtener el usuario actual desde la sesión
+    usuario_id = request.session.get('usuario_id')
+    
+    try:
+        # Obtener el usuario
+        usuario = Usuario.objects.get(id=usuario_id)
+        
+        # Obtener los roles del usuario
+        roles = request.session.get('usuario_roles', [])
+        
+        # Inicializar variables
+        grupos_data = []
+        total_alumnos = 0
+        alumnos_riesgo = 0
+        actividades_pendientes = 0
+        actividades_data = []
+        
+        # Si es docente, obtener sus grupos
+        if 'Docente' in roles:
+            # Obtener todos los grupos donde este docente imparte alguna materia
+            grupos_docente = GrupoDocenteMateria.objects.filter(
+                docente=usuario
+            ).select_related('grupo', 'materia').values('grupo').distinct()
+            
+            # Obtener los IDs de los grupos
+            grupo_ids = [g['grupo'] for g in grupos_docente]
+            
+            # Obtener los grupos completos con sus relaciones
+            grupos = Grupo.objects.filter(id__in=grupo_ids).prefetch_related(
+                'alumno_set',
+                'grupodocentemateria_set__materia'
+            )
+            
+            # Preparar datos de grupos
+            for grupo in grupos:
+                # Obtener las materias que el docente imparte en este grupo
+                materias = GrupoDocenteMateria.objects.filter(
+                    grupo=grupo,
+                    docente=usuario
+                ).select_related('materia')
+                
+                # Crear un nombre más descriptivo para el grupo
+                # Por ejemplo: "Ingeniería en Software - 5A" o si no hay carrera, solo "Grupo 5A"
+                if hasattr(grupo, 'carrera') and grupo.carrera:
+                    nombre_completo = f"{grupo.carrera} - {grupo.clave}"
+                else:
+                    nombre_completo = f"Grupo {grupo.clave}"
+                
+                # Lista de materias que imparte en este grupo
+                materias_lista = [m.materia.nombre for m in materias]
+                
+                # Contar alumnos en este grupo
+                num_alumnos = Alumno.objects.filter(grupo=grupo).count()
+                total_alumnos += num_alumnos
+                
+                # Calcular alumnos en riesgo (basado en asistencias)
+                alumnos_grupo = Alumno.objects.filter(grupo=grupo)
+                riesgo_grupo = 0
+                
+                for alumno in alumnos_grupo:
+                    # Obtener el GDM para este grupo y docente
+                    gdm = GrupoDocenteMateria.objects.filter(
+                        grupo=grupo,
+                        docente=usuario
+                    ).first()
+                    
+                    if gdm:
+                        # Calcular porcentaje de asistencia
+                        asistencias = Asistencia.objects.filter(
+                            alumno=alumno,
+                            grupo_docente_materia=gdm
+                        )
+                        
+                        total_clases = asistencias.count()
+                        if total_clases > 0:
+                            asistencias_totales = asistencias.filter(estado__nombre='Asistió').count()
+                            retardos = asistencias.filter(estado__nombre='Retardo').count()
+                            porcentaje = int(((asistencias_totales + retardos * 0.5) / total_clases) * 100)
+                            
+                            if porcentaje < 60:
+                                riesgo_grupo += 1
+                
+                alumnos_riesgo += riesgo_grupo
+                
+                grupos_data.append({
+                    'id': grupo.id,
+                    'clave': grupo.clave,
+                    'nombre_completo': nombre_completo,
+                    'carrera': getattr(grupo, 'carrera', ''),
+                    'materias': materias_lista,
+                    'num_alumnos': num_alumnos,
+                    'alumnos_riesgo': riesgo_grupo
+                })
+            
+            # Contar actividades pendientes (con fecha de entrega próxima)
+            hoy = datetime.now().date()
+            actividades_pendientes = Actividad.objects.filter(
+                parcial__grupo_docente_materia__docente=usuario,
+                fecha_entrega__gte=hoy
+            ).count()
+            
+            # Obtener actividades para mostrar
+            actividades = Actividad.objects.filter(
+                parcial__grupo_docente_materia__docente=usuario,
+                fecha_entrega__gte=hoy
+            ).select_related(
+                'parcial__grupo_docente_materia__grupo'
+            ).order_by('fecha_entrega')[:5]
+            
+            for actividad in actividades:
+                grupo = actividad.parcial.grupo_docente_materia.grupo
+                total_alumnos_act = Alumno.objects.filter(grupo=grupo).count()
+                entregadas = Entrega.objects.filter(
+                    actividad=actividad,
+                    entregado=True
+                ).count()
+                
+                dias_restantes = (actividad.fecha_entrega - hoy).days
+                porcentaje = int((entregadas / total_alumnos_act * 100)) if total_alumnos_act > 0 else 0
+                
+                # Crear nombre descriptivo para el grupo en actividades
+                if hasattr(grupo, 'carrera') and grupo.carrera:
+                    grupo_nombre = f"{grupo.carrera} - {grupo.clave}"
+                else:
+                    grupo_nombre = f"Grupo {grupo.clave}"
+                
+                actividades_data.append({
+                    'id': actividad.id,
+                    'titulo': actividad.titulo,
+                    'grupo_clave': grupo.clave,
+                    'grupo_nombre': grupo_nombre,
+                    'entregadas': entregadas,
+                    'total_alumnos': total_alumnos_act,
+                    'porcentaje_entregas': porcentaje,
+                    'dias_restantes': dias_restantes,
+                    'fecha_entrega': actividad.fecha_entrega
+                })
+        
+        context = {
+            'docente_nombre': usuario.nombre,
+            'roles': roles,
+            'grupos': grupos_data,
+            'total_alumnos': total_alumnos,
+            'alumnos_riesgo': alumnos_riesgo,
+            'actividades_pendientes': actividades_pendientes,
+            'actividades': actividades_data,
+            'total_grupos': len(grupos_data)
+        }
+        
+    except Usuario.DoesNotExist:
+        return redirect('login')
+    
+    return render(request, "dashboard.html", context)
 def gruposAlumnos(request):
     # Verificar si el usuario está autenticado
     if not request.session.get('usuario_id'):
