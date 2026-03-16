@@ -21,7 +21,7 @@ urlpatterns = [
     path('obtener-alumnos-por-grupo/', views.obtener_alumnos_por_grupo, name='obtener_alumnos_por_grupo'),
     path('guardar-asistencia/', views.guardar_asistencia, name='guardar_asistencia'),
     path('obtener-historial-asistencia/', views.obtener_historial_asistencia, name='obtener_historial_asistencia'),
-    path('guardar-comentario/', views.guardar_comentario, name='guardar_comentario'),    
+    path('guardar-comentario/', views.guardar_comentario, name='guardar_comentario'),
     path('alumno/<int:alumno_id>/perfil/', views.perfil_alumno, name='perfil_alumno'),
     path('guardar-parciales/', views.guardar_parciales, name='guardar_parciales'),
     path('guardar-calificaciones/', views.guardar_calificaciones, name='guardar_calificaciones'),
@@ -29,4 +29,6 @@ urlpatterns = [
     path('cuatrimestre/nuevo/', views.new_cuatrimestre, name='new_cuatrimestre'),
     path('director/editar-docente/<int:docente_id>/', views.editar_docente, name='editar_docente'),
     path('asistencia/', views.asistencia, name='asistencia'),
+    path('obtener-alertas-grupo/', views.obtener_alertas_grupo, name='obtener_alertas_grupo'),
+    path('marcar-alerta-atendida/', views.marcar_alerta_atendida, name='marcar_alerta_atendida'),
 ]

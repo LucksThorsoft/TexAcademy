@@ -257,82 +257,83 @@ def guardar_calificaciones(request):
             data = json.loads(request.body)
             gdm_id = data.get('gdm_id')
             calificaciones = data.get('calificaciones', [])
-            
-            # Validar datos
+ 
             if not gdm_id:
                 return JsonResponse({'error': 'ID de materia no proporcionado'}, status=400)
-            
+ 
             if not calificaciones:
                 return JsonResponse({'error': 'No se recibieron calificaciones'}, status=400)
-            
-            # Obtener la relación GrupoDocenteMateria
+ 
             gdm = GrupoDocenteMateria.objects.get(id=gdm_id)
-            
-            # Validar que el docente sea el mismo que está en sesión
+ 
             docente_id = request.session.get('usuario_id')
             if gdm.docente.id != docente_id:
                 return JsonResponse({'error': 'No tienes permiso para modificar esta materia'}, status=403)
-            
-            # Obtener todos los parciales de esta materia
+ 
             parciales = Parcial.objects.filter(grupo_docente_materia=gdm)
             parciales_dict = {p.numero_parcial: p for p in parciales}
-            
+ 
             calificaciones_guardadas = 0
-            
+ 
             for item in calificaciones:
-                alumno_id = item.get('alumno_id')
-                parcial_numero = item.get('parcial')
+                alumno_id        = item.get('alumno_id')
+                parcial_numero   = item.get('parcial')
                 calificacion_valor = item.get('calificacion')
-                
-                # Validar que el alumno existe
+ 
                 try:
                     alumno = Alumno.objects.get(id=alumno_id)
                 except Alumno.DoesNotExist:
                     continue
-                
-                # Validar que el parcial existe
+ 
                 if parcial_numero not in parciales_dict:
                     continue
-                
+ 
                 parcial = parciales_dict[parcial_numero]
-                
-                # Validar que la calificación es un número válido
-                if calificacion_valor is not None and calificacion_valor.strip() != '':
+ 
+                if calificacion_valor is not None and str(calificacion_valor).strip() != '':
                     try:
                         calif_float = float(calificacion_valor)
-                        # Validar rango 0-100
                         if calif_float < 0 or calif_float > 100:
                             continue
                     except ValueError:
                         continue
                 else:
                     calif_float = None
-                
-                # Crear o actualizar la calificación
+ 
                 CalificacionParcial.objects.update_or_create(
                     alumno=alumno,
                     parcial=parcial,
                     defaults={
                         'calificacion': calif_float,
-                        'comentario': ''  # Por ahora vacío, se puede implementar después
+                        'comentario': ''
                     }
                 )
-                
+
                 calificaciones_guardadas += 1
-            
+
+                # ── GENERAR/LIMPIAR ALERTAS ──────────────────────────────
+                if calif_float is not None:
+                    # Calificación capturada → evaluar si genera alerta
+                    _generar_alertas_alumno(alumno, parcial, gdm, calif_float)
+                else:
+                    # Calificación borrada → eliminar alerta si existía
+                    Alerta.objects.filter(alumno=alumno, parcial=parcial).delete()
+ 
             return JsonResponse({
                 'success': True,
                 'message': f'Calificaciones guardadas correctamente ({calificaciones_guardadas} actualizadas)',
                 'guardadas': calificaciones_guardadas
             })
-            
+ 
         except GrupoDocenteMateria.DoesNotExist:
             return JsonResponse({'error': 'Materia no encontrada'}, status=404)
         except Exception as e:
             print(f"Error guardando calificaciones: {str(e)}")
             return JsonResponse({'error': str(e)}, status=500)
-    
+ 
     return JsonResponse({'error': 'Método no permitido'}, status=405)
+ 
+ 
 
 def obtener_calificaciones(request):
     """Endpoint para obtener las calificaciones de una materia"""
@@ -1217,3 +1218,151 @@ def obtener_materias_por_grupo(request):
             return JsonResponse({'error': str(e)}, status=500)
 
     return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+def _generar_alertas_alumno(alumno, parcial, gdm, calificacion):
+    motivos    = []
+    calif_baja = False
+    asist_baja = False
+
+    # 1. CALIFICACIÓN BAJA
+    umbral_calif = parcial.porcentaje * 0.60
+    calif_baja   = calificacion < umbral_calif
+
+    if calif_baja:
+        motivos.append(
+            f"Calificación baja en {parcial.nombre}: "
+            f"{calificacion:.1f} / {parcial.porcentaje} "
+            f"(mínimo esperado: {umbral_calif:.1f})"
+        )
+
+    # 2. ASISTENCIA BAJA (solo dentro del rango de fechas del parcial)
+    asistencias_parcial = Asistencia.objects.filter(
+        alumno=alumno,
+        grupo_docente_materia=gdm,
+        fecha__gte=parcial.fecha_inicio,
+        fecha__lte=parcial.fecha_cierre
+    )
+    total_clases = asistencias_parcial.count()
+
+    if total_clases > 0:
+        total_asistio    = asistencias_parcial.filter(estado__nombre='Asistió').count()
+        total_retardo    = asistencias_parcial.filter(estado__nombre='Retardo').count()
+        porcentaje_asist = ((total_asistio + total_retardo * 0.5) / total_clases) * 100
+        asist_baja       = porcentaje_asist < 70
+
+        if asist_baja:
+            motivos.append(
+                f"Asistencia baja en {parcial.nombre}: "
+                f"{porcentaje_asist:.1f}% "
+                f"({total_asistio} asistencias, {total_retardo} retardos de {total_clases} clases)"
+            )
+
+    # 3. NIVEL DE RIESGO
+    if   calif_baja and asist_baja: nivel_riesgo = 'Alto'
+    elif calif_baja:                nivel_riesgo = 'Medio'
+    else:                           nivel_riesgo = 'Bajo'
+
+    # 4. BUSCAR ALERTA EXISTENTE para este alumno + parcial
+    alerta_existente = Alerta.objects.filter(
+        alumno=alumno,
+        parcial=parcial
+    ).first()
+
+    if not motivos:
+        # Sin problemas → eliminar alerta si existía
+        if alerta_existente:
+            alerta_existente.delete()
+            print(f"[ALERTA ELIMINADA] {alumno.nombre} — {parcial.nombre} ya no tiene problemas")
+        return
+
+    motivo_completo = ' | '.join(motivos)
+
+    if alerta_existente:
+        # Actualizar — y reactivar si ya estaba atendida
+        alerta_existente.motivo       = motivo_completo
+        alerta_existente.nivel_riesgo = nivel_riesgo
+        alerta_existente.atendida     = False
+        alerta_existente.save()
+        print(f"[ALERTA ACTUALIZADA] {alumno.nombre} — {nivel_riesgo}: {motivo_completo}")
+    else:
+        Alerta.objects.create(
+            alumno=alumno,
+            parcial=parcial,
+            motivo=motivo_completo,
+            nivel_riesgo=nivel_riesgo
+        )
+        print(f"[ALERTA CREADA] {alumno.nombre} — {nivel_riesgo}: {motivo_completo}")
+ 
+ 
+def obtener_alertas_grupo(request):
+    """Retorna las alertas no atendidas de todos los alumnos de un grupo/materia"""
+    if request.method == 'GET':
+        gdm_id     = request.GET.get('gdm_id')
+        docente_id = request.session.get('usuario_id')
+ 
+        if not gdm_id:
+            return JsonResponse({'error': 'ID de materia no proporcionado'}, status=400)
+        if not docente_id:
+            return JsonResponse({'error': 'Usuario no autenticado'}, status=401)
+ 
+        try:
+            gdm     = GrupoDocenteMateria.objects.get(id=gdm_id, docente_id=docente_id)
+            alumnos = Alumno.objects.filter(grupo=gdm.grupo)
+ 
+            alertas_data = []
+            for alumno in alumnos:
+                alertas_alumno = Alerta.objects.filter(
+                    alumno=alumno,
+                    atendida=False
+                ).order_by('-fecha', '-id')
+ 
+                for alerta in alertas_alumno:
+                    alertas_data.append({
+                        'alerta_id':        alerta.id,
+                        'alumno_id':        alumno.id,
+                        'alumno_nombre':    alumno.nombre,
+                        'alumno_matricula': alumno.matricula,
+                        'motivo':           alerta.motivo,
+                        'nivel_riesgo':     alerta.nivel_riesgo,
+                        'fecha':            alerta.fecha.strftime('%d/%m/%Y'),
+                        'atendida':         alerta.atendida,
+                    })
+ 
+            # Ordenar: Alto → Medio → Bajo
+            orden_riesgo = {'Alto': 0, 'Medio': 1, 'Bajo': 2}
+            alertas_data.sort(key=lambda x: orden_riesgo.get(x['nivel_riesgo'], 99))
+ 
+            return JsonResponse({'success': True, 'alertas': alertas_data})
+ 
+        except GrupoDocenteMateria.DoesNotExist:
+            return JsonResponse({'error': 'Materia no encontrada'}, status=404)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+ 
+    return JsonResponse({'error': 'Método no permitido'}, status=405)
+ 
+ 
+@csrf_exempt
+def marcar_alerta_atendida(request):
+    """Marca una alerta como atendida"""
+    if request.method == 'POST':
+        try:
+            data      = json.loads(request.body)
+            alerta_id = data.get('alerta_id')
+ 
+            if not alerta_id:
+                return JsonResponse({'error': 'ID de alerta no proporcionado'}, status=400)
+ 
+            alerta          = Alerta.objects.get(id=alerta_id)
+            alerta.atendida = True
+            alerta.save()
+ 
+            return JsonResponse({'success': True, 'message': 'Alerta marcada como atendida'})
+ 
+        except Alerta.DoesNotExist:
+            return JsonResponse({'error': 'Alerta no encontrada'}, status=404)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+ 
+    return JsonResponse({'error': 'Método no permitido'}, status=405)
+ 
