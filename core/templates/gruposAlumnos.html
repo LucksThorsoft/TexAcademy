@@ -720,26 +720,26 @@
         text-align: left;
     }
 
-    /* Estilos para la columna de sumatoria */
-    .sumatoria-cell {
+    /* Estilos para la columna de promedio */
+    .promedio-cell {
         font-weight: 600;
         background-color: #f8fafc;
         border-left: 2px solid #dee2e6;
         text-align: center;
-        min-width: 80px;
+        min-width: 100px;
     }
 
-    .sumatoria-alta {
+    .promedio-alto {
         color: #059669;
         background-color: #e8f5e9;
     }
 
-    .sumatoria-media {
+    .promedio-medio {
         color: #b45309;
         background-color: #fef3c7;
     }
 
-    .sumatoria-baja {
+    .promedio-bajo {
         color: #b91c1c;
         background-color: #fee2e2;
     }
@@ -1900,6 +1900,8 @@
                 });
             }
             
+            const numUnidades = parciales.length;
+            
             // Crear estructura de la tabla
             let html = '<table class="calificaciones-table">';
             
@@ -1912,7 +1914,7 @@
                 html += `<th>Unidad ${parcial.numero}</th>`;
             });
             
-            // Columna de Sumatoria (vacía en la primera fila)
+            // Columna de Promedio (vacía en la primera fila)
             html += '<th></th>';
             html += '</tr>';
             
@@ -1924,8 +1926,8 @@
                 html += `<th>${parcial.nombre} - ${parcial.porcentaje}%</th>`;
             });
             
-            // Columna de Sumatoria (aquí va el título)
-            html += '<th>Sumatoria</th>';
+            // Columna de Promedio (aquí va el título)
+            html += '<th>Promedio</th>';
             html += '</tr>';
             html += '</thead>';
             
@@ -1943,8 +1945,9 @@
                     </div>
                 </td>`;
                 
-                // Variables para calcular la sumatoria
-                let sumatoria = 0;
+                // Variables para calcular el promedio
+                let suma = 0;
+                let todasCompletas = true;
                 let celdasCalificaciones = [];
                 
                 // Columnas para cada parcial
@@ -1952,11 +1955,13 @@
                     const key = `${alumno.id}-${parcial.numero}`;
                     const calificacionGuardada = calificacionesMap[key] || '';
                     
-                    // Sumar si es un número válido
-                    if (calificacionGuardada !== '') {
+                    // Verificar si esta unidad tiene calificación
+                    if (calificacionGuardada === '') {
+                        todasCompletas = false;
+                    } else {
                         const num = parseFloat(calificacionGuardada);
                         if (!isNaN(num)) {
-                            sumatoria += num;
+                            suma += num;
                         }
                     }
                     
@@ -1968,7 +1973,7 @@
                                 data-alumno-id="${alumno.id}"
                                 data-parcial="${parcial.numero}"
                                 data-original-value="${calificacionGuardada}"
-                                oninput="window.validarInputCalificacion(this); window.actualizarSumatoria(this);">
+                                oninput="window.validarInputCalificacion(this); window.actualizarPromedio(this, ${numUnidades});">
                         </td>
                     `);
                 });
@@ -1976,12 +1981,14 @@
                 // Agregar las celdas de calificaciones
                 html += celdasCalificaciones.join('');
                 
-                // Columna de sumatoria con 2 decimales
-                let sumatoriaTexto = '-';
-                if (sumatoria > 0) {
-                    sumatoriaTexto = sumatoria.toFixed(2);
+                // Calcular promedio SOLO si todas las unidades están completas
+                let promedioTexto = '-';
+                if (todasCompletas && suma > 0 && numUnidades > 0) {
+                    const promedio = suma / numUnidades;
+                    promedioTexto = promedio.toFixed(2);
                 }
-                html += `<td class="sumatoria-cell" id="sumatoria-${alumno.id}">${sumatoriaTexto}</td>`;
+                
+                html += `<td class="promedio-cell" id="promedio-${alumno.id}">${promedioTexto}</td>`;
                 
                 html += '</tr>';
             });
@@ -2046,8 +2053,65 @@
             }
         };
 
+        // Función para actualizar el promedio cuando cambia un input
+        window.actualizarPromedio = function(input, numUnidades) {
+            // Obtener la fila actual
+            const fila = input.closest('tr');
+            if (!fila) return;
+            
+            // Obtener el ID del alumno
+            const alumnoId = input.getAttribute('data-alumno-id');
+            
+            // Obtener todos los inputs de calificación en esta fila
+            const inputs = fila.querySelectorAll('.calificacion-input');
+            let suma = 0;
+            let todasCompletas = true;
+            
+            inputs.forEach(inp => {
+                const valor = inp.value.trim();
+                if (valor === '') {
+                    todasCompletas = false;
+                } else {
+                    const num = parseFloat(valor);
+                    if (!isNaN(num)) {
+                        suma += num;
+                    } else {
+                        todasCompletas = false;
+                    }
+                }
+            });
+            
+            // Calcular y actualizar el promedio
+            const promedioCell = document.getElementById(`promedio-${alumnoId}`);
+            if (promedioCell) {
+                let promedioTexto = '-';
+                if (todasCompletas && suma > 0 && numUnidades > 0) {
+                    const promedio = suma / numUnidades;
+                    promedioTexto = promedio.toFixed(2);
+                }
+                
+                promedioCell.textContent = promedioTexto;
+                
+                // Actualizar clases
+                promedioCell.classList.remove('promedio-alto', 'promedio-medio', 'promedio-bajo');
+                
+                if (todasCompletas) {
+                    const promedio = parseFloat(promedioTexto);
+                    if (!isNaN(promedio)) {
+                        if (promedio >= 70) {
+                            promedioCell.classList.add('promedio-alto');
+                        } else if (promedio >= 60) {
+                            promedioCell.classList.add('promedio-medio');
+                        } else if (promedio > 0) {
+                            promedioCell.classList.add('promedio-bajo');
+                        }
+                    }
+                }
+            }
+        };
+
         // Función para redondear calificaciones a múltiplos de 10 (solo enteros)
-        function redondearCalificacion(calificacion) {
+        window.redondearCalificacion = function(calificacion) {
             // Tomar solo la parte entera (ignorar decimales)
             const entero = Math.floor(calificacion);
             
@@ -2064,7 +2128,7 @@
                 // 5,6,7,8,9 -> redondear hacia arriba al múltiplo de 10 más cercano
                 return entero + (10 - ultimoDigito);
             }
-        }
+        };
 
         // Función para guardar calificaciones
         window.guardarCalificaciones = function() {
@@ -2119,10 +2183,20 @@
                 
                 // Solo guardar si el valor cambió y no hay errores (por ahora)
                 if (valorActual !== valorOriginal && !hayErrores) {
+                    // REDONDEAR EL VALOR ANTES DE GUARDAR
+                    let valorAGuardar = valorActual;
+                    if (valorActual !== '') {
+                        const num = parseFloat(valorActual);
+                        if (!isNaN(num)) {
+                            // Aplicar redondeo especial
+                            valorAGuardar = redondearCalificacion(num).toString();
+                        }
+                    }
+                    
                     calificacionesModificadas.push({
                         alumno_id: alumnoId,
                         parcial: parseInt(parcialNumero),
-                        calificacion: valorActual || null
+                        calificacion: valorAGuardar || null
                     });
                 }
             });
@@ -2144,7 +2218,7 @@
                 return;
             }
             
-            console.log('Calificaciones a guardar:', calificacionesModificadas);
+            console.log('Calificaciones a guardar (redondeadas):', calificacionesModificadas);
             
             // Deshabilitar botón y mostrar carga
             const btnGuardar = document.querySelector('.btn-guardar-calificaciones');
@@ -2177,18 +2251,19 @@
                     // Mostrar mensaje de éxito
                     alert('Calificaciones guardadas correctamente');
                     
-                    // REDONDEAR LOS VALORES EN LOS INPUTS
+                    // ACTUALIZAR LOS INPUTS CON LOS VALORES REDONDEADOS
                     inputs.forEach(input => {
-                        const valorActual = input.value.trim();
-                        if (valorActual !== '') {
-                            const num = parseFloat(valorActual);
-                            if (!isNaN(num)) {
-                                // Aplicar redondeo especial a múltiplos de 10
-                                const valorRedondeado = redondearCalificacion(num);
-                                if (valorRedondeado !== num) {
-                                    input.value = valorRedondeado;
-                                }
-                            }
+                        const alumnoId = input.getAttribute('data-alumno-id');
+                        const parcialNumero = input.getAttribute('data-parcial');
+                        
+                        // Buscar si esta calificación fue modificada y redondeada
+                        const calModificada = calificacionesModificadas.find(
+                            c => c.alumno_id == alumnoId && c.parcial == parcialNumero
+                        );
+                        
+                        if (calModificada) {
+                            // Actualizar el input con el valor redondeado
+                            input.value = calModificada.calificacion || '';
                         }
                         
                         // Actualizar el valor original
@@ -2212,19 +2287,9 @@
                                     c => c.alumno_id === cal.alumno_id && c.parcial === cal.parcial
                                 );
                                 
-                                // Buscar el input para obtener el valor redondeado
-                                let valorRedondeado = cal.calificacion;
-                                inputs.forEach(input => {
-                                    if (input.getAttribute('data-alumno-id') == cal.alumno_id && 
-                                        input.getAttribute('data-parcial') == cal.parcial) {
-                                        valorRedondeado = input.value.trim() || null;
-                                    }
-                                });
-                                
                                 if (calIndex !== -1) {
-                                    window.materiasData[materiaIndex].calificaciones[calIndex].calificacion = valorRedondeado;
+                                    window.materiasData[materiaIndex].calificaciones[calIndex].calificacion = cal.calificacion;
                                 } else {
-                                    cal.calificacion = valorRedondeado;
                                     window.materiasData[materiaIndex].calificaciones.push(cal);
                                 }
                             });
@@ -2234,6 +2299,12 @@
                     // Actualizar las sumatorias
                     document.querySelectorAll('.calificacion-input').forEach(input => {
                         window.actualizarSumatoria(input);
+                    });
+
+                    // Actualizar los promedios después de guardar
+                    const numUnidades = document.querySelectorAll('.calificaciones-subheader-row th').length - 2; // Restamos las columnas de Alumnos y Promedio
+                    document.querySelectorAll('.calificacion-input').forEach(input => {
+                        window.actualizarPromedio(input, numUnidades);
                     });
                 } else {
                     alert('Error: ' + (data.error || 'Error desconocido'));

@@ -6,7 +6,6 @@
 <script src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/js/all.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-    /* (Mantén todo el CSS que ya tienes) */
     * {
         box-sizing: border-box;
         font-family: 'Inter', sans-serif;
@@ -27,7 +26,6 @@
         gap: 20px;
     }
 
-    /* Tabs */
     .tabs {
         display: flex;
         background-color: #e2e8f0;
@@ -58,7 +56,6 @@
         box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
 
-    /* Contenido de las pestañas */
     .tab-content {
         display: none;
         animation: fadeIn 0.3s ease;
@@ -73,7 +70,6 @@
         to { opacity: 1; transform: translateY(0); }
     }
 
-    /* Estilos para la vista de Registro Diario */
     .card {
         background-color: white;
         border-radius: 12px;
@@ -162,7 +158,6 @@
         outline: none;
     }
 
-    /* Tabla para Registro Diario */
     .table-container {
         border: 1px solid #e2e8f0;
         border-radius: 8px;
@@ -213,6 +208,7 @@
         justify-content: center;
         font-size: 12px;
         font-weight: 600;
+        flex-shrink: 0;
     }
 
     .matricula {
@@ -237,10 +233,6 @@
         cursor: pointer;
         transition: all 0.2s;
         font-size: 14px;
-    }
-
-    #td_comment {
-        display: flex;
     }
 
     .btn-status.active-check {
@@ -269,30 +261,11 @@
         color: #64748b;
     }
 
-    .btn-status.comment-btn {
-        color: #3b82f6;
-        border-color: #bfdbfe;
-        background-color: #eff6ff;
+    .celda-comentario {
+        text-align: center;
+        vertical-align: middle;
     }
 
-    .btn-status.comment-btn:hover {
-        background-color: #dbeafe;
-    }
-
-
-.celda-comentario {
-    text-align: center;
-    vertical-align: middle;
-}
-
-.celda-comentario .btn-status {
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
-    margin: 0 auto; 
-}
-
-    /* Summary Bar para Registro Diario */
     .summary-bar {
         background-color: #f8fafc;
         border-radius: 8px;
@@ -318,10 +291,9 @@
     }
 
     .val-asistencias { color: #16a34a; }
-    .val-retardos { color: #b45309; }
-    .val-faltas { color: #dc2626; }
+    .val-retardos    { color: #b45309; }
+    .val-faltas      { color: #dc2626; }
 
-    /* Footer Button para Registro Diario */
     .footer-action {
         margin-top: 24px;
     }
@@ -343,12 +315,7 @@
         background-color: #1e40af;
     }
 
-    .btn-save:disabled {
-        background-color: #94a3b8;
-        cursor: not-allowed;
-    }
-
-    /* Estilos para la vista de Historial */
+    /* Historial */
     .historial-header {
         display: flex;
         justify-content: space-between;
@@ -369,16 +336,6 @@
         color: #95a5a6;
     }
 
-    .dropdown {
-        font-size: 13px;
-        color: #7f8c8d;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    /* Tabla para Historial */
     .historial-table th {
         background-color: #f8fafc;
         text-align: left;
@@ -420,10 +377,10 @@
         font-weight: 500;
     }
 
-    .bg-green-light { background-color: #e8f5e9; color: #2e7d32; }
-    .bg-red-light { background-color: #ffebee; color: #c62828; }
+    .bg-green-light  { background-color: #e8f5e9; color: #2e7d32; }
+    .bg-red-light    { background-color: #ffebee; color: #c62828; }
     .bg-yellow-light { background-color: #fffde7; color: #f9a825; }
-    
+
     .progress-container {
         display: flex;
         align-items: center;
@@ -443,9 +400,10 @@
         border-radius: 3px;
     }
 
-    .progress-fill.green { background-color: #10b981; }
+    .progress-fill.green  { background-color: #10b981; }
     .progress-fill.orange { background-color: #f59e0b; }
-    
+    .progress-fill.red    { background-color: #ef4444; }
+
     .percentage-text {
         font-size: 13px;
         color: #64748b;
@@ -456,18 +414,15 @@
         border-radius: 6px;
         font-size: 11px;
         font-weight: 700;
-        text-transform: capitalize;
+        padding: 4px 8px;
+        color: white;
     }
-
-    .badge-blue { background-color: #2563eb; color: #fff; }
-    .badge-gray { background-color: #e2e8f0; color: #475569; }
 
     .alert-message {
         padding: 12px 16px;
         border-radius: 8px;
         margin-bottom: 16px;
         font-size: 14px;
-        display: none;
     }
 
     .alert-success {
@@ -488,199 +443,74 @@
         border: 1px solid #fde68a;
     }
 
-    /* Responsive */
+    .empty-state {
+        text-align: center;
+        padding: 40px;
+        color: #64748b;
+    }
+
+    .empty-state i {
+        font-size: 48px;
+        margin-bottom: 16px;
+        color: #94a3b8;
+        display: block;
+    }
+
+    .empty-state h3 {
+        margin: 0 0 8px 0;
+        font-weight: 500;
+    }
+
+    .empty-state p {
+        margin: 0;
+        font-size: 14px;
+    }
+
     @media (max-width: 768px) {
         .form-grid {
             grid-template-columns: 1fr;
         }
-        
-        .status-actions {
-            justify-content: flex-start;
-        }
-        
         .historial-header {
             flex-direction: column;
             gap: 15px;
         }
-        
-        .historial-table th, 
+        .historial-table th,
         .historial-table td {
             padding: 10px 15px;
         }
-        
         .progress-bar {
             display: none;
         }
-        
         .tabs {
             width: 100%;
             justify-content: center;
         }
-        
         .tab {
             padding: 8px 16px;
             flex: 1;
             text-align: center;
         }
     }
-  
-    .badge-warning {
-        background-color: #f59e0b;
-        color: white;
-    }
-
-    .badge-danger {
-        background-color: #dc2626;
-        color: white;
-    }
-
-    .progress-fill.red {
-        background-color: #ef4444;
-    }
-    
-    .loading-spinner {
-        display: inline-block;
-        width: 20px;
-        height: 20px;
-        border: 3px solid rgba(255,255,255,.3);
-        border-radius: 50%;
-        border-top-color: #fff;
-        animation: spin 1s ease-in-out infinite;
-        margin-right: 8px;
-    }
-
-    @keyframes spin {
-        to { transform: rotate(360deg); }
-    }
-
-    /* Estilos para el modal de comentarios */
-    #comentarioModal {
-        display: none;
-        position: fixed;
-        z-index: 1000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0,0,0,0.5);
-    }
-
-    #comentarioModal.mostrar {
-        display: block;
-    }
-
-    .modal-content {
-        background-color: white;
-        margin: 15% auto;
-        padding: 24px;
-        border-radius: 12px;
-        width: 400px;
-        max-width: 90%;
-        box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
-    }
-
-    .modal-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-    }
-
-    .modal-header h3 {
-        margin: 0;
-        font-size: 18px;
-        color: #1e293b;
-        font-weight: 600;
-    }
-
-    .modal-close {
-        cursor: pointer;
-        font-size: 24px;
-        color: #64748b;
-    }
-
-    .modal-close:hover {
-        color: #1e293b;
-    }
-
-    .modal-body {
-        margin-bottom: 20px;
-    }
-
-    .modal-body label {
-        display: block;
-        margin-bottom: 8px;
-        font-weight: 500;
-        color: #1e293b;
-    }
-
-    .modal-body textarea {
-        width: 100%;
-        padding: 12px;
-        border: 1px solid #e2e8f0;
-        border-radius: 8px;
-        resize: vertical;
-        font-family: 'Inter', sans-serif;
-        font-size: 14px;
-    }
-
-    .modal-body textarea:focus {
-        outline: none;
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
-    }
-
-    .modal-footer {
-        display: flex;
-        gap: 10px;
-        justify-content: flex-end;
-    }
-
-    .modal-btn {
-        padding: 10px 20px;
-        border-radius: 8px;
-        font-size: 14px;
-        font-weight: 500;
-        cursor: pointer;
-        border: none;
-    }
-
-    .modal-btn-cancel {
-        background-color: white;
-        border: 1px solid #e2e8f0;
-        color: #64748b;
-    }
-
-    .modal-btn-cancel:hover {
-        background-color: #f8fafc;
-    }
-
-    .modal-btn-save {
-        background-color: #1d4ed8;
-        color: white;
-    }
-
-    .modal-btn-save:hover {
-        background-color: #1e40af;
-    }
-
-    .modal-btn-save:disabled {
-        background-color: #94a3b8;
-        cursor: not-allowed;
-    }
 </style>
 
 <div class="container">
-    <!-- Mensaje de alerta -->
-    <div id="alertMessage" class="alert-message"></div>
 
-    <!-- Menú de pestañas -->
+    <!-- Mensajes Django -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert-message alert-success">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Tabs -->
     <div class="tabs">
         <div class="tab active" onclick="showTab('registro', event)">Registro Diario</div>
         <div class="tab" onclick="showTab('historial', event)">Historial</div>
     </div>
 
-    <!-- Contenido de Registro Diario -->
+    <!-- ══════════════════════════════════════════
+         PESTAÑA: REGISTRO DIARIO
+    ══════════════════════════════════════════ -->
     <div id="registro-tab" class="tab-content active">
         <div class="card">
             <div class="header-section">
@@ -688,47 +518,103 @@
                 <p>Bienvenido, {{ docente.nombre }}. Marca la asistencia de tus alumnos</p>
             </div>
 
-            <!-- Form Controls -->
-            <div class="form-grid">
-                <div class="form-group">
-                    <label>Grupo</label>
-                    <div class="select-wrapper">
-                        <select class="custom-input" id="grupoSelect" onchange="cargarAlumnos()">
-                            <option value="">Selecciona un grupo</option>
-                            {% for grupo in grupos %}
-                                <option value="{{ grupo.id }}">{{ grupo.clave }} ({{ grupo.total_alumnos }} alumnos)</option>
-                            {% endfor %}
-                        </select>
+            <!-- Selector (GET) — al cambiar recarga la lista -->
+            <form method="GET" action="">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Grupo / Materia</label>
+                        <div class="select-wrapper">
+                            <select class="custom-input" name="gdm_id"
+                                    onchange="this.form.submit()">
+                                <option value="">Selecciona grupo y materia</option>
+                                {% for gm in grupos_materia %}
+                                    <option value="{{ gm.gdm_id }}"
+                                        {% if gm.gdm_id|stringformat:"s" == gdm_id_sel %}
+                                            selected
+                                        {% endif %}>
+                                        {{ gm.label }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Fecha</label>
+                        <div class="date-wrapper">
+                            <i class="fa-regular fa-calendar"></i>
+                            <input type="date" name="fecha"
+                                   class="custom-input"
+                                   value="{{ fecha_sel }}"
+                                   onchange="this.form.submit()">
+                        </div>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label>Fecha</label>
-                    <div class="date-wrapper">
-                        <i class="fa-regular fa-calendar"></i>
-                        <input type="date" class="custom-input" id="fechaInput" value="{{ hoy|date:'Y-m-d' }}">
-                    </div>
-                </div>
-            </div>
+            </form>
 
-            <!-- Student Table -->
-            <div id="tablaAlumnosContainer" style="display: none;">
+            <!-- Tabla de alumnos (POST para guardar) -->
+            {% if alumnos_con_estado %}
+            <form method="POST" action="">
+                {% csrf_token %}
+                <input type="hidden" name="gdm_id" value="{{ gdm_id_sel }}">
+                <input type="hidden" name="fecha"  value="{{ fecha_sel }}">
+
                 <div class="table-container">
-                    <table id="tablaAsistencia">
+                    <table>
                         <thead>
                             <tr>
                                 <th>Alumno</th>
                                 <th>Matrícula</th>
-                                <th style="text-align: left;">Estado</th>
-                                <th style="text-align: center;">Comentario</th>
+                                <th>Estado</th>
+                                <th style="text-align:center;">Comentario</th>
                             </tr>
                         </thead>
-                        <tbody id="tablaBody">
-                            <!-- Las filas se generarán dinámicamente -->
+                        <tbody>
+                            {% for item in alumnos_con_estado %}
+                            <tr>
+                                <td>
+                                    <div class="student-info">
+                                        <div class="avatar">{{ item.alumno.nombre|first }}</div>
+                                        <span>{{ item.alumno.nombre }}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="matricula">{{ item.alumno.matricula }}</span>
+                                </td>
+                                <td>
+                                    <div class="status-actions" id="actions_{{ item.alumno.id }}">
+                                        <div class="btn-status {% if item.estado == 'Asistió' %}active-check{% else %}inactive{% endif %}"
+                                             onclick="setEstado({{ item.alumno.id }}, 'Asistió', this)">
+                                            <i class="fa-solid fa-check"></i>
+                                        </div>
+                                        <div class="btn-status {% if item.estado == 'Retardo' %}active-late{% else %}inactive{% endif %}"
+                                             onclick="setEstado({{ item.alumno.id }}, 'Retardo', this)">
+                                            <i class="fa-solid fa-minus"></i>
+                                        </div>
+                                        <div class="btn-status {% if item.estado == 'No asistió' %}active-absent{% else %}inactive{% endif %}"
+                                             onclick="setEstado({{ item.alumno.id }}, 'No asistió', this)">
+                                            <i class="fa-solid fa-xmark"></i>
+                                        </div>
+                                    </div>
+                                    <input type="hidden"
+                                           name="estado_{{ item.alumno.id }}"
+                                           id="estado_{{ item.alumno.id }}"
+                                           value="{{ item.estado }}">
+                                </td>
+                                <td class="celda-comentario">
+                                    <input type="text"
+                                           name="comentario_{{ item.alumno.id }}"
+                                           value="{{ item.comentario }}"
+                                           placeholder="Opcional"
+                                           style="border:1px solid #e2e8f0; border-radius:6px;
+                                                  padding:6px 10px; font-size:13px; width:100%;">
+                                </td>
+                            </tr>
+                            {% endfor %}
                         </tbody>
                     </table>
                 </div>
 
-                <!-- Summary Bar -->
+                <!-- Resumen -->
                 <div class="summary-bar">
                     <div class="summary-item">
                         <span class="summary-value val-asistencias" id="totalAsistencias">0</span>
@@ -743,27 +629,33 @@
                         <span class="summary-label">Faltas</span>
                     </div>
                 </div>
-            </div>
-            
-            <div id="sinAlumnosMessage" style="display: none; text-align: center; padding: 40px; color: #64748b;">
-                <i class="fa-solid fa-users" style="font-size: 48px; margin-bottom: 16px; color: #94a3b8;"></i>
-                <h3 style="margin: 0 0 8px 0; font-weight: 500;">No hay alumnos en este grupo</h3>
-                <p style="margin: 0; font-size: 14px;">Selecciona otro grupo para ver sus alumnos</p>
-            </div>
-            
-            <div id="cargandoAlumnosMessage" style="display: none; text-align: center; padding: 40px; color: #64748b;">
-                <i class="fa-solid fa-spinner fa-spin" style="font-size: 48px; margin-bottom: 16px; color: #94a3b8;"></i>
-                <h3 style="margin: 0 0 8px 0; font-weight: 500;">Cargando alumnos...</h3>
-            </div>
-        </div>
 
-        <!-- Footer Action -->
-        <div class="footer-action">
-            <button class="btn-save" id="btnGuardar" onclick="guardarAsistencia()" disabled>Guardar Asistencia</button>
+                <div class="footer-action">
+                    <button type="submit" class="btn-save">Guardar Asistencia</button>
+                </div>
+            </form>
+
+            {% elif gdm_id_sel %}
+            <div class="empty-state">
+                <i class="fa-solid fa-users"></i>
+                <h3>No hay alumnos en este grupo</h3>
+                <p>Selecciona otro grupo para ver sus alumnos</p>
+            </div>
+
+            {% else %}
+            <div class="empty-state">
+                <i class="fa-solid fa-hand-pointer"></i>
+                <h3>Selecciona un grupo y materia</h3>
+                <p>La lista de alumnos aparecerá aquí automáticamente</p>
+            </div>
+            {% endif %}
+
         </div>
     </div>
 
-    <!-- Contenido de Historial -->
+    <!-- ══════════════════════════════════════════
+         PESTAÑA: HISTORIAL
+    ══════════════════════════════════════════ -->
     <div id="historial-tab" class="tab-content">
         <div class="card">
             <div class="historial-header">
@@ -771,17 +663,19 @@
                     <h1>Historial de Asistencia</h1>
                     <p>Resumen acumulado por alumno</p>
                 </div>
-                <div class="dropdown">
-                    <select id="historialGrupo" class="custom-input" style="border: 1px solid #e2e8f0; padding: 8px 12px; border-radius: 8px;" onchange="cargarHistorial()">
-                        <option value="">Selecciona un grupo</option>
-                        {% for grupo in grupos %}
-                            <option value="{{ grupo.id }}">{{ grupo.clave }}</option>
+                <div>
+                    <select id="historialGrupo" class="custom-input"
+                            style="border:1px solid #e2e8f0; padding:8px 12px; border-radius:8px;"
+                            onchange="cargarHistorial()">
+                        <option value="">Selecciona grupo / materia</option>
+                        {% for gm in grupos_materia %}
+                            <option value="{{ gm.gdm_id }}">{{ gm.label }}</option>
                         {% endfor %}
                     </select>
                 </div>
             </div>
 
-            <div id="historialTableContainer" style="display: none;">
+            <div id="historialTableContainer" style="display:none;">
                 <table class="historial-table">
                     <thead>
                         <tr>
@@ -793,481 +687,143 @@
                             <th>Estado</th>
                         </tr>
                     </thead>
-                    <tbody id="historialBody">
-                        <!-- Las filas se generarán dinámicamente -->
-                    </tbody>
+                    <tbody id="historialBody"></tbody>
                 </table>
             </div>
-            
-            <div id="sinHistorialMessage" style="display: block; text-align: center; padding: 40px; color: #64748b;">
-                <i class="fa-solid fa-chart-line" style="font-size: 48px; margin-bottom: 16px; color: #94a3b8;"></i>
-                <h3 style="margin: 0 0 8px 0; font-weight: 500;">Selecciona un grupo para ver el historial</h3>
-                <p style="margin: 0; font-size: 14px;">Los datos de asistencia se mostrarán aquí</p>
-            </div>
-            
-            <div id="cargandoHistorialMessage" style="display: none; text-align: center; padding: 40px; color: #64748b;">
-                <i class="fa-solid fa-spinner fa-spin" style="font-size: 48px; margin-bottom: 16px; color: #94a3b8;"></i>
-                <h3 style="margin: 0 0 8px 0; font-weight: 500;">Cargando historial...</h3>
-            </div>
-        </div>
-    </div>
-</div>
 
-<!-- Modal para comentarios -->
-<div id="comentarioModal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>Agregar Comentario</h3>
-            <span class="modal-close" onclick="cerrarModal()">&times;</span>
-        </div>
-        <div class="modal-body">
-            <input type="hidden" id="comentarioAlumnoId" value="">
-            <label for="comentarioTexto">Escribe tu comentario:</label>
-            <textarea id="comentarioTexto" rows="4" placeholder="Escribe tu comentario aquí..."></textarea>
-        </div>
-        <div class="modal-footer">
-            <button class="modal-btn modal-btn-cancel" onclick="cerrarModal()">Cancelar</button>
-            <button class="modal-btn modal-btn-save" onclick="guardarComentario()">Guardar</button>
+            <div id="sinHistorialMessage" class="empty-state">
+                <i class="fa-solid fa-chart-line"></i>
+                <h3>Selecciona un grupo para ver el historial</h3>
+                <p>Los datos de asistencia se mostrarán aquí</p>
+            </div>
+
+            <div id="cargandoHistorialMessage" style="display:none;" class="empty-state">
+                <i class="fa-solid fa-spinner fa-spin"></i>
+                <h3>Cargando historial...</h3>
+            </div>
         </div>
     </div>
+
 </div>
 
 <script>
-    // Variables globales
-    let alumnosActuales = [];
-    let asistenciasActuales = {};
+    function setEstado(alumnoId, nuevoEstado, btnClicked) {
+        const container = document.getElementById(`actions_${alumnoId}`);
 
-    // Función para mostrar mensajes de alerta
-    function mostrarAlerta(mensaje, tipo) {
-        const alertDiv = document.getElementById('alertMessage');
-        alertDiv.textContent = mensaje;
-        alertDiv.className = `alert-message alert-${tipo}`;
-        alertDiv.style.display = 'block';
-        
-        setTimeout(() => {
-            alertDiv.style.display = 'none';
-        }, 5000);
-    }
-
-    // Mostrar pestaña seleccionada
-    function showTab(tabName, event) {
-        // Actualizar pestañas
-        document.querySelectorAll('.tab').forEach(tab => {
-            tab.classList.remove('active');
+        container.querySelectorAll('.btn-status').forEach(btn => {
+            btn.classList.remove('active-check', 'active-late', 'active-absent');
+            btn.classList.add('inactive');
         });
-        
-        // Activar pestaña clickeada
-        event.target.classList.add('active');
-        
-        // Mostrar contenido correspondiente
-        document.querySelectorAll('.tab-content').forEach(content => {
-            content.classList.remove('active');
-        });
-        
-        document.getElementById(`${tabName}-tab`).classList.add('active');
-    }
 
-    // Cargar alumnos del grupo seleccionado
-    function cargarAlumnos() {
-        const grupoId = document.getElementById('grupoSelect').value;
-        
-        if (!grupoId) {
-            document.getElementById('tablaAlumnosContainer').style.display = 'none';
-            document.getElementById('sinAlumnosMessage').style.display = 'block';
-            document.getElementById('cargandoAlumnosMessage').style.display = 'none';
-            document.getElementById('btnGuardar').disabled = true;
-            return;
-        }
+        btnClicked.classList.remove('inactive');
+        if (nuevoEstado === 'Asistió')    btnClicked.classList.add('active-check');
+        if (nuevoEstado === 'Retardo')    btnClicked.classList.add('active-late');
+        if (nuevoEstado === 'No asistió') btnClicked.classList.add('active-absent');
 
-        // Mostrar mensaje de carga
-        document.getElementById('tablaAlumnosContainer').style.display = 'none';
-        document.getElementById('sinAlumnosMessage').style.display = 'none';
-        document.getElementById('cargandoAlumnosMessage').style.display = 'block';
-        document.getElementById('btnGuardar').disabled = true;
-
-        // Buscar el grupo en los datos del servidor
-        fetch(`/obtener-alumnos-por-grupo/?grupo_id=${grupoId}`)
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('cargandoAlumnosMessage').style.display = 'none';
-                
-                if (data.alumnos && data.alumnos.length > 0) {
-                    alumnosActuales = data.alumnos;
-                    // Inicializar asistencias (por defecto 'Asistió')
-                    asistenciasActuales = {};
-                    alumnosActuales.forEach(alumno => {
-                        asistenciasActuales[alumno.id] = 'Asistió';
-                    });
-                    
-                    actualizarTablaAsistencia();
-                    document.getElementById('tablaAlumnosContainer').style.display = 'block';
-                    document.getElementById('sinAlumnosMessage').style.display = 'none';
-                    document.getElementById('btnGuardar').disabled = false;
-                } else {
-                    document.getElementById('tablaAlumnosContainer').style.display = 'none';
-                    document.getElementById('sinAlumnosMessage').style.display = 'block';
-                    document.getElementById('btnGuardar').disabled = true;
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                document.getElementById('cargandoAlumnosMessage').style.display = 'none';
-                mostrarAlerta('Error al cargar los alumnos', 'error');
-                document.getElementById('sinAlumnosMessage').style.display = 'block';
-                document.getElementById('btnGuardar').disabled = true;
-            });
-    }
-
-    // Actualizar tabla de asistencia
-    function actualizarTablaAsistencia() {
-        const tablaBody = document.getElementById('tablaBody');
-        tablaBody.innerHTML = '';
-        
-        alumnosActuales.forEach((alumno, index) => {
-            const estado = asistenciasActuales[alumno.id] || 'Asistió';
-            const row = document.createElement('tr');
-            
-            // Obtener inicial del nombre
-            const inicial = alumno.nombre.charAt(0);
-            
-            row.innerHTML = `
-                <td>
-                    <div class="student-info">
-                        <div class="avatar" style="background-color: ${getAvatarColor(index)}; color: ${getAvatarTextColor(index)};">${inicial}</div>
-                        <span>${alumno.nombre}</span>
-                    </div>
-                </td>
-                <td><span class="matricula">${alumno.matricula}</span></td>
-                <td>
-                    <div class="status-actions">
-                        <div class="btn-status ${estado === 'Asistió' ? 'active-check' : 'inactive'}" onclick="cambiarEstado(${alumno.id}, 'Asistió')">
-                            <i class="fa-solid fa-check"></i>
-                        </div>
-                        <div class="btn-status ${estado === 'Retardo' ? 'active-late' : 'inactive'}" onclick="cambiarEstado(${alumno.id}, 'Retardo')">
-                            <i class="fa-solid fa-minus"></i>
-                        </div>
-                        <div class="btn-status ${estado === 'No asistió' ? 'active-absent' : 'inactive'}" onclick="cambiarEstado(${alumno.id}, 'No asistió')">
-                            <i class="fa-solid fa-xmark"></i>
-                        </div>
-                    </div>
-                </td>
-                <td class="celda-comentario">
-                    <div class="btn-status comment-btn" onclick="abrirComentario(${alumno.id})" title="Agregar comentario">
-                        <i class="fa-regular fa-comment"></i>
-                    </div>
-                </td>
-            `;
-            
-            tablaBody.appendChild(row);
-        });
-        
+        document.getElementById(`estado_${alumnoId}`).value = nuevoEstado;
         actualizarResumen();
     }
 
-    // Cambiar estado de asistencia
-    function cambiarEstado(id, nuevoEstado) {
-        asistenciasActuales[id] = nuevoEstado;
-        actualizarTablaAsistencia();
-    }
-
-    // Actualizar resumen de asistencias
     function actualizarResumen() {
-        let asistencias = 0;
-        let retardos = 0;
-        let faltas = 0;
-        
-        Object.values(asistenciasActuales).forEach(estado => {
-            if (estado === 'Asistió') asistencias++;
-            else if (estado === 'Retardo') retardos++;
-            else if (estado === 'No asistió') faltas++;
+        let asistencias = 0, retardos = 0, faltas = 0;
+
+        document.querySelectorAll('[id^="estado_"]').forEach(input => {
+            if      (input.value === 'Asistió')    asistencias++;
+            else if (input.value === 'Retardo')    retardos++;
+            else if (input.value === 'No asistió') faltas++;
         });
-        
+
         document.getElementById('totalAsistencias').textContent = asistencias;
-        document.getElementById('totalRetardos').textContent = retardos;
-        document.getElementById('totalFaltas').textContent = faltas;
+        document.getElementById('totalRetardos').textContent    = retardos;
+        document.getElementById('totalFaltas').textContent      = faltas;
     }
 
-    // Guardar asistencia
-    function guardarAsistencia() {
-        const grupoId = document.getElementById('grupoSelect').value;
-        const fecha = document.getElementById('fechaInput').value;
-        
-        if (!grupoId) {
-            mostrarAlerta('Selecciona un grupo', 'warning');
-            return;
-        }
-        
-        if (!fecha) {
-            mostrarAlerta('Selecciona una fecha', 'warning');
-            return;
-        }
-
-        // Verificar que hay alumnos
-        if (alumnosActuales.length === 0) {
-            mostrarAlerta('No hay alumnos en este grupo', 'warning');
-            return;
-        }
-
-        // Deshabilitar botón y mostrar carga
-        const btnGuardar = document.getElementById('btnGuardar');
-        const textoOriginal = btnGuardar.innerHTML;
-        btnGuardar.disabled = true;
-        btnGuardar.innerHTML = '<span class="loading-spinner"></span> Guardando...';
-
-        console.log('Guardando asistencia:', {
-            grupo_id: grupoId,
-            fecha: fecha,
-            asistencias: asistenciasActuales
-        });
-
-        fetch('/guardar-asistencia/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
-            },
-            body: JSON.stringify({
-                grupo_id: grupoId,
-                fecha: fecha,
-                asistencias: asistenciasActuales
-            })
-        })
-        .then(response => {
-            if (!response.ok) {
-                return response.json().then(err => { throw new Error(err.error || 'Error en el servidor'); });
-            }
-            return response.json();
-        })
-        .then(data => {
-            btnGuardar.disabled = false;
-            btnGuardar.innerHTML = textoOriginal;
-            
-            if (data.success) {
-                mostrarAlerta(data.message || 'Asistencia guardada correctamente', 'success');
-                
-                // Actualizar automáticamente el historial si estamos en esa pestaña
-                const historialTab = document.getElementById('historial-tab');
-                if (historialTab.classList.contains('active')) {
-                    cargarHistorial();
-                }
-            } else {
-                mostrarAlerta('Error: ' + (data.error || 'Error desconocido'), 'error');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            btnGuardar.disabled = false;
-            btnGuardar.innerHTML = textoOriginal;
-            mostrarAlerta('Error al guardar la asistencia: ' + error.message, 'error');
-        });
+    function showTab(tabName, event) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        event.target.classList.add('active');
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        document.getElementById(`${tabName}-tab`).classList.add('active');
     }
-    
-    // Cargar historial de asistencia
+
+    // Historial sigue usando fetch ya que es solo lectura
     function cargarHistorial() {
-        const grupoId = document.getElementById('historialGrupo').value;
-        
-        if (!grupoId) {
+        const gdmId = document.getElementById('historialGrupo').value;
+
+        if (!gdmId) {
             document.getElementById('historialTableContainer').style.display = 'none';
             document.getElementById('sinHistorialMessage').style.display = 'block';
-            document.getElementById('cargandoHistorialMessage').style.display = 'none';
             return;
         }
 
-        // Mostrar mensaje de carga
         document.getElementById('historialTableContainer').style.display = 'none';
         document.getElementById('sinHistorialMessage').style.display = 'none';
         document.getElementById('cargandoHistorialMessage').style.display = 'block';
 
-        console.log('Cargando historial para grupo:', grupoId);
-
-        fetch(`/obtener-historial-asistencia/?grupo_id=${grupoId}`)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
+        fetch(`/obtener-historial-asistencia/?gdm_id=${gdmId}`)
+            .then(r => r.json())
             .then(data => {
-                console.log('Datos de historial recibidos:', data);
                 document.getElementById('cargandoHistorialMessage').style.display = 'none';
-                
+
                 if (data.historial && data.historial.length > 0) {
                     actualizarTablaHistorial(data.historial);
                     document.getElementById('historialTableContainer').style.display = 'block';
-                    document.getElementById('sinHistorialMessage').style.display = 'none';
                 } else {
-                    document.getElementById('historialTableContainer').style.display = 'none';
                     document.getElementById('sinHistorialMessage').style.display = 'block';
-                    
-                    let mensaje = 'No hay datos de asistencia para este grupo';
-                    if (data.message) {
-                        mensaje = data.message;
-                    }
-                    
                     document.getElementById('sinHistorialMessage').innerHTML = `
-                        <i class="fa-solid fa-chart-line" style="font-size: 48px; margin-bottom: 16px; color: #94a3b8;"></i>
-                        <h3 style="margin: 0 0 8px 0; font-weight: 500;">${mensaje}</h3>
-                        <p style="margin: 0; font-size: 14px;">Registra asistencias para ver el historial</p>
+                        <i class="fa-solid fa-chart-line" style="font-size:48px;margin-bottom:16px;color:#94a3b8;display:block;"></i>
+                        <h3 style="margin:0 0 8px 0;font-weight:500;">${data.message || 'Sin registros aún'}</h3>
+                        <p style="margin:0;font-size:14px;">Registra asistencias para ver el historial</p>
                     `;
                 }
             })
-            .catch(error => {
-                console.error('Error detallado:', error);
+            .catch(() => {
                 document.getElementById('cargandoHistorialMessage').style.display = 'none';
-                mostrarAlerta('Error al cargar el historial: ' + error.message, 'error');
                 document.getElementById('sinHistorialMessage').style.display = 'block';
-                document.getElementById('sinHistorialMessage').innerHTML = `
-                    <i class="fa-solid fa-exclamation-triangle" style="font-size: 48px; margin-bottom: 16px; color: #dc2626;"></i>
-                    <h3 style="margin: 0 0 8px 0; font-weight: 500;">Error al cargar datos</h3>
-                    <p style="margin: 0; font-size: 14px;">${error.message}</p>
-                `;
             });
     }
 
-    // Actualizar tabla de historial
     function actualizarTablaHistorial(historial) {
-        const historialBody = document.getElementById('historialBody');
-        historialBody.innerHTML = '';
-        
-        historial.forEach((item, index) => {
-            const row = document.createElement('tr');
-            
-            // Determinar color del badge según el estado
-            let badgeClass = 'badge-gray';
-            if (item.estado === 'Bueno') badgeClass = 'badge-blue';
-            else if (item.estado === 'Regular') badgeClass = 'badge-warning';
-            else if (item.estado === 'Crítico') badgeClass = 'badge-danger';
-            else if (item.estado === 'Sin datos') badgeClass = 'badge-gray';
-            
-            row.innerHTML = `
-                <td>
-                    <span class="student-name">${item.nombre}</span>
-                    <span class="student-id">${item.matricula}</span>
-                </td>
-                <td><div class="stat-box bg-green-light">${item.asistencias}</div></td>
-                <td><div class="stat-box bg-red-light">${item.faltas}</div></td>
-                <td><div class="stat-box bg-yellow-light">${item.retardos}</div></td>
-                <td>
-                    <div class="progress-container">
-                        <div class="progress-bar">
-                            <div class="progress-fill ${item.porcentaje >= 80 ? 'green' : item.porcentaje >= 60 ? 'orange' : 'red'}" 
-                                 style="width: ${item.porcentaje}%; background-color: ${item.porcentaje >= 80 ? '#10b981' : item.porcentaje >= 60 ? '#f59e0b' : '#ef4444'};"></div>
+        const body = document.getElementById('historialBody');
+        body.innerHTML = '';
+
+        historial.forEach(item => {
+            const colorBadge = item.estado === 'Bueno'    ? '#2563eb'
+                             : item.estado === 'Regular'  ? '#f59e0b'
+                             : item.estado === 'Crítico'  ? '#dc2626'
+                             : '#94a3b8';
+
+            const colorBarra = item.porcentaje >= 80 ? 'green'
+                             : item.porcentaje >= 60 ? 'orange'
+                             : 'red';
+
+            body.innerHTML += `
+                <tr>
+                    <td>
+                        <span class="student-name">${item.nombre}</span>
+                        <span class="student-id">${item.matricula}</span>
+                    </td>
+                    <td><div class="stat-box bg-green-light">${item.asistencias}</div></td>
+                    <td><div class="stat-box bg-red-light">${item.faltas}</div></td>
+                    <td><div class="stat-box bg-yellow-light">${item.retardos}</div></td>
+                    <td>
+                        <div class="progress-container">
+                            <div class="progress-bar">
+                                <div class="progress-fill ${colorBarra}"
+                                     style="width:${item.porcentaje}%;"></div>
+                            </div>
+                            <span class="percentage-text">${item.porcentaje}%</span>
                         </div>
-                        <span class="percentage-text">${item.porcentaje}%</span>
-                    </div>
-                </td>
-                <td>
-                    <span class="badge ${badgeClass}" 
-                          style="background-color: ${item.estado === 'Bueno' ? '#2563eb' : item.estado === 'Regular' ? '#f59e0b' : item.estado === 'Crítico' ? '#dc2626' : '#e2e8f0'}; 
-                                 color: white; padding: 4px 8px; border-radius: 4px;">
-                        ${item.estado}
-                    </span>
-                </td>
+                    </td>
+                    <td>
+                        <span class="badge" style="background-color:${colorBadge};">
+                            ${item.estado}
+                        </span>
+                    </td>
+                </tr>
             `;
-            
-            historialBody.appendChild(row);
         });
     }
 
-    // ===== FUNCIONES PARA COMENTARIOS =====
-
-    // Variable para almacenar el alumno actual
-    let alumnoComentarioActual = null;
-
-    // Función para abrir modal de comentario
-    function abrirComentario(alumnoId) {
-        alumnoComentarioActual = alumnoId;
-        document.getElementById('comentarioAlumnoId').value = alumnoId;
-        document.getElementById('comentarioTexto').value = '';
-        document.getElementById('comentarioModal').classList.add('mostrar');
-    }
-
-    // Función para cerrar modal
-    function cerrarModal() {
-        document.getElementById('comentarioModal').classList.remove('mostrar');
-    }
-
-    // Función para guardar comentario
-    function guardarComentario() {
-        const alumnoId = document.getElementById('comentarioAlumnoId').value;
-        const texto = document.getElementById('comentarioTexto').value.trim();
-        
-        if (!texto) {
-            alert('Por favor escribe un comentario');
-            return;
-        }
-        
-        // Deshabilitar botón
-        const btnGuardar = event.target;
-        const textoOriginal = btnGuardar.innerHTML;
-        btnGuardar.disabled = true;
-        btnGuardar.innerHTML = 'Guardando...';
-        
-        fetch('/guardar-comentario/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
-            },
-            body: JSON.stringify({
-                alumno_id: alumnoId,
-                texto: texto
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            btnGuardar.disabled = false;
-            btnGuardar.innerHTML = textoOriginal;
-            
-            if (data.success) {
-                cerrarModal();
-                mostrarAlerta('Comentario guardado correctamente', 'success');
-            } else {
-                mostrarAlerta('Error: ' + (data.error || 'Error desconocido'), 'error');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            btnGuardar.disabled = false;
-            btnGuardar.innerHTML = textoOriginal;
-            mostrarAlerta('Error al guardar el comentario', 'error');
-        });
-    }
-
-    // Funciones auxiliares para colores de avatar
-    function getAvatarColor(index) {
-        const colors = ['#e0e7ff', '#fef3c7', '#d1fae5', '#fee2e2', '#ede9fe', '#fae8ff'];
-        return colors[index % colors.length];
-    }
-
-    function getAvatarTextColor(index) {
-        const colors = ['#4338ca', '#92400e', '#065f46', '#991b1b', '#5b21b6', '#86198f'];
-        return colors[index % colors.length];
-    }
-
-    // Función para obtener el CSRF token
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
-
-    // Inicializar al cargar la página
-    document.addEventListener('DOMContentLoaded', function() {
-        // Si hay un grupo seleccionado por defecto, cargar sus alumnos
-        const grupoSelect = document.getElementById('grupoSelect');
-        if (grupoSelect.value) {
-            cargarAlumnos();
-        }
-    });
+    document.addEventListener('DOMContentLoaded', actualizarResumen);
 </script>
 {% endblock %}
