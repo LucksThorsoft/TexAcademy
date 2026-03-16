@@ -882,31 +882,48 @@ def director(request):
 
     form = DocenteForm()
     grupo_form = GrupoForm()
-    materia_form = GrupoDocenteMateriaForm()  # 👈 ESTO FALTABA
+    materia_form = GrupoDocenteMateriaForm()
 
-    relaciones = GrupoDocenteMateria.objects.select_related(
-        'grupo', 'materia', 'docente'
-    ).order_by('grupo__clave', 'materia__nombre')
+    cuatrimestre_activo = Cuatrimestre.objects.filter(activo=True).first()
 
-    grupos_data = []
-
-    for rel in relaciones:
-        grupo = rel.grupo
-        num_alumnos = Alumno.objects.filter(grupo=grupo).count()
-
-        grupos_data.append({
-            'clave': grupo.clave,
-            'materia': rel.materia.nombre,
-            'docente': rel.docente.nombre,
-            'num_alumnos': num_alumnos,
-            'tutor': grupo.tutor.nombre if grupo.tutor else 'Sin tutor',
+    # Cuatrimestres para el histórico
+    cuatrimestres_data = []
+    for c in Cuatrimestre.objects.order_by('-fecha_inicio'):
+        grupos_c = Grupo.objects.filter(cuatrimestre=c)
+        cuatrimestres_data.append({
+            'id': c.id,
+            'nombre': c.nombre,
+            'activo': c.activo,
+            'fecha_inicio': c.fecha_inicio,
+            'fecha_fin': c.fecha_fin,
+            'total_grupos': grupos_c.count(),
+            'total_alumnos': Alumno.objects.filter(grupo__in=grupos_c).count(),
         })
+
+    # Solo grupos del cuatrimestre activo 👇
+    grupos_data = []
+    if cuatrimestre_activo:
+        relaciones = GrupoDocenteMateria.objects.filter(
+            grupo__cuatrimestre=cuatrimestre_activo
+        ).select_related('grupo', 'materia', 'docente').order_by('grupo__clave', 'materia__nombre')
+
+        for rel in relaciones:
+            grupo = rel.grupo
+            grupos_data.append({
+                'clave': grupo.clave,
+                'materia': rel.materia.nombre,
+                'docente': rel.docente.nombre,
+                'num_alumnos': Alumno.objects.filter(grupo=grupo).count(),
+                'tutor': grupo.tutor.nombre if grupo.tutor else 'Sin tutor',
+            })
 
     return render(request, "director.html", {
         "form": form,
         "grupo_form": grupo_form,
-        "materia_form": materia_form,  # 👈 Y PASARLO
-        "grupos": grupos_data
+        "materia_form": materia_form,
+        "grupos": grupos_data,
+        "sin_cuatrimestre": cuatrimestre_activo is None,
+        "cuatrimestres_data": cuatrimestres_data,
     })
 
 
@@ -1117,3 +1134,33 @@ def guardar_comentario(request):
             return JsonResponse({'error': str(e)}, status=500)
     
     return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+def new_cuatrimestre(request):
+    if request.method == "POST":
+        fecha_inicio = request.POST.get("fecha_inicio")
+        fecha_fin = request.POST.get("fecha_fin")
+
+        # Generar nombre automático según el mes actual
+        hoy = date.today()
+        mes = hoy.month
+        anio = hoy.year
+
+        if 1 <= mes <= 4:
+            nombre = f"Enero-Abril {anio}"
+        elif 5 <= mes <= 8:
+            nombre = f"Mayo-Agosto {anio}"
+        else:
+            nombre = f"Septiembre-Diciembre {anio}"
+
+        # Desactivar cualquier cuatrimestre activo previo
+        Cuatrimestre.objects.filter(activo=True).update(activo=False)
+
+        Cuatrimestre.objects.create(
+            nombre=nombre,
+            fecha_inicio=fecha_inicio,
+            fecha_fin=fecha_fin,
+            activo=True
+        )
+        messages.success(request, f"Cuatrimestre '{nombre}' creado correctamente")
+
+    return redirect("director")

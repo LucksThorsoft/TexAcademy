@@ -27,4 +27,5 @@ urlpatterns = [
     path('guardar-parciales/', views.guardar_parciales, name='guardar_parciales'),
     path('guardar-calificaciones/', views.guardar_calificaciones, name='guardar_calificaciones'),
     path('obtener-calificaciones/', views.obtener_calificaciones, name='obtener_calificaciones'),
+    path('cuatrimestre/nuevo/', views.new_cuatrimestre, name='new_cuatrimestre'),
 ]
