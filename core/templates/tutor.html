@@ -3,5 +3,733 @@
 {% block header_title %}Tutor{% endblock %}
 
 {% block content %}
-    <h1>Aqui va la seccion del Tutor</h1>
+
+{% if not grupo %}
+<div style="background:white;border-radius:12px;border:2px solid #e4e4e4;padding:60px 40px;text-align:center;max-width:480px;margin:60px auto;">
+    <span class="mdi mdi-account-group-outline" style="font-size:48px;color:#d1d5db;display:block;margin-bottom:16px;"></span>
+    <h3 style="font-size:18px;color:#111827;margin-bottom:8px;">Sin grupo asignado</h3>
+    <p style="font-size:14px;color:#6b7280;">Contacta con el director para que te asigne un grupo como tutor.</p>
+</div>
+
+{% else %}
+
+<!-- ── HEADER ── -->
+<div class="header-actions">
+    <div>
+        <p style="font-size:14px;color:#6b7280;margin:0;">
+            Grupo <strong style="color:#111827;">{{ grupo.clave }}</strong>
+            &nbsp;·&nbsp;
+            <span style="color:#111827;font-weight:600;">{{ stats.total }}</span>
+            alerta{{ stats.total|pluralize }} activa{{ stats.total|pluralize }}
+        </p>
+    </div>
+
+    <div class="view-switch">
+        <button class="view-option active" data-filtro="todas">Todas</button>
+        <button class="view-option" data-filtro="Alto">Alto</button>
+        <button class="view-option" data-filtro="Medio">Medio</button>
+        <button class="view-option" data-filtro="Bajo">Bajo</button>
+        <button class="view-option" data-filtro="derivada">Derivadas</button>
+    </div>
+</div>
+
+<!-- ── PILLS RESUMEN ── -->
+{% if stats.total > 0 %}
+<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;">
+    {% if stats.alto > 0 %}
+    <span class="pill pill-alto"><span class="mdi mdi-alert-circle"></span> {{ stats.alto }} Alto</span>
+    {% endif %}
+    {% if stats.medio > 0 %}
+    <span class="pill pill-medio"><span class="mdi mdi-alert"></span> {{ stats.medio }} Medio</span>
+    {% endif %}
+    {% if stats.bajo > 0 %}
+    <span class="pill pill-bajo"><span class="mdi mdi-information-outline"></span> {{ stats.bajo }} Bajo</span>
+    {% endif %}
+    {% if stats.derivadas > 0 %}
+    <span class="pill pill-derivada"><span class="mdi mdi-send-check"></span> {{ stats.derivadas }} Derivada{{ stats.derivadas|pluralize }}</span>
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- ── LISTA ── -->
+<div id="alertasLista">
+    {% if not alertas %}
+    <div class="empty-state">
+        <span class="mdi mdi-check-circle-outline" style="font-size:48px;color:#bbf7d0;display:block;margin-bottom:16px;"></span>
+        <h3 style="font-size:18px;color:#111827;margin-bottom:8px;">Todo en orden</h3>
+        <p style="font-size:14px;color:#6b7280;">No hay alertas activas en tu grupo.</p>
+    </div>
+
+    {% else %}
+    <div style="display:flex;flex-direction:column;gap:12px;">
+        {% for alerta in alertas %}
+        <div class="alerta-card"
+             id="alerta-{{ alerta.id }}"
+             data-nivel="{{ alerta.nivel_riesgo }}"
+             data-derivada="{{ alerta.derivada|yesno:'true,false' }}">
+
+            <div class="alerta-card-inner">
+
+                <!-- Avatar -->
+                <div class="alumno-avatar avatar-{{ alerta.nivel_riesgo|lower }}">
+                    {{ alerta.alumno_nombre|slice:":1" }}
+                </div>
+
+                <!-- Cuerpo -->
+                <div style="flex:1;min-width:0;">
+
+                    <!-- Top -->
+                    <div class="alerta-top">
+                        <div>
+                            <div style="font-weight:600;font-size:15px;color:#111827;margin-bottom:2px;">{{ alerta.alumno_nombre }}</div>
+                            <div style="font-size:12px;color:#9ca3af;">{{ alerta.alumno_matricula }}</div>
+                        </div>
+                        <div class="alerta-badges">
+                            <span class="badge badge-{{ alerta.nivel_riesgo|lower }}">
+                                {% if alerta.nivel_riesgo == 'Alto' %}<span class="mdi mdi-alert-circle"></span>
+                                {% elif alerta.nivel_riesgo == 'Medio' %}<span class="mdi mdi-alert"></span>
+                                {% else %}<span class="mdi mdi-information-outline"></span>{% endif %}
+                                {{ alerta.nivel_riesgo }}
+                            </span>
+                            {% if alerta.derivada %}
+                            <span class="badge badge-derivada"><span class="mdi mdi-send-check"></span> {{ alerta.derivada_a }}</span>
+                            {% endif %}
+                            <span style="font-size:11px;color:#9ca3af;">{{ alerta.fecha }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Motivos -->
+                    <div class="motivos-wrapper">
+                        {% for motivo in alerta.motivos_lista %}
+                        <div class="motivo-item">
+                            <span class="mdi mdi-chevron-right" style="color:#9ca3af;flex-shrink:0;margin-top:2px;"></span>
+                            <span>{{ motivo }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Botones principales -->
+                    <div class="acciones-principales" id="acciones-{{ alerta.id }}">
+                        <button class="btn-accion btn-cerrar"
+                                onclick="mostrarFormComentario({{ alerta.id }}, 'cerrar')">
+                            <span class="mdi mdi-check"></span> Cerrar alerta
+                        </button>
+                        {% if not alerta.derivada %}
+                        <button class="btn-accion btn-pedagogia"
+                                onclick="mostrarFormComentario({{ alerta.id }}, 'Pedagogia')">
+                            <span class="mdi mdi-school-outline"></span> Pedagogía
+                        </button>
+                        <button class="btn-accion btn-direccion"
+                                onclick="mostrarFormComentario({{ alerta.id }}, 'Direccion')">
+                            <span class="mdi mdi-office-building-outline"></span> Dirección
+                        </button>
+                        <button class="btn-accion btn-psicologia"
+                                onclick="mostrarFormComentario({{ alerta.id }}, 'Psicologia')">
+                            <span class="mdi mdi-head-heart-outline"></span> Psicología
+                        </button>
+                        {% else %}
+                        <button class="btn-accion btn-enviada" disabled>
+                            <span class="mdi mdi-send-check"></span> Enviada a {{ alerta.derivada_a }}
+                        </button>
+                        {% endif %}
+                    </div>
+
+                    <!-- Formulario de comentario (oculto inicialmente) -->
+                    <div class="form-comentario" id="form-{{ alerta.id }}" style="display:none;">
+                        <div class="form-comentario-header">
+                            <span class="mdi mdi-comment-text-outline" style="color:#6b7280;"></span>
+                            <span id="form-label-{{ alerta.id }}" style="font-size:13px;font-weight:600;color:#374151;">
+                                Escribe un comentario sobre la sesión
+                            </span>
+                        </div>
+                        <textarea
+                            id="textarea-{{ alerta.id }}"
+                            class="comentario-textarea"
+                            placeholder="Describe lo que se trató en la sesión, acuerdos, observaciones..."
+                            rows="3"
+                        ></textarea>
+                        <div class="form-comentario-acciones">
+                            <button class="btn-accion btn-cancelar"
+                                    onclick="cancelarFormComentario({{ alerta.id }})">
+                                Cancelar
+                            </button>
+                            <button class="btn-accion btn-confirmar"
+                                    id="btn-confirmar-{{ alerta.id }}"
+                                    onclick="confirmarAccion({{ alerta.id }})">
+                                <span class="mdi mdi-check"></span>
+                                <span id="btn-confirmar-label-{{ alerta.id }}">Confirmar</span>
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+
+{% endif %}
+
+<!-- Snackbar -->
+<div id="snackbar">
+    <span class="mdi" id="snackIcon"></span>
+    <span id="snackMsg"></span>
+</div>
+
+<script>
+    // Estado por alerta: qué acción está pendiente
+    const accionPendiente = {};
+
+    // ── Filtros ──────────────────────────────────────────────────────────────
+    document.querySelectorAll('.view-option').forEach(btn => {
+        btn.addEventListener('click', function () {
+            document.querySelectorAll('.view-option').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+
+            const filtro = this.dataset.filtro;
+            const cards  = document.querySelectorAll('.alerta-card');
+
+            cards.forEach(card => {
+                if      (filtro === 'todas')    card.style.display = '';
+                else if (filtro === 'derivada') card.style.display = card.dataset.derivada === 'true' ? '' : 'none';
+                else                            card.style.display = card.dataset.nivel === filtro ? '' : 'none';
+            });
+
+            const lista   = document.getElementById('alertasLista');
+            const visible = [...cards].filter(c => c.style.display !== 'none').length;
+            const empty   = lista.querySelector('.filtro-empty');
+
+            if (visible === 0 && cards.length > 0) {
+                if (!empty) lista.insertAdjacentHTML('beforeend', `
+                    <div class="filtro-empty empty-state" style="margin-top:4px;">
+                        <span class="mdi mdi-filter-off-outline" style="font-size:36px;color:#d1d5db;display:block;margin-bottom:10px;"></span>
+                        <p style="color:#6b7280;font-size:14px;">No hay alertas con ese filtro</p>
+                    </div>`);
+            } else {
+                if (empty) empty.remove();
+            }
+        });
+    });
+
+    // ── Mostrar formulario de comentario ─────────────────────────────────────
+    function mostrarFormComentario(alertaId, accion) {
+        // Guardar qué acción se va a hacer
+        accionPendiente[alertaId] = accion;
+
+        // Ocultar los botones principales
+        document.getElementById(`acciones-${alertaId}`).style.display = 'none';
+
+        // Actualizar label según la acción
+        const label = document.getElementById(`form-label-${alertaId}`);
+        const btnLabel = document.getElementById(`btn-confirmar-label-${alertaId}`);
+        const btn = document.getElementById(`btn-confirmar-${alertaId}`);
+
+        const configs = {
+            'cerrar':    { label: 'Comentario de cierre',      btn: 'Cerrar alerta',      cls: 'btn-confirmar-cerrar'    },
+            'Pedagogia': { label: 'Comentario para Pedagogía', btn: 'Enviar a Pedagogía', cls: 'btn-confirmar-pedagogia' },
+            'Psicologia':{ label: 'Comentario para Psicología',btn: 'Enviar a Psicología',cls: 'btn-confirmar-psicologia' },
+            'Direccion': { label: 'Comentario para Dirección', btn: 'Enviar a Dirección', cls: 'btn-confirmar-direccion'  },
+        };
+        const config = configs[accion] || configs['Direccion'];
+        label.textContent    = config.label;
+        btnLabel.textContent = config.btn;
+        btn.className        = `btn-accion btn-confirmar ${config.cls}`;
+
+        // Mostrar formulario con animación
+        const form = document.getElementById(`form-${alertaId}`);
+        form.style.display = 'block';
+        form.style.opacity = '0';
+        form.style.transform = 'translateY(-6px)';
+        requestAnimationFrame(() => {
+            form.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+            form.style.opacity    = '1';
+            form.style.transform  = 'translateY(0)';
+        });
+
+        // Focus en el textarea
+        setTimeout(() => document.getElementById(`textarea-${alertaId}`).focus(), 150);
+    }
+
+    // ── Cancelar formulario ───────────────────────────────────────────────────
+    function cancelarFormComentario(alertaId) {
+        document.getElementById(`form-${alertaId}`).style.display = 'none';
+        document.getElementById(`textarea-${alertaId}`).value     = '';
+        document.getElementById(`acciones-${alertaId}`).style.display = 'flex';
+        delete accionPendiente[alertaId];
+    }
+
+    // ── Confirmar acción con comentario ──────────────────────────────────────
+    function confirmarAccion(alertaId) {
+        const comentario = document.getElementById(`textarea-${alertaId}`).value.trim();
+        const accion     = accionPendiente[alertaId];
+        const btn        = document.getElementById(`btn-confirmar-${alertaId}`);
+
+        if (!comentario) {
+            document.getElementById(`textarea-${alertaId}`).focus();
+            document.getElementById(`textarea-${alertaId}`).style.borderColor = '#ef4444';
+            mostrarSnack('Escribe un comentario antes de continuar', 'error');
+            return;
+        }
+
+        // Reset borde textarea
+        document.getElementById(`textarea-${alertaId}`).style.borderColor = '';
+
+        btn.disabled      = true;
+        btn.innerHTML     = '<span class="mdi mdi-loading mdi-spin"></span> Guardando…';
+
+        if (accion === 'cerrar') {
+            _cerrarAlerta(alertaId, comentario, btn);
+        } else {
+            _derivarAlerta(alertaId, accion, comentario, btn);
+        }
+    }
+
+    // ── Cerrar alerta ─────────────────────────────────────────────────────────
+    function _cerrarAlerta(alertaId, comentario, btn) {
+        fetch('/cerrar-alerta-tutor/', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrf() },
+            body:    JSON.stringify({ alerta_id: alertaId, comentario })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                const card = document.getElementById(`alerta-${alertaId}`);
+                card.style.transition = 'opacity 0.3s, transform 0.3s';
+                card.style.opacity    = '0';
+                card.style.transform  = 'translateX(16px)';
+                setTimeout(() => { card.remove(); checkEmpty(); }, 300);
+                mostrarSnack('Alerta cerrada correctamente', 'success');
+            } else {
+                _resetBtn(alertaId, btn, 'cerrar');
+                mostrarSnack(data.error || 'Error al cerrar', 'error');
+            }
+        })
+        .catch(() => {
+            _resetBtn(alertaId, btn, 'cerrar');
+            mostrarSnack('Error de conexión', 'error');
+        });
+    }
+
+    // ── Derivar alerta ────────────────────────────────────────────────────────
+    function _derivarAlerta(alertaId, destino, comentario, btn) {
+        fetch('/derivar-alerta/', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrf() },
+            body:    JSON.stringify({ alerta_id: alertaId, destino, comentario })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                const card = document.getElementById(`alerta-${alertaId}`);
+                card.dataset.derivada = 'true';
+
+                // Ocultar form, mostrar botones actualizados
+                document.getElementById(`form-${alertaId}`).style.display = 'none';
+                const accionesDiv = document.getElementById(`acciones-${alertaId}`);
+                accionesDiv.innerHTML = `
+                <button class="btn-accion btn-enviada" disabled>
+                    <span class="mdi mdi-send-check"></span> Enviada a ${destino}
+                </button>`;
+                accionesDiv.style.display = 'flex';
+
+                // Agregar badge derivada
+                const badgesDiv = card.querySelector('.alerta-badges');
+                if (badgesDiv && !badgesDiv.querySelector('.badge-derivada')) {
+                    badgesDiv.insertAdjacentHTML('afterbegin',
+                        `<span class="badge badge-derivada"><span class="mdi mdi-send-check"></span> ${destino}</span>`);
+                }
+
+                mostrarSnack(`Alerta derivada a ${destino}`, 'success');
+            } else {
+                _resetBtn(alertaId, btn, destino);
+                mostrarSnack(data.error || 'Error al derivar', 'error');
+            }
+        })
+        .catch(() => {
+            _resetBtn(alertaId, btn, destino);
+            mostrarSnack('Error de conexión', 'error');
+        });
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+    function _resetBtn(alertaId, btn, accion) {
+        btn.disabled = false;
+        const labels = {
+            'cerrar':     'Cerrar alerta',
+            'Pedagogia':  'Enviar a Pedagogía',
+            'Psicologia': 'Enviar a Psicología',
+            'Direccion':  'Enviar a Dirección',
+        };
+        const icono = accion === 'cerrar' ? 'mdi-check' : 'mdi-send';
+        btn.innerHTML = `<span class="mdi ${icono}"></span> <span>${labels[accion] || 'Enviar'}</span>`;
+    }
+
+    function checkEmpty() {
+        if (document.querySelectorAll('.alerta-card').length === 0) {
+            document.getElementById('alertasLista').innerHTML = `
+                <div class="empty-state">
+                    <span class="mdi mdi-check-circle-outline" style="font-size:48px;color:#bbf7d0;display:block;margin-bottom:16px;"></span>
+                    <h3 style="font-size:18px;color:#111827;margin-bottom:8px;">Todo en orden</h3>
+                    <p style="font-size:14px;color:#6b7280;">No hay alertas activas en tu grupo.</p>
+                </div>`;
+        }
+    }
+
+    let snackTimer;
+    function mostrarSnack(msg, tipo) {
+        const el  = document.getElementById('snackbar');
+        const ico = document.getElementById('snackIcon');
+        ico.className   = `mdi ${tipo === 'success' ? 'mdi-check-circle' : 'mdi-alert-circle'}`;
+        ico.style.color = tipo === 'success' ? '#4ade80' : '#f87171';
+        document.getElementById('snackMsg').textContent = msg;
+        el.classList.add('show');
+        clearTimeout(snackTimer);
+        snackTimer = setTimeout(() => el.classList.remove('show'), 3000);
+    }
+
+    function getCsrf() {
+        const m = document.cookie.match(/csrftoken=([^;]+)/);
+        return m ? m[1] : '';
+    }
+</script>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .header-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    /* ── View switch ── */
+    .view-switch {
+        display: inline-flex;
+        background: #f5f5f5;
+        border-radius: 12px;
+        padding: 4px;
+        border: 1px solid #e0e0e0;
+    }
+
+    .view-option {
+        padding: 5px 18px;
+        border-radius: 10px;
+        font-weight: 500;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        color: #666;
+        border: none;
+        background: transparent;
+    }
+
+    .view-option.active {
+        background: white;
+        color: #333;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+
+    /* ── Pills ── */
+    .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border-radius: 20px;
+        padding: 4px 12px;
+        font-size: 12px;
+        font-weight: 600;
+        border: 1px solid;
+    }
+
+    .pill-alto     { background: #fee2e2; color: #b91c1c; border-color: #fca5a5; }
+    .pill-medio    { background: #fef3c7; color: #92400e; border-color: #fcd34d; }
+    .pill-bajo     { background: #dbeafe; color: #1e40af; border-color: #93c5fd; }
+    .pill-derivada { background: #dcfce7; color: #15803d; border-color: #86efac; }
+
+    /* ── Tarjeta alerta ── */
+    .alerta-card {
+        background: white;
+        border-radius: 12px;
+        border: 2px solid #e4e4e4;
+        border-left: 4px solid #e4e4e4;
+        transition: box-shadow 0.2s ease, opacity 0.3s, transform 0.3s;
+        animation: fadeInUp 0.2s ease both;
+    }
+
+    .alerta-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+
+    .alerta-card[data-nivel="Alto"]    { border-left-color: #ef4444; }
+    .alerta-card[data-nivel="Medio"]   { border-left-color: #f59e0b; }
+    .alerta-card[data-nivel="Bajo"]    { border-left-color: #3b82f6; }
+    .alerta-card[data-derivada="true"] { border-left-color: #22c55e; }
+
+    .alerta-card-inner {
+        padding: 18px 20px;
+        display: flex;
+        gap: 14px;
+        align-items: flex-start;
+    }
+
+    /* ── Top row ── */
+    .alerta-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 10px;
+        flex-wrap: wrap;
+    }
+
+    .alerta-badges {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+        flex-shrink: 0;
+    }
+
+    /* ── Avatar ── */
+    .alumno-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 15px;
+        flex-shrink: 0;
+        text-transform: uppercase;
+    }
+
+    .avatar-alto  { background: #fee2e2; color: #b91c1c; }
+    .avatar-medio { background: #fef3c7; color: #92400e; }
+    .avatar-bajo  { background: #dbeafe; color: #1e40af; }
+
+    /* ── Badges ── */
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        border-radius: 20px;
+        padding: 3px 10px;
+        font-size: 11px;
+        font-weight: 600;
+        border: 1px solid;
+    }
+
+    .badge-alto     { background: #fee2e2; color: #b91c1c; border-color: #fca5a5; }
+    .badge-medio    { background: #fef3c7; color: #92400e; border-color: #fcd34d; }
+    .badge-bajo     { background: #dbeafe; color: #1e40af; border-color: #93c5fd; }
+    .badge-derivada { background: #dcfce7; color: #15803d; border-color: #86efac; }
+
+    /* ── Motivos ── */
+    .motivos-wrapper {
+        border: 1px solid #f3f4f6;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .motivo-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 8px 12px;
+        font-size: 13px;
+        color: #374151;
+        border-bottom: 1px solid #f3f4f6;
+        line-height: 1.5;
+    }
+
+    .motivo-item:last-child { border-bottom: none; }
+
+    /* ── Acciones principales ── */
+    .acciones-principales {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 12px;
+    }
+
+    /* ── Formulario comentario ── */
+    .form-comentario {
+        margin-top: 12px;
+        background: #f8f9fb;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 14px;
+    }
+
+    .form-comentario-header {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        margin-bottom: 10px;
+    }
+
+    .comentario-textarea {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 13px;
+        font-family: inherit;
+        color: #111827;
+        resize: vertical;
+        outline: none;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        background: white;
+        box-sizing: border-box;
+        line-height: 1.5;
+    }
+
+    .comentario-textarea:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 2px rgba(37,99,235,0.12);
+    }
+
+    .comentario-textarea::placeholder { color: #9ca3af; }
+
+    .form-comentario-acciones {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+        margin-top: 10px;
+    }
+
+    /* ── Botones ── */
+    .btn-accion {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 14px;
+        border-radius: 10px;
+        border: 1px solid #e5e7eb;
+        background: white;
+        color: #374151;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-family: inherit;
+        white-space: nowrap;
+    }
+
+    .btn-accion:disabled { cursor: not-allowed; opacity: 0.7; }
+
+    .btn-cerrar:hover:not(:disabled) {
+        border-color: #2563eb;
+        color: #2563eb;
+        background: #eff6ff;
+    }
+
+    .btn-pedagogia {
+        background: #f5f3ff;
+        border-color: #ddd6fe;
+        color: #7c3aed;
+    }
+    .btn-pedagogia:hover:not(:disabled) { background: #ede9fe; border-color: #c4b5fd; }
+
+    .btn-direccion {
+        background: #fff7ed;
+        border-color: #fed7aa;
+        color: #c2410c;
+    }
+    .btn-direccion:hover:not(:disabled) { background: #ffedd5; border-color: #fdba74; }
+
+    .btn-enviada {
+        background: #f3f4f6;
+        border-color: #e5e7eb;
+        color: #9ca3af;
+    }
+
+    .btn-cancelar:hover:not(:disabled) { background: #f3f4f6; }
+
+    /* Botón confirmar varía según acción */
+    .btn-confirmar-cerrar {
+        background: #2563eb;
+        border-color: #2563eb;
+        color: white;
+    }
+    .btn-confirmar-cerrar:hover:not(:disabled) { background: #1e40af; border-color: #1e40af; }
+
+    .btn-confirmar-pedagogia {
+        background: #7c3aed;
+        border-color: #7c3aed;
+        color: white;
+    }
+    .btn-confirmar-pedagogia:hover:not(:disabled) { background: #6d28d9; border-color: #6d28d9; }
+
+    .btn-confirmar-direccion {
+        background: #c2410c;
+        border-color: #c2410c;
+        color: white;
+    }
+    .btn-confirmar-direccion:hover:not(:disabled) { background: #9a3412; border-color: #9a3412; }
+
+    /* ── Empty state ── */
+    .empty-state {
+        background: white;
+        border-radius: 12px;
+        border: 2px solid #e4e4e4;
+        padding: 60px 40px;
+        text-align: center;
+    }
+
+    /* ── Snackbar ── */
+    #snackbar {
+        position: fixed;
+        bottom: 24px;
+        left: 50%;
+        transform: translateX(-50%) translateY(80px);
+        background: #1a1a1a;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 100px;
+        font-size: 13px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        z-index: 9999;
+        transition: transform 0.3s ease;
+        white-space: nowrap;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+        pointer-events: none;
+    }
+
+    #snackbar.show { transform: translateX(-50%) translateY(0); }
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(6px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 640px) {
+        .alerta-card-inner { flex-direction: column; }
+        .view-option { padding: 5px 10px; font-size: 13px; }
+        .header-actions { flex-direction: column; align-items: flex-start; }
+        .form-comentario-acciones { justify-content: stretch; }
+        .form-comentario-acciones .btn-accion { flex: 1; justify-content: center; }
+    }
+
+    .btn-psicologia {
+    background: #fdf2f8;
+    border-color: #fbcfe8;
+    color: #9d174d;
+    }
+    .btn-psicologia:hover:not(:disabled) { background: #fce7f3; border-color: #f9a8d4; }
+
+    .btn-confirmar-psicologia {
+        background: #9d174d; border-color: #9d174d; color: white;
+    }
+    .btn-confirmar-psicologia:hover:not(:disabled) { background: #831843; }
+</style>
 {% endblock %}
