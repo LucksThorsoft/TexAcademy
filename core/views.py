@@ -14,6 +14,7 @@ from django.db.models.functions import Coalesce
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from datetime import datetime
+from django.contrib.auth.hashers import make_password, check_password
 
 
 
@@ -946,13 +947,10 @@ def new_user(request):
     form = DocenteForm(request.POST)
 
     if form.is_valid():
-        usuario = form.save()
+        usuario = form.save()  # ← el form ya hashea solo, sin cambios extra
 
         rol_docente, _ = Rol.objects.get_or_create(nombre="Docente")
-        UsuarioRol.objects.create(
-            usuario=usuario,
-            rol=rol_docente
-        )
+        UsuarioRol.objects.create(usuario=usuario, rol=rol_docente)
 
     return redirect('director')
 
@@ -1096,7 +1094,7 @@ def login_view(request):
 
         try:
             usuario = Usuario.objects.get(correo=correo)
-            if password == usuario.password:
+            if check_password(password, usuario.password):
                 request.session['usuario_id'] = usuario.id
                 request.session['usuario_nombre'] = usuario.nombre
 
@@ -1295,7 +1293,7 @@ def editar_docente(request, docente_id):
 
             nueva_password = request.POST.get('password')
             if nueva_password:
-                docente.password = nueva_password
+                docente.password = make_password(nueva_password)  # ← antes era texto plano
 
             docente.save()
             messages.success(request, 'Docente actualizado correctamente')
