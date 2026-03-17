@@ -395,6 +395,14 @@ def perfil_alumno(request, alumno_id):
         docente=docente
     ).select_related('materia')
     
+    # Obtener los IDs de los GDM del docente para filtrar
+    gdm_ids_docente = [gdm.id for gdm in materias_docente]
+    
+    # Obtener los parciales de las materias del docente
+    parciales_ids = Parcial.objects.filter(
+        grupo_docente_materia__in=gdm_ids_docente
+    ).values_list('id', flat=True)
+    
     # Variables para el promedio de la materia
     promedio_materia = None
     
@@ -569,10 +577,11 @@ def perfil_alumno(request, alumno_id):
     
     comentarios_esta_materia = [c for c in comentarios_todas if c['gdm_id'] in gdm_ids_docente]
 
-    # Obtener las alertas del alumno (no atendidas)
+    # Obtener las alertas del alumno FILTRADAS por las materias del docente
     alertas = Alerta.objects.filter(
         alumno=alumno,
-        atendida=False
+        atendida=False,
+        parcial__id__in=parciales_ids  # Solo alertas de parciales del docente
     ).select_related('parcial__grupo_docente_materia__materia').order_by(
         models.Case(
             models.When(nivel_riesgo='Alto', then=0),
