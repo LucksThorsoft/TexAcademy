@@ -452,42 +452,64 @@
     <!-- Vista: Alertas -->
 <div id="alertasView" class="view-content" style="display:none;">
 
-    <!-- Sub-tabs: General / Dirección -->
+    <!-- Filtros por nivel -->
     <div style="display:flex;align-items:center;justify-content:space-between;
                 flex-wrap:wrap;gap:12px;margin-bottom:20px;">
-        <div class="view-switch" id="alertasSubSwitch">
-            <button class="view-option active" data-subtab="general">
-                <span class="mdi mdi-bell-outline"></span> General
-            </button>
-            <button class="view-option" data-subtab="direccion">
-                <span class="mdi mdi-office-building-outline"></span> Dirección
-            </button>
-        </div>
-        <p id="alertas-count-label"
-           style="font-size:13px;color:#9ca3af;margin:0;"></p>
-    </div>
-
-    <!-- Pills resumen -->
-    <div id="alertas-pills"
-         style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;"></div>
-
-    <!-- Filtros por nivel -->
-    <div class="view-switch" id="alertasFiltroSwitch"
-         style="margin-bottom:20px;">
-        <button class="view-option active" data-filtro="todas">Todas</button>
-        <button class="view-option" data-filtro="Alto">Alto</button>
-        <button class="view-option" data-filtro="Medio">Medio</button>
-        <button class="view-option" data-filtro="Bajo">Bajo</button>
-    </div>
-
-    <!-- Lista -->
-    <div id="alertasDirLista">
-        <div style="text-align:center;padding:60px;color:#9ca3af;">
-            <span class="mdi mdi-loading mdi-spin"
-                  style="font-size:32px;display:block;margin-bottom:12px;"></span>
-            Cargando alertas...
+        <div class="view-switch" id="alertasFiltroSwitch">
+            <button class="view-option active" data-filtro="todas">Todas</button>
+            <button class="view-option" data-filtro="Alto">Alto</button>
+            <button class="view-option" data-filtro="Medio">Medio</button>
+            <button class="view-option" data-filtro="Bajo">Bajo</button>
         </div>
     </div>
+
+    <!-- Sección General -->
+    <div class="alerta-seccion" id="seccionGeneral">
+        <button class="alerta-seccion-header" onclick="toggleSeccion('general')">
+            <div style="display:flex;align-items:center;gap:10px;">
+                <span class="mdi mdi-bell-outline" style="font-size:18px;color:#6b7280;"></span>
+                <span class="alerta-seccion-titulo">General</span>
+                <span class="alerta-seccion-badge" id="badge-general">...</span>
+            </div>
+            <span class="mdi mdi-chevron-down alerta-seccion-chevron"
+                  id="chevron-general"></span>
+        </button>
+        <div class="alerta-seccion-body" id="body-general">
+            <div id="lista-general" style="display:flex;flex-direction:column;gap:12px;">
+                <div style="text-align:center;padding:40px;color:#9ca3af;">
+                    <span class="mdi mdi-loading mdi-spin"
+                          style="font-size:28px;display:block;margin-bottom:10px;"></span>
+                    Cargando...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sección Dirección -->
+    <div class="alerta-seccion" id="seccionDireccion" style="margin-top:12px;">
+        <button class="alerta-seccion-header" onclick="toggleSeccion('direccion')">
+            <div style="display:flex;align-items:center;gap:10px;">
+                <span class="mdi mdi-office-building-outline"
+                      style="font-size:18px;color:#6b7280;"></span>
+                <span class="alerta-seccion-titulo">Dirección</span>
+                <span class="alerta-seccion-badge alerta-seccion-badge-dir"
+                      id="badge-direccion">...</span>
+            </div>
+            <span class="mdi mdi-chevron-down alerta-seccion-chevron"
+                  id="chevron-direccion"></span>
+        </button>
+        <div class="alerta-seccion-body alerta-seccion-body-closed"
+             id="body-direccion">
+            <div id="lista-direccion" style="display:flex;flex-direction:column;gap:12px;">
+                <div style="text-align:center;padding:40px;color:#9ca3af;">
+                    <span class="mdi mdi-loading mdi-spin"
+                          style="font-size:28px;display:block;margin-bottom:10px;"></span>
+                    Cargando...
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 
@@ -531,7 +553,6 @@
         const groupsView = document.getElementById('groupsView');
         const studentsView = document.getElementById('studentsView');
 
-        // ===== VIEW SWITCH =====
         viewOptions.forEach(option => {
             option.addEventListener('click', function() {
                 viewOptions.forEach(opt => opt.classList.remove('active'));
@@ -635,32 +656,32 @@
         });
 
         // ===== NOMBRE AUTOMÁTICO CUATRIMESTRE =====
-    const hoy = new Date();
-    const mes = hoy.getMonth() + 1; // getMonth() empieza en 0
-    const anio = hoy.getFullYear();
-    let nombreCuat = "";
+        const hoy = new Date();
+        const mes = hoy.getMonth() + 1;
+        const anio = hoy.getFullYear();
+        let nombreCuat = "";
 
-    if (mes >= 1 && mes <= 4) {
-        nombreCuat = `Enero-Abril ${anio}`;
-    } else if (mes >= 5 && mes <= 8) {
-        nombreCuat = `Mayo-Agosto ${anio}`;
-    } else {
-        nombreCuat = `Septiembre-Diciembre ${anio}`;
-    }
-
-    const inputNombre = document.getElementById("nombreCuatrimestre");
-    if (inputNombre) inputNombre.value = nombreCuat;
-
-    // ===== VALIDACIÓN FECHAS CUATRIMESTRE =====
-    const fechaInicio = document.getElementById("fechaInicio");
-    const fechaFin = document.getElementById("fechaFin");
-
-    fechaInicio.addEventListener("change", function() {
-        fechaFin.min = this.value;
-        if (fechaFin.value && fechaFin.value < this.value) {
-            fechaFin.value = "";
+        if (mes >= 1 && mes <= 4) {
+            nombreCuat = `Enero-Abril ${anio}`;
+        } else if (mes >= 5 && mes <= 8) {
+            nombreCuat = `Mayo-Agosto ${anio}`;
+        } else {
+            nombreCuat = `Septiembre-Diciembre ${anio}`;
         }
-    });
+
+        const inputNombre = document.getElementById("nombreCuatrimestre");
+        if (inputNombre) inputNombre.value = nombreCuat;
+
+        // ===== VALIDACIÓN FECHAS CUATRIMESTRE =====
+        const fechaInicio = document.getElementById("fechaInicio");
+        const fechaFin = document.getElementById("fechaFin");
+
+        fechaInicio.addEventListener("change", function() {
+            fechaFin.min = this.value;
+            if (fechaFin.value && fechaFin.value < this.value) {
+                fechaFin.value = "";
+            }
+        });
     });
 
     // ===== MODAL MATERIA =====
@@ -676,115 +697,93 @@
 
     function cerrarModalMateria() { modalMateria.style.display = "none"; }
 
+
     // ╔══════════════════════════════════════════════════════╗
     // ║              ALERTAS — DIRECTOR                      ║
     // ╚══════════════════════════════════════════════════════╝
 
     const _dirAccionPendiente = {};
-    let   _dirSubTabActual    = 'general';
-    let   _dirAlertasCargadas = false;
+    let   _alertasIniciadas   = false;
 
     function iniciarAlertas() {
-        // Evitar registrar listeners duplicados al volver al tab
-        const subSwitch = document.getElementById('alertasSubSwitch');
-        if (subSwitch.dataset.iniciado) {
-            _dirAlertasCargadas = false;
-            cargarAlertasDir();
-            return;
-        }
-        subSwitch.dataset.iniciado = '1';
+        if (!_alertasIniciadas) {
+            _alertasIniciadas = true;
 
-        // Sub-tabs
-        subSwitch.querySelectorAll('.view-option').forEach(btn => {
-            btn.addEventListener('click', function () {
-                subSwitch.querySelectorAll('.view-option').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                _dirSubTabActual    = this.dataset.subtab;
-                _dirAlertasCargadas = false;
-                cargarAlertasDir();
-            });
-        });
-
-        // Filtros de nivel
-        document.getElementById('alertasFiltroSwitch')
-                .querySelectorAll('.view-option').forEach(btn => {
-            btn.addEventListener('click', function () {
-                document.querySelectorAll('#alertasFiltroSwitch .view-option')
-                        .forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                const filtro = this.dataset.filtro;
-                document.querySelectorAll('.alerta-dir-card').forEach(card => {
-                    card.style.display =
-                        (filtro === 'todas' || card.dataset.nivel === filtro) ? '' : 'none';
+            document.getElementById('alertasFiltroSwitch')
+                    .querySelectorAll('.view-option').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    document.querySelectorAll('#alertasFiltroSwitch .view-option')
+                            .forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    const filtro = this.dataset.filtro;
+                    document.querySelectorAll('.alerta-dir-card').forEach(card => {
+                        card.style.display =
+                            (filtro === 'todas' || card.dataset.nivel === filtro) ? '' : 'none';
+                    });
                 });
             });
-        });
+        }
 
-        cargarAlertasDir();
+        cargarSeccion('general');
+        cargarSeccion('direccion');
     }
 
-    async function cargarAlertasDir() {
-        if (_dirAlertasCargadas) return;
-        _dirAlertasCargadas = true;
+    // ── Toggle acordeón ──────────────────────────────────────────────────────────
+    const _seccionAbierta = { general: true, direccion: false };
 
-        const lista = document.getElementById('alertasDirLista');
-        lista.innerHTML = `
-            <div style="text-align:center;padding:60px;color:#9ca3af;">
-                <span class="mdi mdi-loading mdi-spin"
-                    style="font-size:32px;display:block;margin-bottom:12px;"></span>
-                Cargando alertas...
-            </div>`;
+    function toggleSeccion(cual) {
+        const body    = document.getElementById(`body-${cual}`);
+        const chevron = document.getElementById(`chevron-${cual}`);
+        const abierta = _seccionAbierta[cual];
 
-        const url = _dirSubTabActual === 'general'
+        if (abierta) {
+            body.classList.add('alerta-seccion-body-closed');
+            chevron.style.transform = 'rotate(-90deg)';
+        } else {
+            body.classList.remove('alerta-seccion-body-closed');
+            chevron.style.transform = 'rotate(0deg)';
+        }
+        _seccionAbierta[cual] = !abierta;
+    }
+
+    // ── Fetch por sección ────────────────────────────────────────────────────────
+    const _seccionCargada = { general: false, direccion: false };
+
+    async function cargarSeccion(cual) {
+        if (_seccionCargada[cual]) return;
+        _seccionCargada[cual] = true;
+
+        const url = cual === 'general'
             ? '/director/alertas/'
             : '/director/alertas/direccion/';
 
         try {
             const res  = await fetch(url);
             const data = await res.json();
-            _renderAlertasDir(data.alertas || [], data.stats || {});
+            _renderSeccion(cual, data.alertas || [], data.stats || {});
         } catch {
-            lista.innerHTML =
-                `<p style="color:#ef4444;text-align:center;padding:40px;">
+            document.getElementById(`lista-${cual}`).innerHTML =
+                `<p style="color:#ef4444;text-align:center;padding:30px;">
                     Error al cargar las alertas
                 </p>`;
         }
     }
 
-    function _renderAlertasDir(alertas, stats) {
-        // Pills
-        const pillsEl = document.getElementById('alertas-pills');
-        pillsEl.innerHTML = '';
-        [
-            { key:'alto',  label:'Alto',  cls:'pill-alto',  icon:'mdi-alert-circle'        },
-            { key:'medio', label:'Medio', cls:'pill-medio', icon:'mdi-alert'               },
-            { key:'bajo',  label:'Bajo',  cls:'pill-bajo',  icon:'mdi-information-outline' },
-        ].forEach(p => {
-            if (stats[p.key] > 0) {
-                pillsEl.insertAdjacentHTML('beforeend',
-                    `<span class="pill ${p.cls}">
-                        <span class="mdi ${p.icon}"></span> ${stats[p.key]} ${p.label}
-                    </span>`);
-            }
-        });
+    // ── Render de una sección ────────────────────────────────────────────────────
+    function _renderSeccion(cual, alertas, stats) {
+        const badge = document.getElementById(`badge-${cual}`);
+        badge.textContent = stats.total || '0';
 
-        // Contador
-        document.getElementById('alertas-count-label').textContent =
-            stats.total
-                ? `${stats.total} alerta${stats.total !== 1 ? 's' : ''} activa${stats.total !== 1 ? 's' : ''}`
-                : '';
-
-        // Lista
-        const lista = document.getElementById('alertasDirLista');
+        const lista = document.getElementById(`lista-${cual}`);
         if (!alertas.length) {
             lista.innerHTML = `
-                <div style="background:white;border-radius:12px;border:2px solid #e4e4e4;
-                            padding:60px 40px;text-align:center;">
+                <div style="background:#f8f9fb;border-radius:10px;
+                            padding:40px;text-align:center;">
                     <span class="mdi mdi-check-circle-outline"
-                        style="font-size:48px;color:#bbf7d0;display:block;margin-bottom:16px;"></span>
-                    <h3 style="font-size:18px;color:#111827;margin-bottom:8px;">Sin alertas pendientes</h3>
-                    <p style="font-size:14px;color:#6b7280;">
-                        ${_dirSubTabActual === 'general'
+                        style="font-size:36px;color:#bbf7d0;
+                                display:block;margin-bottom:12px;"></span>
+                    <p style="font-size:14px;color:#6b7280;margin:0;">
+                        ${cual === 'general'
                             ? 'No hay alertas activas en el sistema.'
                             : 'No hay alertas derivadas a Dirección.'}
                     </p>
@@ -792,13 +791,11 @@
             return;
         }
 
-        lista.innerHTML =
-            `<div style="display:flex;flex-direction:column;gap:12px;">
-                ${alertas.map(a => _cardDirHTML(a)).join('')}
-            </div>`;
+        lista.innerHTML = alertas.map(a => _cardDirHTML(a, cual)).join('');
     }
 
-    function _cardDirHTML(a) {
+    // ── HTML de una tarjeta ──────────────────────────────────────────────────────
+    function _cardDirHTML(a, seccion) {
         const colores   = { Alto:'#ef4444', Medio:'#f59e0b', Bajo:'#3b82f6' };
         const avatarCls = { Alto:'avatar-alto', Medio:'avatar-medio', Bajo:'avatar-bajo' };
         const badgeCls  = { Alto:'badge-alto',  Medio:'badge-medio',  Bajo:'badge-bajo'  };
@@ -834,9 +831,11 @@
                     </div>`).join('')}
             </div>` : '';
 
+        const uid = `${seccion}-${a.id}`;
+
         return `
         <div class="alerta-dir-card"
-            id="alerta-dir-${a.id}"
+            id="alerta-dir-${uid}"
             data-nivel="${a.nivel_riesgo}"
             style="background:white;border-radius:12px;border:2px solid #e4e4e4;
                     border-left:4px solid ${colores[a.nivel_riesgo] || '#e4e4e4'};
@@ -874,41 +873,40 @@
                     </div>
 
                     <div class="motivos-wrapper">${motivosHtml}</div>
-
                     ${historialHtml}
 
-                    <div id="acciones-dir-${a.id}"
+                    <div id="acciones-dir-${uid}"
                         style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
                         <button class="btn-accion btn-cerrar"
-                                onclick="_mostrarFormDir(${a.id},'cerrar')">
+                                onclick="_mostrarFormDir('${uid}','cerrar')">
                             <span class="mdi mdi-check"></span> Cerrar alerta
                         </button>
                         <button class="btn-accion btn-pedagogia"
-                                onclick="_mostrarFormDir(${a.id},'Pedagogia')">
+                                onclick="_mostrarFormDir('${uid}','Pedagogia')">
                             <span class="mdi mdi-school-outline"></span> Pedagogía
                         </button>
                         <button class="btn-accion btn-psicologia"
-                                onclick="_mostrarFormDir(${a.id},'Psicologia')">
+                                onclick="_mostrarFormDir('${uid}','Psicologia')">
                             <span class="mdi mdi-head-heart-outline"></span> Psicología
                         </button>
                         <button class="btn-accion"
                                 style="background:#fff7ed;border-color:#fed7aa;color:#c2410c;"
-                                onclick="_mostrarFormDir(${a.id},'Tutor')">
+                                onclick="_mostrarFormDir('${uid}','Tutor')">
                             <span class="mdi mdi-account-tie-outline"></span> Tutor
                         </button>
                     </div>
 
-                    <div id="form-dir-${a.id}"
+                    <div id="form-dir-${uid}"
                         style="display:none;margin-top:12px;background:#f8f9fb;
                                 border:1px solid #e5e7eb;border-radius:10px;padding:14px;">
                         <div style="display:flex;align-items:center;gap:7px;margin-bottom:10px;">
                             <span class="mdi mdi-comment-text-outline" style="color:#6b7280;"></span>
-                            <span id="form-dir-label-${a.id}"
+                            <span id="form-dir-label-${uid}"
                                 style="font-size:13px;font-weight:600;color:#374151;">
                                 Comentario
                             </span>
                         </div>
-                        <textarea id="textarea-dir-${a.id}"
+                        <textarea id="textarea-dir-${uid}"
                                 placeholder="Describe el motivo de la acción..."
                                 rows="3"
                                 style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;
@@ -918,17 +916,15 @@
                                         transition:border-color .2s,box-shadow .2s;">
                         </textarea>
                         <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px;">
-                            <button class="btn-accion btn-secondary"
-                                    style="height:auto;"
-                                    onclick="_cancelarFormDir(${a.id})">
+                            <button class="btn-accion btn-secondary" style="height:auto;"
+                                    onclick="_cancelarFormDir('${uid}')">
                                 Cancelar
                             </button>
-                            <button id="btn-dir-${a.id}"
-                                    class="btn-accion btn-primary"
-                                    style="height:auto;"
-                                    onclick="_confirmarAccionDir(${a.id})">
+                            <button id="btn-dir-${uid}"
+                                    class="btn-accion btn-primary" style="height:auto;"
+                                    onclick="_confirmarAccionDir('${uid}', ${a.id})">
                                 <span class="mdi mdi-check"></span>
-                                <span id="btn-dir-label-${a.id}">Confirmar</span>
+                                <span id="btn-dir-label-${uid}">Confirmar</span>
                             </button>
                         </div>
                     </div>
@@ -938,9 +934,10 @@
         </div>`;
     }
 
-    function _mostrarFormDir(id, accion) {
-        _dirAccionPendiente[id] = accion;
-        document.getElementById(`acciones-dir-${id}`).style.display = 'none';
+    // ── Mostrar / cancelar formulario ────────────────────────────────────────────
+    function _mostrarFormDir(uid, accion) {
+        _dirAccionPendiente[uid] = accion;
+        document.getElementById(`acciones-dir-${uid}`).style.display = 'none';
 
         const configs = {
             'cerrar':    { label:'Comentario de cierre',       btn:'Cerrar alerta'      },
@@ -949,10 +946,10 @@
             'Tutor':     { label:'Comentario para Tutor',      btn:'Enviar a Tutor'     },
         };
         const cfg = configs[accion] || {};
-        document.getElementById(`form-dir-label-${id}`).textContent = cfg.label;
-        document.getElementById(`btn-dir-label-${id}`).textContent  = cfg.btn;
+        document.getElementById(`form-dir-label-${uid}`).textContent = cfg.label;
+        document.getElementById(`btn-dir-label-${uid}`).textContent  = cfg.btn;
 
-        const form = document.getElementById(`form-dir-${id}`);
+        const form = document.getElementById(`form-dir-${uid}`);
         form.style.display   = 'block';
         form.style.opacity   = '0';
         form.style.transform = 'translateY(-6px)';
@@ -961,35 +958,36 @@
             form.style.opacity    = '1';
             form.style.transform  = 'translateY(0)';
         });
-        setTimeout(() => document.getElementById(`textarea-dir-${id}`).focus(), 150);
+        setTimeout(() => document.getElementById(`textarea-dir-${uid}`).focus(), 150);
     }
 
-    function _cancelarFormDir(id) {
-        document.getElementById(`form-dir-${id}`).style.display     = 'none';
-        document.getElementById(`textarea-dir-${id}`).value         = '';
-        document.getElementById(`acciones-dir-${id}`).style.display = 'flex';
-        delete _dirAccionPendiente[id];
+    function _cancelarFormDir(uid) {
+        document.getElementById(`form-dir-${uid}`).style.display     = 'none';
+        document.getElementById(`textarea-dir-${uid}`).value         = '';
+        document.getElementById(`acciones-dir-${uid}`).style.display = 'flex';
+        delete _dirAccionPendiente[uid];
     }
 
-    async function _confirmarAccionDir(id) {
-        const comentario = document.getElementById(`textarea-dir-${id}`).value.trim();
-        const accion     = _dirAccionPendiente[id];
-        const btn        = document.getElementById(`btn-dir-${id}`);
+    // ── Confirmar ────────────────────────────────────────────────────────────────
+    async function _confirmarAccionDir(uid, alertaId) {
+        const comentario = document.getElementById(`textarea-dir-${uid}`).value.trim();
+        const accion     = _dirAccionPendiente[uid];
+        const btn        = document.getElementById(`btn-dir-${uid}`);
 
         if (!comentario) {
-            document.getElementById(`textarea-dir-${id}`).style.borderColor = '#ef4444';
+            document.getElementById(`textarea-dir-${uid}`).style.borderColor = '#ef4444';
             _snackDir('Escribe un comentario antes de continuar', 'error');
             return;
         }
-        document.getElementById(`textarea-dir-${id}`).style.borderColor = '';
+        document.getElementById(`textarea-dir-${uid}`).style.borderColor = '';
 
         btn.disabled  = true;
         btn.innerHTML = '<span class="mdi mdi-loading mdi-spin"></span> Guardando…';
 
         const url  = accion === 'cerrar' ? '/cerrar-alerta-direccion/' : '/derivar-alerta-direccion/';
         const body = accion === 'cerrar'
-            ? { alerta_id: id, comentario }
-            : { alerta_id: id, destino: accion, comentario };
+            ? { alerta_id: alertaId, comentario }
+            : { alerta_id: alertaId, destino: accion, comentario };
 
         try {
             const res  = await fetch(url, {
@@ -1000,40 +998,46 @@
             const data = await res.json();
 
             if (data.success) {
-                const card = document.getElementById(`alerta-dir-${id}`);
+                const card = document.getElementById(`alerta-dir-${uid}`);
                 card.style.opacity   = '0';
                 card.style.transform = 'translateX(16px)';
                 setTimeout(() => {
                     card.remove();
-                    if (!document.querySelectorAll('.alerta-dir-card').length) {
-                        document.getElementById('alertasDirLista').innerHTML = `
-                            <div style="background:white;border-radius:12px;border:2px solid #e4e4e4;
-                                        padding:60px 40px;text-align:center;">
+                    const seccion   = uid.startsWith('general') ? 'general' : 'direccion';
+                    const lista     = document.getElementById(`lista-${seccion}`);
+                    const restantes = lista.querySelectorAll('.alerta-dir-card').length;
+                    document.getElementById(`badge-${seccion}`).textContent = restantes;
+
+                    if (!restantes) {
+                        lista.innerHTML = `
+                            <div style="background:#f8f9fb;border-radius:10px;
+                                        padding:40px;text-align:center;">
                                 <span class="mdi mdi-check-circle-outline"
-                                    style="font-size:48px;color:#bbf7d0;
-                                            display:block;margin-bottom:16px;"></span>
-                                <h3 style="font-size:18px;color:#111827;margin-bottom:8px;">
-                                    Sin alertas pendientes
-                                </h3>
-                                <p style="font-size:14px;color:#6b7280;">
+                                    style="font-size:36px;color:#bbf7d0;
+                                            display:block;margin-bottom:12px;"></span>
+                                <p style="font-size:14px;color:#6b7280;margin:0;">
                                     Todas las alertas han sido atendidas.
                                 </p>
                             </div>`;
                     }
                 }, 300);
-                _snackDir(accion === 'cerrar' ? 'Alerta cerrada correctamente' : `Alerta derivada a ${accion}`, 'success');
+
+                _snackDir(accion === 'cerrar'
+                    ? 'Alerta cerrada correctamente'
+                    : `Alerta derivada a ${accion}`, 'success');
             } else {
                 btn.disabled  = false;
-                btn.innerHTML = `<span class="mdi mdi-check"></span> <span id="btn-dir-label-${id}">${configs?.[accion]?.btn || 'Confirmar'}</span>`;
+                btn.innerHTML = '<span class="mdi mdi-check"></span> <span>Confirmar</span>';
                 _snackDir(data.error || 'Error al procesar', 'error');
             }
         } catch {
             btn.disabled  = false;
-            btn.innerHTML = `<span class="mdi mdi-check"></span> <span id="btn-dir-label-${id}">Confirmar</span>`;
+            btn.innerHTML = '<span class="mdi mdi-check"></span> <span>Confirmar</span>';
             _snackDir('Error de conexión', 'error');
         }
     }
 
+    // ── Snackbar y CSRF ──────────────────────────────────────────────────────────
     let _snackDirTimer;
     function _snackDir(msg, tipo) {
         let el = document.getElementById('snackbar-dir');
@@ -1707,6 +1711,77 @@
     from { opacity:0; transform:translateY(6px); }
     to   { opacity:1; transform:translateY(0); }
 }
-    </style>
-    {% endblock %}
 
+/* ── Acordeón de alertas ── */
+.alerta-seccion {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e8eaf0;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+
+.alerta-seccion-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    background: white;
+    border: none;
+    cursor: pointer;
+    transition: background .15s ease;
+    font-family: inherit;
+}
+
+.alerta-seccion-header:hover { background: #f8f9fb; }
+
+.alerta-seccion-titulo {
+    font-size: 14px;
+    font-weight: 600;
+    color: #111827;
+}
+
+.alerta-seccion-badge {
+    background: #f3f4f6;
+    color: #374151;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 20px;
+    min-width: 22px;
+    text-align: center;
+}
+
+.alerta-seccion-badge-dir {
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+.alerta-seccion-chevron {
+    font-size: 20px;
+    color: #9ca3af;
+    transition: transform .25s ease;
+}
+
+.alerta-seccion-body {
+    padding: 0 16px 16px;
+    overflow: hidden;
+    max-height: 9999px;
+    transition: max-height .3s ease, padding .3s ease;
+}
+
+.alerta-seccion-body-closed {
+    max-height: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+.pill-xs {
+    padding: 2px 8px;
+    font-size: 11px;
+}
+
+</style>
+
+{% endblock %}
