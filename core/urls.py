@@ -38,4 +38,8 @@ urlpatterns = [
     path('cerrar-alerta-psicologia/', views.cerrar_alerta_psicologia, name='cerrar_alerta_psicologia'),
     path('derivar-alerta-psicologia/', views.derivar_alerta_psicologia, name='derivar_alerta_psicologia'),
     path('psicologia', views.psicologia, name='psicologia'),
+    path('director/alertas/',            views.director_alertas_view,           name='director_alertas'),
+    path('director/alertas/direccion/',  views.director_alertas_direccion_view, name='director_alertas_direccion'),
+    path('cerrar-alerta-direccion/',     views.cerrar_alerta_direccion,         name='cerrar_alerta_direccion'),
+    path('derivar-alerta-direccion/',    views.derivar_alerta_direccion,        name='derivar_alerta_direccion'),
 ]
