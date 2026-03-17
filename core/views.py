@@ -390,16 +390,77 @@ def perfil_alumno(request, alumno_id):
     docente_id = request.session.get('usuario_id')
     docente = get_object_or_404(Usuario, id=docente_id)
     
-    # Obtener comentarios del alumno
-    comentarios = Comentario.objects.filter(
-        alumno=alumno
-    ).select_related('docente').order_by('-fecha')
-    
     # Obtener las materias que este docente imparte en el grupo del alumno
     materias_docente = GrupoDocenteMateria.objects.filter(
         grupo=alumno.grupo,
         docente=docente
     ).select_related('materia')
+    
+    # Obtener los IDs de los GDM del docente para filtrar
+    gdm_ids_docente = [gdm.id for gdm in materias_docente]
+    
+    # Obtener los parciales de las materias del docente
+    parciales_ids = Parcial.objects.filter(
+        grupo_docente_materia__in=gdm_ids_docente
+    ).values_list('id', flat=True)
+    
+    # Variables para el promedio de la materia
+    promedio_materia = None
+    
+    # Obtener datos de calificaciones para la tabla
+    calificaciones_data = []
+    parciales_info = []
+    
+    for gdm in materias_docente:
+        # Obtener los parciales de esta materia
+        parciales = Parcial.objects.filter(
+            grupo_docente_materia=gdm
+        ).order_by('numero_parcial')
+        
+        # Guardar información de parciales para los encabezados
+        for parcial in parciales:
+            parciales_info.append({
+                'numero': parcial.numero_parcial,
+                'nombre': parcial.nombre,
+                'porcentaje': parcial.porcentaje,
+            })
+        
+        # Obtener calificaciones del alumno en esta materia
+        for parcial in parciales:
+            calificacion = CalificacionParcial.objects.filter(
+                alumno=alumno,
+                parcial=parcial
+            ).first()
+            
+            calificaciones_data.append({
+                'parcial_numero': parcial.numero_parcial,
+                'parcial_nombre': parcial.nombre,
+                'parcial_porcentaje': parcial.porcentaje,
+                'calificacion': calificacion.calificacion if calificacion and calificacion.calificacion is not None else None
+            })
+    
+    # Calcular suma para el promedio (como en el modal)
+    suma_calificaciones = sum([
+        c['calificacion'] for c in calificaciones_data 
+        if c['calificacion'] is not None
+    ])
+    total_calificaciones = len([c for c in calificaciones_data if c['calificacion'] is not None])
+    todas_completas = total_calificaciones == len(parciales_info) and total_calificaciones > 0
+    
+    if todas_completas and suma_calificaciones > 0:
+        # Misma función de redondeo que en el modal
+        def redondear_calificacion(valor):
+            entero = int(valor)
+            ultimo_digito = entero % 10
+            if ultimo_digito == 0:
+                return entero
+            elif ultimo_digito <= 4:
+                return entero - ultimo_digito
+            else:
+                return entero + (10 - ultimo_digito)
+        
+        suma_redondeada = redondear_calificacion(suma_calificaciones)
+        promedio_materia = suma_redondeada / 10
     
     # Obtener las actividades relacionadas con estas materias
     actividades_data = []
@@ -441,56 +502,181 @@ def perfil_alumno(request, alumno_id):
                     'entregado': entrega.entregado if entrega else False,
                 })
     
-    # Obtener historial de asistencia del alumno
-    asistencias = Asistencia.objects.filter(
-        alumno=alumno,
-        grupo_docente_materia__docente=docente  # Solo asistencias registradas por este docente
-    ).select_related('grupo_docente_materia__materia', 'estado').order_by('-fecha')
+    # Obtener historial de asistencia del alumno (TODAS las materias)
+    asistencias_todas = Asistencia.objects.filter(
+        alumno=alumno
+    ).select_related(
+        'grupo_docente_materia__materia', 
+        'grupo_docente_materia__docente',
+        'estado'
+    ).order_by('-fecha')
     
-    # Procesar datos de asistencia
-    asistencia_data = []
-    total_asistencias = 0
-    total_retardos = 0
-    total_faltas = 0
+    # Procesar datos de asistencia (TODAS)
+    asistencia_todas_data = []
     
-    for asistencia in asistencias:
+    for asistencia in asistencias_todas:
         materia_nombre = asistencia.grupo_docente_materia.materia.nombre
+        docente_nombre = asistencia.grupo_docente_materia.docente.nombre
         estado_nombre = asistencia.estado.nombre
         
-        # Contar para estadísticas
-        if estado_nombre == 'Asistió':
-            total_asistencias += 1
-        elif estado_nombre == 'Retardo':
-            total_retardos += 1
-        elif estado_nombre == 'No asistió':
-            total_faltas += 1
-        
-        asistencia_data.append({
+        registro = {
             'fecha': asistencia.fecha.strftime('%d/%m/%Y'),
             'materia': materia_nombre,
+            'docente': docente_nombre,
             'estado': estado_nombre,
             'comentario': asistencia.comentario,
+            'gdm_id': asistencia.grupo_docente_materia.id
+        }
+        
+        asistencia_todas_data.append(registro)
+    
+    # Obtener solo las asistencias de la materia del docente actual
+    gdm_ids_docente = [gdm.id for gdm in materias_docente]
+    asistencia_esta_materia = [a for a in asistencia_todas_data if a['gdm_id'] in gdm_ids_docente]
+    
+    # Calcular estadísticas para "Esta Materia"
+    total_asistencias_esta = sum(1 for a in asistencia_esta_materia if a['estado'] == 'Asistió')
+    total_retardos_esta = sum(1 for a in asistencia_esta_materia if a['estado'] == 'Retardo')
+    total_faltas_esta = sum(1 for a in asistencia_esta_materia if a['estado'] == 'No asistió')
+    total_clases_esta = len(asistencia_esta_materia)
+    
+    if total_clases_esta > 0:
+        porcentaje_esta = int(((total_asistencias_esta + total_retardos_esta * 0.5) / total_clases_esta) * 100)
+    else:
+        porcentaje_esta = 0
+    
+    # Calcular estadísticas para "Todas las Materias"
+    total_asistencias_todas = sum(1 for a in asistencia_todas_data if a['estado'] == 'Asistió')
+    total_retardos_todas = sum(1 for a in asistencia_todas_data if a['estado'] == 'Retardo')
+    total_faltas_todas = sum(1 for a in asistencia_todas_data if a['estado'] == 'No asistió')
+    total_clases_todas = len(asistencia_todas_data)
+    
+    if total_clases_todas > 0:
+        porcentaje_todas = int(((total_asistencias_todas + total_retardos_todas * 0.5) / total_clases_todas) * 100)
+    else:
+        porcentaje_todas = 0
+    
+    # Comentarios (de asistencia)
+    comentarios_todas = []
+    for a in asistencia_todas_data:
+        if a['comentario'] and a['comentario'].strip():
+            tipo_comentario = "Observación"
+            if a['estado'] == "No asistió":
+                tipo_comentario = "Falta"
+            elif a['estado'] == "Retardo":
+                tipo_comentario = "Retardo"
+            
+            comentarios_todas.append({
+                'tipo': tipo_comentario,
+                'fecha': a['fecha'],
+                'texto': a['comentario'],
+                'docente': a['docente'],
+                'materia': a['materia'],
+                'estado': a['estado'],
+                'gdm_id': a['gdm_id']
+            })
+    
+    comentarios_esta_materia = [c for c in comentarios_todas if c['gdm_id'] in gdm_ids_docente]
+
+    # Obtener las alertas del alumno FILTRADAS por las materias del docente
+    alertas = Alerta.objects.filter(
+        alumno=alumno,
+        atendida=False,
+        parcial__id__in=parciales_ids  # Solo alertas de parciales del docente
+    ).select_related('parcial__grupo_docente_materia__materia').order_by(
+        models.Case(
+            models.When(nivel_riesgo='Alto', then=0),
+            models.When(nivel_riesgo='Medio', then=1),
+            models.When(nivel_riesgo='Bajo', then=2),
+            default=3,
+            output_field=models.IntegerField(),
+        ),
+        '-fecha'
+    )
+    
+    # Determinar el estado del alumno basado en las alertas
+    estado_alumno = "Estable"  # Por defecto
+    estado_clase = "status-good"  # Clase CSS por defecto
+    
+    if alertas.exists():
+        # Verificar si hay alertas de nivel Alto
+        if alertas.filter(nivel_riesgo='Alto').exists():
+            estado_alumno = "En Riesgo"
+            estado_clase = "status-danger"
+        # Verificar si hay alertas de nivel Medio
+        elif alertas.filter(nivel_riesgo='Medio').exists():
+            estado_alumno = "Requiere Atención"
+            estado_clase = "status-warning"
+        # Si solo hay alertas Bajas
+        elif alertas.filter(nivel_riesgo='Bajo').exists():
+            estado_alumno = "Precaución"
+            estado_clase = "status-info"  # Podríamos definir un color azul/informativo
+    
+    # Procesar alertas para el template
+    alertas_data = []
+    for alerta in alertas:
+        materia_nombre = "General"
+        if alerta.parcial and alerta.parcial.grupo_docente_materia:
+            materia_nombre = alerta.parcial.grupo_docente_materia.materia.nombre
+        
+        alertas_data.append({
+            'id': alerta.id,
+            'motivo': alerta.motivo,
+            'nivel_riesgo': alerta.nivel_riesgo,
+            'fecha': alerta.fecha.strftime('%d/%m/%Y'),
+            'materia': materia_nombre,
+            'parcial': alerta.parcial.nombre if alerta.parcial else None,
         })
     
-    # Calcular porcentaje de asistencia (considerando retardos como 0.5)
-    total_clases = len(asistencia_data)
-    if total_clases > 0:
-        porcentaje_asistencia = int(((total_asistencias + total_retardos * 0.5) / total_clases) * 100)
+     # Determinar si el alumno está en un cuatrimestre activo
+    cuatrimestre_activo = alumno.grupo.cuatrimestre.activo if alumno.grupo.cuatrimestre else False
+    
+    # También podrías verificar la fecha actual contra el rango del cuatrimestre
+    from django.utils import timezone
+    hoy = timezone.now().date()
+    
+    if alumno.grupo.cuatrimestre:
+        cuatrimestre_en_rango = (
+            alumno.grupo.cuatrimestre.fecha_inicio <= hoy <= alumno.grupo.cuatrimestre.fecha_fin
+        )
+        # El badge será activo solo si el cuatrimestre está marcado como activo Y la fecha actual está dentro del rango
+        cuatrimestre_valido = alumno.grupo.cuatrimestre.activo and cuatrimestre_en_rango
     else:
-        porcentaje_asistencia = 0
+        cuatrimestre_valido = False
     
     context = {
         'alumno': alumno,
-        'comentarios': comentarios,
+        'parciales_info': parciales_info,
+        'calificaciones_data': calificaciones_data,
+        'promedio_materia': promedio_materia,
         'actividades': actividades_data,
-        'asistencia_historial': asistencia_data,
-        'estadisticas_asistencia': {
-            'asistencias': total_asistencias,
-            'retardos': total_retardos,
-            'faltas': total_faltas,
-            'total_clases': total_clases,
-            'porcentaje': porcentaje_asistencia,
-        }
+        'asistencia_esta_materia': asistencia_esta_materia,
+        'asistencia_todas_materias': asistencia_todas_data,
+        'stats_esta_materia': {
+            'asistencias': total_asistencias_esta,
+            'retardos': total_retardos_esta,
+            'faltas': total_faltas_esta,
+            'total_clases': total_clases_esta,
+            'porcentaje': porcentaje_esta,
+        },
+        'stats_todas_materias': {
+            'asistencias': total_asistencias_todas,
+            'retardos': total_retardos_todas,
+            'faltas': total_faltas_todas,
+            'total_clases': total_clases_todas,
+            'porcentaje': porcentaje_todas,
+        },
+        'comentarios_esta_materia': comentarios_esta_materia,
+        'comentarios_todas_materias': comentarios_todas,
+        'materias_docente': materias_docente,
+        'alertas': alertas_data,
+        'total_alertas': len(alertas_data),
+        'alertas_alto': sum(1 for a in alertas_data if a['nivel_riesgo'] == 'Alto'),
+        'alertas_medio': sum(1 for a in alertas_data if a['nivel_riesgo'] == 'Medio'),
+        'alertas_bajo': sum(1 for a in alertas_data if a['nivel_riesgo'] == 'Bajo'),
+        'estado_alumno': estado_alumno,
+        'estado_clase': estado_clase,
+        'cuatrimestre_valido': cuatrimestre_valido,
     }
     
     return render(request, "perfilAlumno.html", context)

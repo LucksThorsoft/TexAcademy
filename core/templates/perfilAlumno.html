@@ -96,6 +96,11 @@
             align-items: center;
             gap: 4px;
         }
+
+        .perfil-badge-inactivo {
+            background: #ffebee;
+            color: #c62828;
+        }
         
         /* ===== GRID DE ESTADÍSTICAS ===== */
         .stats-grid {
@@ -143,20 +148,359 @@
             font-size: 14px;
             font-weight: 500;
         }
-        
+
         .status-good {
             background: #e8f5e9;
             color: #2e7d32;
         }
-        
+
         .status-warning {
             background: #fff3e0;
             color: #e65100;
         }
-        
+
         .status-danger {
             background: #ffebee;
             color: #c62828;
+        }
+
+        .status-info {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+
+        /* ===== TÍTULO DE SECCIÓN UNIFICADO ===== */
+        .section-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .section-title-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title-left .mdi {
+            color: #667eea;
+            font-size: 24px;
+        }
+
+        .section-title-right {
+            display: flex;
+            align-items: center;
+            margin-left: auto;
+        }
+
+        /* Switch más grande para las secciones */
+        .view-switch-small {
+            display: inline-flex;
+            background: #f5f5f5;
+            border-radius: 8px;
+            padding: 4px;
+            border: 1px solid #e0e0e0;
+            box-shadow: none;
+        }
+
+        .view-option-small {
+            padding: 8px 40px;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #666;
+            border: none;
+            background: transparent;
+            white-space: nowrap;
+        }
+
+        .view-option-small.active {
+            background: white;
+            color: #333;
+            box-shadow: none; /* Sin sombra extra */
+            font-weight: 500; /* Mismo peso que el original */
+        }
+
+        /* ===== SECCIÓN DE CALIFICACIONES EN PERFIL ===== */
+        .calificaciones-perfil-section {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 2px solid #e4e4e4;
+        }
+
+        .calificaciones-perfil-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        .calificaciones-perfil-wrapper {
+            overflow-x: auto;
+            border: 1px solid #eaeaea;
+            border-radius: 8px;
+        }
+
+        .calificaciones-perfil-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px;
+            border: 1px solid #dee2e6;
+        }
+
+        .calificaciones-perfil-table th,
+        .calificaciones-perfil-table td {
+            padding: 12px 16px;
+            border: 1px solid #dee2e6;
+            vertical-align: middle;
+            text-align: center;
+        }
+
+        .calificaciones-perfil-table th {
+            background: #f8f9fa;
+            color: #666;
+            font-weight: 600;
+            font-size: 14px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .calificaciones-perfil-table .calificaciones-header-row th {
+            background: #e9ecef;
+            color: #495057;
+            font-size: 15px;
+        }
+
+        .calificaciones-perfil-table .calificaciones-subheader-row th {
+            background: #f1f3f5;
+            color: #666;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .calificaciones-perfil-table td:first-child {
+            text-align: left;
+            font-weight: 500;
+            color: #333;
+            background-color: #f8f9fa;
+        }
+
+        .materia-info-cell {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .materia-nombre {
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .calificacion-perfil-valor {
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .promedio-perfil-cell {
+            font-weight: 600;
+            background-color: #f8fafc;
+            border-left: 2px solid #dee2e6;
+            font-size: 18px;
+            color: #059669;
+        }
+
+        /* ===== SECCIÓN DE ALERTAS EN PERFIL ===== */
+        .alertas-perfil-section {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 2px solid #e4e4e4;
+        }
+
+        .alertas-summary-mini {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .badge-riesgo {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-alto  { background: #fee2e2; color: #b91c1c; }
+        .badge-medio { background: #fef3c7; color: #92400e; }
+        .badge-bajo  { background: #dbeafe; color: #1e40af; }
+
+        .alertas-perfil-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .alerta-perfil-card {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            padding: 16px;
+            border-radius: 10px;
+            margin-bottom: 0;
+            border-left: 4px solid;
+            transition: box-shadow 0.2s, opacity 0.3s, transform 0.3s;
+        }
+
+        .alerta-perfil-card:hover { 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08); 
+        }
+
+        .alerta-perfil-card.alto  { 
+            background: #fff5f5; 
+            border-color: #ef4444; 
+        }
+
+        .alerta-perfil-card.medio { 
+            background: #fffbeb; 
+            border-color: #f59e0b; 
+        }
+
+        .alerta-perfil-card.bajo  { 
+            background: #eff6ff; 
+            border-color: #3b82f6; 
+        }
+
+        .alerta-perfil-icon { 
+            font-size: 22px; 
+            margin-top: 2px; 
+            flex-shrink: 0; 
+        }
+
+        .alerta-perfil-card.alto  .alerta-perfil-icon { color: #ef4444; }
+        .alerta-perfil-card.medio .alerta-perfil-icon { color: #f59e0b; }
+        .alerta-perfil-card.bajo  .alerta-perfil-icon { color: #3b82f6; }
+
+        .alerta-perfil-body { 
+            flex: 1; 
+            min-width: 0; 
+        }
+
+        .alerta-perfil-alumno    { 
+            font-weight: 600; 
+            font-size: 14px; 
+            color: #111; 
+            margin-bottom: 3px; 
+        }
+
+        .alerta-perfil-matricula { 
+            font-size: 12px; 
+            color: #888; 
+            margin-bottom: 6px; 
+        }
+
+        .alerta-perfil-motivos { 
+            list-style: none; 
+            padding: 0; 
+            margin: 0; 
+        }
+
+        .alerta-perfil-motivos li {
+            font-size: 13px; 
+            color: #444; 
+            padding: 3px 0 3px 16px;
+            position: relative; 
+            line-height: 1.5;
+        }
+
+        .alerta-perfil-motivos li::before { 
+            content: "•"; 
+            position: absolute; 
+            left: 0; 
+            color: #999; 
+        }
+
+        .alerta-perfil-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 10px;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .alerta-perfil-fecha { 
+            font-size: 11px; 
+            color: #aaa; 
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .alerta-perfil-materia {
+            font-size: 11px;
+            color: #666;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            background: rgba(255,255,255,0.5);
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+
+        .alerta-perfil-materia .mdi {
+            font-size: 12px;
+        }
+
+        .alertas-perfil-empty {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            color: #9ca3af;
+            text-align: center;
+            gap: 10px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border: 2px dashed #e4e4e4;
+        }
+
+        .alertas-perfil-empty .mdi {
+            font-size: 48px;
+            color: #bbf7d0;
+        }
+
+        .alertas-perfil-empty h4 {
+            font-size: 16px;
+            color: #374151;
+            margin: 0;
+            font-weight: 500;
+        }
+
+        .alertas-perfil-empty p {
+            font-size: 13px;
+            color: #9ca3af;
+            margin: 0;
         }
         
         /* ===== SECCIÓN DE ACTIVIDADES Y TAREAS ===== */
@@ -340,6 +684,25 @@
             font-size: 16px;
             display: inline-block;
         }
+
+        /* Mensaje informativo sobre la tabla */
+        .tabla-info-message {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            padding: 8px 12px;
+            background-color: #f0f7ff;
+            border-left: 4px solid #667eea;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #1e40af;
+        }
+
+        .tabla-info-message .mdi {
+            font-size: 16px;
+            color: #667eea;
+        }
         
         .asistencia-table-wrapper {
             overflow-x: auto;
@@ -418,23 +781,6 @@
             border-radius: 16px;
             padding: 25px;
             border: 2px solid #e4e4e4;
-        }
-        
-        .section-title {
-            font-size: 20px;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .section-title .mdi {
-            color: #667eea;
-            font-size: 24px;
         }
         
         .comentarios-grid {
@@ -731,10 +1077,40 @@
             .comentarios-grid {
                 grid-template-columns: 1fr;
             }
+
+            .calificaciones-perfil-table th,
+            .calificaciones-perfil-table td {
+                padding: 10px 12px;
+                font-size: 13px;
+            }
+            
+            .calificacion-perfil-valor {
+                font-size: 14px;
+            }
+            
+            .promedio-perfil-cell {
+                font-size: 16px;
+            }
+
+            .alertas-perfil-footer {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+            
+            .alertas-summary-mini {
+                justify-content: flex-start;
+                margin-top: 10px;
+            }
             
             .actividad-header {
                 flex-direction: column;
                 align-items: flex-start;
+            }
+
+            .tabla-info-message {
+                font-size: 12px;
+                padding: 6px 10px;
             }
         }
         
@@ -787,9 +1163,13 @@
                     <span class="mdi mdi-calendar-month"></span>
                     <span><strong>Cuatrimestre:</strong> {{ alumno.grupo.cuatrimestre.nombre }}</span>
                 </div>
-                <div class="perfil-badge">
+                <div class="perfil-badge {% if not cuatrimestre_valido %}perfil-badge-inactivo{% endif %}">
                     <span class="mdi mdi-school"></span>
-                    Activo
+                    {% if cuatrimestre_valido %}
+                        Activo
+                    {% else %}
+                        Inactivo
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -799,7 +1179,13 @@
     <div class="stats-grid">
         <div class="stat-card">
             <div class="stat-label">Promedio de la Materia</div>
-            <div class="stat-value">--</div>
+            <div class="stat-value">
+                {% if promedio_materia %}
+                    {{ promedio_materia|floatformat:0 }}
+                {% else %}
+                    --
+                {% endif %}
+            </div>
         </div>
         <div class="stat-card">
             <div class="stat-label">Promedio General</div>
@@ -808,16 +1194,171 @@
         <div class="stat-card">
             <div class="stat-label">Estado</div>
             <div class="stat-value small">
-                <span class="status-badge status-good">Estable</span>
+                <span class="status-badge {{ estado_clase }}">{{ estado_alumno }}</span>
             </div>
         </div>
+    </div>
+
+    <!-- Sección de Calificaciones -->
+    <div class="calificaciones-perfil-section">
+        <div class="section-title">
+            <div class="section-title-left">
+                <span class="mdi mdi-star"></span>
+                Calificaciones
+            </div>
+        </div>
+        
+        <div class="calificaciones-perfil-container">
+            <div class="calificaciones-perfil-wrapper">
+                <table class="calificaciones-perfil-table">
+                    <thead>
+                        <!-- Primera fila: Números de unidad -->
+                        <tr class="calificaciones-header-row">
+                            <th></th>
+                            {% for parcial in parciales_info %}
+                                <th>Unidad {{ parcial.numero }}</th>
+                            {% endfor %}
+                            <th></th>
+                        </tr>
+                        
+                        <!-- Segunda fila: Nombres y porcentajes -->
+                        <tr class="calificaciones-subheader-row">
+                            <th>Materia</th>
+                            {% for parcial in parciales_info %}
+                                <th>{{ parcial.nombre }} - {{ parcial.porcentaje }}%</th>
+                            {% endfor %}
+                            <th>Promedio</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <!-- Nombre de la materia -->
+                            <td>
+                                <div class="materia-info-cell">
+                                    <span class="materia-nombre">
+                                        {% for gdm in materias_docente %}
+                                            {{ gdm.materia.nombre }}
+                                        {% endfor %}
+                                    </span>
+                                </div>
+                            </td>
+                            
+                            <!-- Calificaciones de cada parcial - SIN DECIMALES -->
+                            {% for parcial in parciales_info %}
+                                <td>
+                                    {% for cal in calificaciones_data %}
+                                        {% if cal.parcial_numero == parcial.numero %}
+                                            <div class="calificacion-perfil-valor">
+                                                {% if cal.calificacion %}
+                                                    {{ cal.calificacion|floatformat:0 }}
+                                                {% else %}
+                                                    -
+                                                {% endif %}
+                                            </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                </td>
+                            {% endfor %}
+                            
+                            <!-- Promedio - SIN DECIMALES -->
+                            <td class="promedio-perfil-cell">
+                                {% if promedio_materia %}
+                                    {{ promedio_materia|floatformat:0 }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sección de Alertas -->
+    <div class="alertas-perfil-section">
+        <div class="section-title">
+            <div class="section-title-left">
+                <span class="mdi mdi-alert-circle"></span>
+                Alertas del Alumno
+            </div>
+            <div class="section-title-right">
+                {% if alertas_alto > 0 or alertas_medio > 0 or alertas_bajo > 0 %}
+                    <div class="alertas-summary-mini">
+                        {% if alertas_alto > 0 %}
+                            <span class="badge-riesgo badge-alto">
+                                <span class="mdi mdi-alert-circle"></span> {{ alertas_alto }} Alto
+                            </span>
+                        {% endif %}
+                        {% if alertas_medio > 0 %}
+                            <span class="badge-riesgo badge-medio">
+                                <span class="mdi mdi-alert"></span> {{ alertas_medio }} Medio
+                            </span>
+                        {% endif %}
+                        {% if alertas_bajo > 0 %}
+                            <span class="badge-riesgo badge-bajo">
+                                <span class="mdi mdi-information-outline"></span> {{ alertas_bajo }} Bajo
+                            </span>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        {% if alertas %}
+            <div class="alertas-perfil-list">
+                {% for alerta in alertas %}
+                    <div class="alerta-perfil-card {{ alerta.nivel_riesgo|lower }}" id="alerta-perfil-{{ alerta.id }}">
+                        <span class="alerta-perfil-icon mdi 
+                            {% if alerta.nivel_riesgo == 'Alto' %}
+                                mdi-alert-circle
+                            {% elif alerta.nivel_riesgo == 'Medio' %}
+                                mdi-alert
+                            {% else %}
+                                mdi-information-outline
+                            {% endif %}">
+                        </span>
+                        <div class="alerta-perfil-body">
+                            <div class="alerta-perfil-alumno">{{ alumno.nombre }}</div>
+                            <div class="alerta-perfil-matricula">{{ alumno.matricula }}</div>
+                            <ul class="alerta-perfil-motivos">
+                                {% for motivo in alerta.motivo.splitlines %}
+                                    <li>{{ motivo }}</li>
+                                {% endfor %}
+                            </ul>
+                            <div class="alerta-perfil-footer">
+                                <span class="alerta-perfil-fecha">
+                                    <span class="mdi mdi-calendar-outline"></span> {{ alerta.fecha }}
+                                </span>
+                                {% if alerta.materia != 'General' %}
+                                    <span class="alerta-perfil-materia">
+                                        <span class="mdi mdi-book"></span> {{ alerta.materia }}
+                                        {% if alerta.parcial %}
+                                            ({{ alerta.parcial }})
+                                        {% endif %}
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alertas-perfil-empty">
+                <span class="mdi mdi-check-circle-outline"></span>
+                <h4>Sin alertas activas</h4>
+                <p>Este alumno no tiene alertas pendientes</p>
+            </div>
+        {% endif %}
     </div>
     
     <!-- Sección de Actividades y Tareas -->
     <div class="actividades-section">
         <div class="section-title">
-            <span class="mdi mdi-clipboard-list"></span>
-            Actividades y Tareas
+            <div class="section-title-left">
+                <span class="mdi mdi-clipboard-list"></span>
+                Actividades y Tareas
+            </div>
         </div>
         
         {% if actividades %}
@@ -883,114 +1424,63 @@
     <!-- Sección de Historial de Asistencia -->
     <div class="asistencia-section">
         <div class="section-title">
-            <span class="mdi mdi-calendar-check"></span>
-            Historial de Asistencia
+            <div class="section-title-left">
+                <span class="mdi mdi-calendar-check"></span>
+                Historial de Asistencia
+            </div>
+            <div class="section-title-right">
+                <div class="view-switch-small" id="switchAsistencia">
+                    <button class="view-option-small active" data-view="esta-materia">Esta Materia</button>
+                    <button class="view-option-small" data-view="todas-materias">Todas las Materias</button>
+                </div>
+            </div>
         </div>
         
         <!-- Mini estadísticas de asistencia -->
-        <div class="asistencia-stats-mini">
-            <div class="stat-mini-item">
-                <span class="stat-mini-label">Asistencias</span>
-                <span class="stat-mini-value" style="color: #16a34a;">{{ estadisticas_asistencia.asistencias }}</span>
-            </div>
-            <div class="stat-mini-item">
-                <span class="stat-mini-label">Retardos</span>
-                <span class="stat-mini-value" style="color: #d97706;">{{ estadisticas_asistencia.retardos }}</span>
-            </div>
-            <div class="stat-mini-item">
-                <span class="stat-mini-label">Faltas</span>
-                <span class="stat-mini-value" style="color: #dc2626;">{{ estadisticas_asistencia.faltas }}</span>
-            </div>
-            <div class="stat-mini-item">
-                <span class="stat-mini-label">Porcentaje</span>
-                <span class="stat-mini-value {% if estadisticas_asistencia.porcentaje >= 80 %}status-good{% elif estadisticas_asistencia.porcentaje >= 60 %}status-warning{% else %}status-danger{% endif %}">
-                    {{ estadisticas_asistencia.porcentaje }}%
-                </span>
-            </div>
-            <div class="stat-mini-item">
-                <span class="stat-mini-label">Total clases</span>
-                <span class="stat-mini-value">{{ estadisticas_asistencia.total_clases }}</span>
-            </div>
+        <div class="asistencia-stats-mini" id="statsAsistencia">
+            <!-- Se actualizará dinámicamente -->
         </div>
         
-        {% if asistencia_historial %}
+        <!-- Texto informativo sobre la tabla -->
+        <div class="tabla-info-message">
+            <span class="mdi mdi-information-outline"></span>
+            Mostrando solo faltas y retardos
+        </div>
+        
         <div class="asistencia-table-wrapper">
             <table class="asistencia-table">
                 <thead>
                     <tr>
-                        <th>Fecha</th>
-                        <th>Materia</th>
-                        <th>Estado</th>
+                        <th class="text-center">Fecha</th>
+                        <th class="text-center">Materia</th>
+                        <th class="text-center">Estado</th>
                     </tr>
                 </thead>
-                <tbody>
-                    {% for registro in asistencia_historial %}
-                    <tr>
-                        <td>
-                            <div class="fecha-cell">
-                                <span class="mdi mdi-calendar"></span>
-                                {{ registro.fecha }}
-                            </div>
-                        </td>
-                        <td>{{ registro.materia }}</td>
-                        <td>
-                            {% if registro.estado == "Asistió" %}
-                                <span class="estado-badge estado-asistio">
-                                    <span class="mdi mdi-check-circle"></span>
-                                    {{ registro.estado }}
-                                </span>
-                            {% elif registro.estado == "Retardo" %}
-                                <span class="estado-badge estado-retardo">
-                                    <span class="mdi mdi-clock"></span>
-                                    {{ registro.estado }}
-                                </span>
-                            {% elif registro.estado == "No asistió" %}
-                                <span class="estado-badge estado-falta">
-                                    <span class="mdi mdi-close-circle"></span>
-                                    {{ registro.estado }}
-                                </span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
+                <tbody id="tablaAsistenciaBody">
+                    <!-- Los datos se cargarán aquí dinámicamente -->
                 </tbody>
             </table>
         </div>
-        {% else %}
-        <div class="empty-message">
-            No hay registros de asistencia para este alumno
-        </div>
-        {% endif %}
     </div>
     
     <!-- Sección de comentarios -->
     <div class="comentarios-section">
         <div class="section-title">
-            <span class="mdi mdi-comment"></span>
-            Comentarios
-        </div>
-        
-        {% if comentarios %}
-        <div class="comentarios-grid">
-            {% for comentario in comentarios %}
-            <div class="comentario-card">
-                <div class="comentario-header">
-                    <span class="comentario-tipo">{{ comentario.tipo }}</span>
-                    <span class="comentario-fecha">{{ comentario.fecha|date:"d/m/Y" }}</span>
-                </div>
-                <div class="comentario-texto">{{ comentario.texto }}</div>
-                <div class="comentario-docente">
-                    <span class="mdi mdi-account"></span>
-                    {{ comentario.docente.nombre }}
+            <div class="section-title-left">
+                <span class="mdi mdi-comment"></span>
+                Comentarios de Asistencia
+            </div>
+            <div class="section-title-right">
+                <div class="view-switch-small" id="switchComentarios">
+                    <button class="view-option-small active" data-view="esta-materia">Esta Materia</button>
+                    <button class="view-option-small" data-view="todas-materias">Todas las Materias</button>
                 </div>
             </div>
-            {% endfor %}
         </div>
-        {% else %}
-        <div class="empty-message">
-            No hay comentarios para este alumno
+        
+        <div id="comentariosContainer">
+            <!-- Los comentarios se cargarán aquí dinámicamente -->
         </div>
-        {% endif %}
     </div>
     
     <!-- Botones de acción -->
@@ -1001,35 +1491,324 @@
         </button>
     </div>
 
+    {{ asistencia_esta_materia|json_script:"asistencia-esta-materia" }}
+    {{ asistencia_todas_materias|json_script:"asistencia-todas-materias" }}
+    {{ stats_esta_materia|json_script:"stats-esta-materia" }}
+    {{ stats_todas_materias|json_script:"stats-todas-materias" }}
+    {{ comentarios_esta_materia|json_script:"comentarios-esta-materia" }}
+    {{ comentarios_todas_materias|json_script:"comentarios-todas-materias" }}
+
     <script>
-        function descargarPDF() {
-            const btn = event.target.closest('button');
-            const textoOriginal = btn.innerHTML;
-            btn.innerHTML = '<span class="mdi mdi-loading mdi-spin"></span> Generando PDF...';
-            btn.disabled = true;
+        document.addEventListener('DOMContentLoaded', function() {
+            // Datos desde Django usando json_script
+            const asistenciaEstaMateria = JSON.parse(document.getElementById('asistencia-esta-materia').textContent);
+            const asistenciaTodasMaterias = JSON.parse(document.getElementById('asistencia-todas-materias').textContent);
+            const statsEstaMateria = JSON.parse(document.getElementById('stats-esta-materia').textContent);
+            const statsTodasMaterias = JSON.parse(document.getElementById('stats-todas-materias').textContent);
+            const comentariosEstaMateria = JSON.parse(document.getElementById('comentarios-esta-materia').textContent);
+            const comentariosTodasMaterias = JSON.parse(document.getElementById('comentarios-todas-materias').textContent);
             
-            const opciones = {
-                margin:        [0.5, 0.5, 0.5, 0.5],
-                filename:      'perfil_{{ alumno.matricula }}.pdf',
-                image:         { type: 'jpeg', quality: 0.98 },
-                html2canvas:   { scale: 2, letterRendering: true, useCORS: true, logging: false },
-                jsPDF:         { unit: 'in', format: 'a4', orientation: 'portrait' }
-            };
-            
-            const elemento = document.body;
-            
-            html2pdf().set(opciones).from(elemento).save()
-                .then(() => {
-                    btn.innerHTML = textoOriginal;
-                    btn.disabled = false;
-                })
-                .catch(error => {
-                    console.error('Error al generar PDF:', error);
-                    btn.innerHTML = textoOriginal;
-                    btn.disabled = false;
-                    alert('Error al generar el PDF. Por favor intenta de nuevo.');
+            console.log('Datos cargados correctamente');
+
+            // Función para actualizar el estado del alumno basado en las alertas
+            function actualizarEstadoAlumno() {
+                // Obtener todas las tarjetas de alerta visibles
+                const alertasVisibles = document.querySelectorAll('.alerta-perfil-card');
+                const estadoBadge = document.querySelector('.status-badge');
+                const estadoLabel = estadoBadge ? estadoBadge.closest('.stat-value') : null;
+                
+                if (!estadoBadge) return;
+                
+                let tieneAlto = false;
+                let tieneMedio = false;
+                let tieneBajo = false;
+                
+                // Verificar los niveles de las alertas visibles
+                alertasVisibles.forEach(alerta => {
+                    if (alerta.classList.contains('alto')) {
+                        tieneAlto = true;
+                    } else if (alerta.classList.contains('medio')) {
+                        tieneMedio = true;
+                    } else if (alerta.classList.contains('bajo')) {
+                        tieneBajo = true;
+                    }
                 });
-        }
+                
+                // Determinar nuevo estado
+                if (tieneAlto) {
+                    estadoBadge.className = 'status-badge status-danger';
+                    estadoBadge.textContent = 'En Riesgo';
+                } else if (tieneMedio) {
+                    estadoBadge.className = 'status-badge status-warning';
+                    estadoBadge.textContent = 'Requiere Atención';
+                } else if (tieneBajo) {
+                    estadoBadge.className = 'status-badge status-info';
+                    estadoBadge.textContent = 'Precaución';
+                } else {
+                    estadoBadge.className = 'status-badge status-good';
+                    estadoBadge.textContent = 'Estable';
+                }
+            }
+            
+            // Función para actualizar tabla de asistencia (solo faltas y retardos)
+            function actualizarTablaAsistencia(datos) {
+                const tbody = document.getElementById('tablaAsistenciaBody');
+                tbody.innerHTML = '';
+                
+                // Filtrar solo faltas y retardos
+                const faltasYRetardos = datos.filter(registro => 
+                    registro.estado === 'No asistió' || registro.estado === 'Retardo'
+                );
+                
+                if (faltasYRetardos.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="3" style="text-align: center; padding: 30px; color: #999;">
+                                No hay faltas o retardos registrados
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                faltasYRetardos.forEach(registro => {
+                    const row = document.createElement('tr');
+                    
+                    let estadoClass = '';
+                    let estadoIcon = '';
+                    
+                    if (registro.estado === 'Retardo') {
+                        estadoClass = 'estado-retardo';
+                        estadoIcon = 'mdi-clock';
+                    } else { // No asistió
+                        estadoClass = 'estado-falta';
+                        estadoIcon = 'mdi-close-circle';
+                    }
+                    
+                    row.innerHTML = `
+                        <td>
+                            <div class="fecha-cell">
+                                <span class="mdi mdi-calendar"></span>
+                                ${registro.fecha}
+                            </div>
+                        </td>
+                        <td>${registro.materia}</td>
+                        <td>
+                            <span class="estado-badge ${estadoClass}">
+                                <span class="mdi ${estadoIcon}"></span>
+                                ${registro.estado}
+                            </span>
+                        </td>
+                    `;
+                    
+                    tbody.appendChild(row);
+                });
+            }
+            
+            // Función para actualizar mini estadísticas
+            function actualizarStats(stats) {
+                const statsContainer = document.getElementById('statsAsistencia');
+                statsContainer.innerHTML = `
+                    <div class="stat-mini-item">
+                        <span class="stat-mini-label">Asistencias</span>
+                        <span class="stat-mini-value" style="color: #16a34a;">${stats.asistencias}</span>
+                    </div>
+                    <div class="stat-mini-item">
+                        <span class="stat-mini-label">Retardos</span>
+                        <span class="stat-mini-value" style="color: #d97706;">${stats.retardos}</span>
+                    </div>
+                    <div class="stat-mini-item">
+                        <span class="stat-mini-label">Faltas</span>
+                        <span class="stat-mini-value" style="color: #dc2626;">${stats.faltas}</span>
+                    </div>
+                    <div class="stat-mini-item">
+                        <span class="stat-mini-label">Porcentaje</span>
+                        <span class="stat-mini-value ${stats.porcentaje >= 80 ? 'status-good' : (stats.porcentaje >= 60 ? 'status-warning' : 'status-danger')}">
+                            ${stats.porcentaje}%
+                        </span>
+                    </div>
+                    <div class="stat-mini-item">
+                        <span class="stat-mini-label">Total clases</span>
+                        <span class="stat-mini-value">${stats.total_clases}</span>
+                    </div>
+                `;
+            }
+            
+            // Función para actualizar comentarios
+            function actualizarComentarios(comentarios) {
+                const container = document.getElementById('comentariosContainer');
+                
+                if (comentarios.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-message">
+                            No hay comentarios para este alumno
+                        </div>
+                    `;
+                    return;
+                }
+                
+                let html = '<div class="comentarios-grid">';
+                
+                comentarios.forEach(com => {
+                    html += `
+                        <div class="comentario-card">
+                            <div class="comentario-header">
+                                <span class="comentario-tipo">${com.tipo}</span>
+                                <span class="comentario-fecha">${com.fecha}</span>
+                            </div>
+                            <div class="comentario-texto">${com.texto}</div>
+                            <div class="comentario-docente">
+                                <span class="mdi mdi-account"></span>
+                                ${com.docente} - ${com.materia}
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+                container.innerHTML = html;
+            }
+            
+            // Inicializar con "Esta Materia"
+            actualizarTablaAsistencia(asistenciaEstaMateria);
+            actualizarStats(statsEstaMateria);
+            actualizarComentarios(comentariosEstaMateria);
+            
+            // Switch de asistencia
+            const switchAsistencia = document.getElementById('switchAsistencia');
+            const opcionesAsistencia = switchAsistencia.querySelectorAll('.view-option-small');
+            
+            opcionesAsistencia.forEach(option => {
+                option.addEventListener('click', function() {
+                    opcionesAsistencia.forEach(opt => opt.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const view = this.getAttribute('data-view');
+                    
+                    if (view === 'esta-materia') {
+                        actualizarTablaAsistencia(asistenciaEstaMateria);
+                        actualizarStats(statsEstaMateria);
+                    } else {
+                        actualizarTablaAsistencia(asistenciaTodasMaterias);
+                        actualizarStats(statsTodasMaterias);
+                    }
+                });
+            });
+            
+            // Switch de comentarios
+            const switchComentarios = document.getElementById('switchComentarios');
+            const opcionesComentarios = switchComentarios.querySelectorAll('.view-option-small');
+            
+            opcionesComentarios.forEach(option => {
+                option.addEventListener('click', function() {
+                    opcionesComentarios.forEach(opt => opt.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const view = this.getAttribute('data-view');
+                    
+                    if (view === 'esta-materia') {
+                        actualizarComentarios(comentariosEstaMateria);
+                    } else {
+                        actualizarComentarios(comentariosTodasMaterias);
+                    }
+                });
+            });
+
+            function descargarPDF() {
+                const btn = event.target.closest('button');
+                const textoOriginal = btn.innerHTML;
+                btn.innerHTML = '<span class="mdi mdi-loading mdi-spin"></span> Generando PDF...';
+                btn.disabled = true;
+                
+                const opciones = {
+                    margin:        [0.5, 0.5, 0.5, 0.5],
+                    filename:      'perfil_{{ alumno.matricula }}.pdf',
+                    image:         { type: 'jpeg', quality: 0.98 },
+                    html2canvas:   { scale: 2, letterRendering: true, useCORS: true, logging: false },
+                    jsPDF:         { unit: 'in', format: 'a4', orientation: 'portrait' }
+                };
+                
+                const elemento = document.body;
+                
+                html2pdf().set(opciones).from(elemento).save()
+                    .then(() => {
+                        btn.innerHTML = textoOriginal;
+                        btn.disabled = false;
+                    })
+                    .catch(error => {
+                        console.error('Error al generar PDF:', error);
+                        btn.innerHTML = textoOriginal;
+                        btn.disabled = false;
+                        alert('Error al generar el PDF. Por favor intenta de nuevo.');
+                    });
+            }
+
+            // Actualizar estado inicial
+            actualizarEstadoAlumno();
+            
+            // Observar cambios en las alertas (por si se eliminan)
+            const observer = new MutationObserver(function(mutations) {
+                actualizarEstadoAlumno();
+            });
+            
+            const alertasList = document.querySelector('.alertas-perfil-list');
+            if (alertasList) {
+                observer.observe(alertasList, { childList: true, subtree: true });
+            }
+        });
+
+        // Modificar la función de atender alerta para actualizar el estado
+        window.atenderAlertaPerfil = function(alertaId, btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<span class="mdi mdi-loading mdi-spin"></span> Atendiendo…';
+            
+            fetch('/marcar-alerta-atendida/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ alerta_id: alertaId })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    const card = document.getElementById(`alerta-perfil-${alertaId}`);
+                    if (card) {
+                        card.style.opacity = '0';
+                        card.style.transform = 'translateX(20px)';
+                        setTimeout(() => {
+                            card.remove();
+                            actualizarEstadoAlumno(); // Actualizar estado al eliminar
+                            
+                            // Si ya no hay tarjetas, mostrar empty state
+                            if (document.querySelectorAll('.alerta-perfil-card').length === 0) {
+                                const container = document.querySelector('.alertas-perfil-list');
+                                const emptyHtml = `
+                                    <div class="alertas-perfil-empty">
+                                        <span class="mdi mdi-check-circle-outline"></span>
+                                        <h4>Sin alertas activas</h4>
+                                        <p>Este alumno no tiene alertas pendientes</p>
+                                    </div>
+                                `;
+                                if (container) {
+                                    container.innerHTML = emptyHtml;
+                                }
+                            }
+                        }, 300);
+                    }
+                } else {
+                    btn.disabled = false;
+                    btn.innerHTML = '<span class="mdi mdi-check"></span> Atender';
+                    window.mostrarSnackbar('Error al atender la alerta', 'error');
+                }
+            })
+            .catch(() => {
+                btn.disabled = false;
+                btn.innerHTML = '<span class="mdi mdi-check"></span> Atender';
+                window.mostrarSnackbar('Error de conexión', 'error');
+            });
+        };
     </script>
 </body>
 </html>
