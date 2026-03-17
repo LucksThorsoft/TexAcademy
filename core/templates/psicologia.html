@@ -1,6 +1,6 @@
 {% extends 'sidebar.html' %}
 
-{% block header_title %}Pedagogía{% endblock %}
+{% block header_title %}Psicología{% endblock %}
 
 {% block content %}
 
@@ -9,7 +9,7 @@
     <div>
         <p style="font-size:14px;color:#6b7280;margin:0;">
             <span style="color:#111827;font-weight:600;">{{ stats.total }}</span>
-            alerta{{ stats.total|pluralize }} derivada{{ stats.total|pluralize }} a Pedagogía
+            alerta{{ stats.total|pluralize }} derivada{{ stats.total|pluralize }} a Psicología
         </p>
     </div>
 
@@ -42,7 +42,7 @@
     <div class="empty-state">
         <span class="mdi mdi-check-circle-outline" style="font-size:48px;color:#bbf7d0;display:block;margin-bottom:16px;"></span>
         <h3 style="font-size:18px;color:#111827;margin-bottom:8px;">Sin alertas pendientes</h3>
-        <p style="font-size:14px;color:#6b7280;">No hay alertas derivadas a Pedagogía en este momento.</p>
+        <p style="font-size:14px;color:#6b7280;">No hay alertas derivadas a Psicología en este momento.</p>
     </div>
 
     {% else %}
@@ -79,8 +79,8 @@
                                 {% else %}<span class="mdi mdi-information-outline"></span>{% endif %}
                                 {{ alerta.nivel_riesgo }}
                             </span>
-                            <span class="badge badge-pedagogia">
-                                <span class="mdi mdi-school-outline"></span> Pedagogía
+                            <span class="badge badge-psicologia">
+                                <span class="mdi mdi-head-heart-outline"></span> Psicología
                             </span>
                             <span style="font-size:11px;color:#9ca3af;">{{ alerta.fecha }}</span>
                         </div>
@@ -107,8 +107,10 @@
                         <div class="seguimiento-item">
                             <div class="seguimiento-dot
                                 {% if s.accion == 'cerrada' %}dot-cerrada
+                                {% elif 'psicologia' in s.accion %}dot-psicologia
                                 {% elif 'pedagogia' in s.accion %}dot-pedagogia
                                 {% elif 'direccion' in s.accion %}dot-direccion
+                                {% elif 'tutor' in s.accion %}dot-tutor
                                 {% else %}dot-default{% endif %}">
                             </div>
                             <div class="seguimiento-body">
@@ -116,12 +118,16 @@
                                     <strong>{{ s.usuario }}</strong>
                                     <span class="seguimiento-accion
                                         {% if s.accion == 'cerrada' %}accion-cerrada
+                                        {% elif 'psicologia' in s.accion %}accion-psicologia
                                         {% elif 'pedagogia' in s.accion %}accion-pedagogia
                                         {% elif 'direccion' in s.accion %}accion-direccion
+                                        {% elif 'tutor' in s.accion %}accion-tutor
                                         {% else %}accion-default{% endif %}">
                                         {% if s.accion == 'cerrada' %}Cerró la alerta
+                                        {% elif s.accion == 'derivada_psicologia' %}Derivó a Psicología
                                         {% elif s.accion == 'derivada_pedagogia' %}Derivó a Pedagogía
                                         {% elif s.accion == 'derivada_direccion' %}Derivó a Dirección
+                                        {% elif s.accion == 'derivada_tutor' %}Derivó al Tutor
                                         {% else %}Comentario{% endif %}
                                     </span>
                                     <span style="font-size:11px;color:#9ca3af;margin-left:auto;">{{ s.fecha }}</span>
@@ -134,24 +140,29 @@
                     {% endif %}
 
                     <!-- Botones principales -->
-                    <!-- Botones principales -->
                     <div class="acciones-principales" id="acciones-{{ alerta.id }}">
                         <button class="btn-accion btn-cerrar"
                                 onclick="mostrarFormComentario({{ alerta.id }}, 'cerrar')">
                             <span class="mdi mdi-check"></span> Cerrar alerta
                         </button>
-                        <button class="btn-accion btn-pedagogia"
-                                onclick="mostrarFormComentario({{ alerta.id }}, 'Tutor')">
-                            <span class="mdi mdi-account-tie-outline"></span> Tutor
+                        <button class="btn-accion btn-derivar dropdown-trigger"
+                                id="btn-derivar-{{ alerta.id }}"
+                                onclick="toggleDropdown({{ alerta.id }})">
+                            <span class="mdi mdi-send-outline"></span> Derivar
+                            <span class="mdi mdi-chevron-down"></span>
                         </button>
-                        <button class="btn-accion btn-psicologia"
-                                onclick="mostrarFormComentario({{ alerta.id }}, 'Psicologia')">
-                            <span class="mdi mdi-head-heart-outline"></span> Psicología
-                        </button>
-                        <button class="btn-accion btn-direccion"
-                                onclick="mostrarFormComentario({{ alerta.id }}, 'Direccion')">
-                            <span class="mdi mdi-office-building-outline"></span> Dirección
-                        </button>
+                        <!-- Dropdown destinos -->
+                        <div class="derivar-dropdown" id="dropdown-{{ alerta.id }}" style="display:none;">
+                            <button class="dropdown-item-derivar" onclick="seleccionarDestino({{ alerta.id }}, 'Tutor')">
+                                <span class="mdi mdi-account-tie-outline"></span> Tutor
+                            </button>
+                            <button class="dropdown-item-derivar" onclick="seleccionarDestino({{ alerta.id }}, 'Pedagogia')">
+                                <span class="mdi mdi-school-outline"></span> Pedagogía
+                            </button>
+                            <button class="dropdown-item-derivar" onclick="seleccionarDestino({{ alerta.id }}, 'Direccion')">
+                                <span class="mdi mdi-office-building-outline"></span> Dirección
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Formulario comentario (oculto) -->
@@ -173,7 +184,7 @@
                                     onclick="cancelarFormComentario({{ alerta.id }})">
                                 Cancelar
                             </button>
-                            <button class="btn-accion btn-confirmar"
+                            <button class="btn-accion btn-confirmar btn-confirmar-cerrar"
                                     id="btn-confirmar-{{ alerta.id }}"
                                     onclick="confirmarAccion({{ alerta.id }})">
                                 <span class="mdi mdi-check"></span>
@@ -197,209 +208,213 @@
 </div>
 
 <script>
-    const accionPendiente = {};
+    const accionPendiente  = {};
+    const destinoPendiente = {};
 
-// ── Filtros ──────────────────────────────────────────────────────────────
-document.querySelectorAll('.view-option').forEach(btn => {
-    btn.addEventListener('click', function () {
-        document.querySelectorAll('.view-option').forEach(b => b.classList.remove('active'));
-        this.classList.add('active');
+    // ── Filtros ──────────────────────────────────────────────────────────────
+    document.querySelectorAll('.view-option').forEach(btn => {
+        btn.addEventListener('click', function () {
+            document.querySelectorAll('.view-option').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
 
-        const filtro = this.dataset.filtro;
-        const cards  = document.querySelectorAll('.alerta-card');
+            const filtro = this.dataset.filtro;
+            const cards  = document.querySelectorAll('.alerta-card');
 
-        cards.forEach(card => {
-            card.style.display = (filtro === 'todas' || card.dataset.nivel === filtro) ? '' : 'none';
+            cards.forEach(card => {
+                card.style.display = (filtro === 'todas' || card.dataset.nivel === filtro) ? '' : 'none';
+            });
+
+            const lista   = document.getElementById('alertasLista');
+            const visible = [...cards].filter(c => c.style.display !== 'none').length;
+            const empty   = lista.querySelector('.filtro-empty');
+
+            if (visible === 0 && cards.length > 0) {
+                if (!empty) lista.insertAdjacentHTML('beforeend', `
+                    <div class="filtro-empty empty-state" style="margin-top:4px;">
+                        <span class="mdi mdi-filter-off-outline" style="font-size:36px;color:#d1d5db;display:block;margin-bottom:10px;"></span>
+                        <p style="color:#6b7280;font-size:14px;">No hay alertas con ese filtro</p>
+                    </div>`);
+            } else {
+                if (empty) empty.remove();
+            }
+        });
+    });
+
+    // ── Dropdown derivar ─────────────────────────────────────────────────────
+    function toggleDropdown(alertaId) {
+        const dropdown = document.getElementById(`dropdown-${alertaId}`);
+        const isOpen   = dropdown.style.display === 'block';
+        // Cerrar todos los dropdowns abiertos
+        document.querySelectorAll('.derivar-dropdown').forEach(d => d.style.display = 'none');
+        dropdown.style.display = isOpen ? 'none' : 'block';
+    }
+
+    function seleccionarDestino(alertaId, destino) {
+        document.getElementById(`dropdown-${alertaId}`).style.display = 'none';
+        mostrarFormComentario(alertaId, destino);
+    }
+
+    // Cerrar dropdowns al hacer clic fuera
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.dropdown-trigger') && !e.target.closest('.derivar-dropdown')) {
+            document.querySelectorAll('.derivar-dropdown').forEach(d => d.style.display = 'none');
+        }
+    });
+
+    // ── Mostrar formulario ───────────────────────────────────────────────────
+    function mostrarFormComentario(alertaId, accion) {
+        accionPendiente[alertaId] = accion;
+
+        document.getElementById(`acciones-${alertaId}`).style.display = 'none';
+
+        const label    = document.getElementById(`form-label-${alertaId}`);
+        const btnLabel = document.getElementById(`btn-confirmar-label-${alertaId}`);
+        const btn      = document.getElementById(`btn-confirmar-${alertaId}`);
+
+        const labels = {
+            'cerrar':    { label: 'Comentario de cierre',        btn: 'Cerrar alerta',        cls: 'btn-confirmar-cerrar'    },
+            'Tutor':     { label: 'Comentario para el Tutor',    btn: 'Derivar al Tutor',      cls: 'btn-confirmar-tutor'     },
+            'Pedagogia': { label: 'Comentario para Pedagogía',   btn: 'Derivar a Pedagogía',   cls: 'btn-confirmar-pedagogia' },
+            'Direccion': { label: 'Comentario para Dirección',   btn: 'Derivar a Dirección',   cls: 'btn-confirmar-direccion' },
+        };
+
+        const config = labels[accion] || labels['cerrar'];
+        label.textContent    = config.label;
+        btnLabel.textContent = config.btn;
+        btn.className        = `btn-accion btn-confirmar ${config.cls}`;
+
+        const form = document.getElementById(`form-${alertaId}`);
+        form.style.display   = 'block';
+        form.style.opacity   = '0';
+        form.style.transform = 'translateY(-6px)';
+        requestAnimationFrame(() => {
+            form.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+            form.style.opacity    = '1';
+            form.style.transform  = 'translateY(0)';
         });
 
-        const lista   = document.getElementById('alertasLista');
-        const visible = [...cards].filter(c => c.style.display !== 'none').length;
-        const empty   = lista.querySelector('.filtro-empty');
+        setTimeout(() => document.getElementById(`textarea-${alertaId}`).focus(), 150);
+    }
 
-        if (visible === 0 && cards.length > 0) {
-            if (!empty) lista.insertAdjacentHTML('beforeend', `
-                <div class="filtro-empty empty-state" style="margin-top:4px;">
-                    <span class="mdi mdi-filter-off-outline" style="font-size:36px;color:#d1d5db;display:block;margin-bottom:10px;"></span>
-                    <p style="color:#6b7280;font-size:14px;">No hay alertas con ese filtro</p>
-                </div>`);
-        } else {
-            if (empty) empty.remove();
+    // ── Cancelar ─────────────────────────────────────────────────────────────
+    function cancelarFormComentario(alertaId) {
+        document.getElementById(`form-${alertaId}`).style.display     = 'none';
+        document.getElementById(`textarea-${alertaId}`).value         = '';
+        document.getElementById(`acciones-${alertaId}`).style.display = 'flex';
+        delete accionPendiente[alertaId];
+    }
+
+    // ── Confirmar ────────────────────────────────────────────────────────────
+    function confirmarAccion(alertaId) {
+        const comentario = document.getElementById(`textarea-${alertaId}`).value.trim();
+        const accion     = accionPendiente[alertaId];
+        const btn        = document.getElementById(`btn-confirmar-${alertaId}`);
+        const textarea   = document.getElementById(`textarea-${alertaId}`);
+
+        if (!comentario) {
+            textarea.focus();
+            textarea.style.borderColor = '#ef4444';
+            mostrarSnack('Escribe un comentario antes de continuar', 'error');
+            return;
         }
-    });
-});
 
-// ── Dropdown ─────────────────────────────────────────────────────────────
-function toggleDropdown(alertaId) {
-    const dropdown = document.getElementById(`dropdown-${alertaId}`);
-    const isOpen   = dropdown.style.display === 'block';
-    document.querySelectorAll('.derivar-dropdown').forEach(d => d.style.display = 'none');
-    dropdown.style.display = isOpen ? 'none' : 'block';
-}
+        textarea.style.borderColor = '';
+        btn.disabled  = true;
+        btn.innerHTML = '<span class="mdi mdi-loading mdi-spin"></span> Guardando…';
 
-function seleccionarDestino(alertaId, destino) {
-    document.getElementById(`dropdown-${alertaId}`).style.display = 'none';
-    mostrarFormComentario(alertaId, destino);
-}
-
-document.addEventListener('click', function(e) {
-    if (!e.target.closest('.dropdown-trigger') && !e.target.closest('.derivar-dropdown')) {
-        document.querySelectorAll('.derivar-dropdown').forEach(d => d.style.display = 'none');
-    }
-});
-
-// ── Mostrar formulario ───────────────────────────────────────────────────
-function mostrarFormComentario(alertaId, accion) {
-    accionPendiente[alertaId] = accion;
-    document.getElementById(`acciones-${alertaId}`).style.display = 'none';
-
-    const label    = document.getElementById(`form-label-${alertaId}`);
-    const btnLabel = document.getElementById(`btn-confirmar-label-${alertaId}`);
-    const btn      = document.getElementById(`btn-confirmar-${alertaId}`);
-
-    const configs = {
-        'cerrar':     { label: 'Comentario de cierre',       btn: 'Cerrar alerta',       cls: 'btn-confirmar-cerrar'     },
-        'Tutor':      { label: 'Comentario para el Tutor',   btn: 'Derivar al Tutor',    cls: 'btn-confirmar-tutor'      },
-        'Psicologia': { label: 'Comentario para Psicología', btn: 'Derivar a Psicología', cls: 'btn-confirmar-psicologia' },
-        'Direccion':  { label: 'Comentario para Dirección',  btn: 'Derivar a Dirección',  cls: 'btn-confirmar-direccion'  },
-    };
-    const config = configs[accion] || configs['cerrar'];
-    label.textContent    = config.label;
-    btnLabel.textContent = config.btn;
-    btn.className        = `btn-accion btn-confirmar ${config.cls}`;
-
-    const form = document.getElementById(`form-${alertaId}`);
-    form.style.display   = 'block';
-    form.style.opacity   = '0';
-    form.style.transform = 'translateY(-6px)';
-    requestAnimationFrame(() => {
-        form.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
-        form.style.opacity    = '1';
-        form.style.transform  = 'translateY(0)';
-    });
-    setTimeout(() => document.getElementById(`textarea-${alertaId}`).focus(), 150);
-}
-
-// ── Cancelar ─────────────────────────────────────────────────────────────
-function cancelarFormComentario(alertaId) {
-    document.getElementById(`form-${alertaId}`).style.display     = 'none';
-    document.getElementById(`textarea-${alertaId}`).value         = '';
-    document.getElementById(`acciones-${alertaId}`).style.display = 'flex';
-    delete accionPendiente[alertaId];
-}
-
-// ── Confirmar ────────────────────────────────────────────────────────────
-function confirmarAccion(alertaId) {
-    const comentario = document.getElementById(`textarea-${alertaId}`).value.trim();
-    const accion     = accionPendiente[alertaId];
-    const btn        = document.getElementById(`btn-confirmar-${alertaId}`);
-    const textarea   = document.getElementById(`textarea-${alertaId}`);
-
-    if (!comentario) {
-        textarea.focus();
-        textarea.style.borderColor = '#ef4444';
-        mostrarSnack('Escribe un comentario antes de continuar', 'error');
-        return;
-    }
-
-    textarea.style.borderColor = '';
-    btn.disabled  = true;
-    btn.innerHTML = '<span class="mdi mdi-loading mdi-spin"></span> Guardando…';
-
-    if (accion === 'cerrar') {
-        _cerrarAlerta(alertaId, comentario, btn);
-    } else {
-        _derivarAlerta(alertaId, comentario, btn);
-    }
-}
-
-// ── Cerrar ───────────────────────────────────────────────────────────────
-function _cerrarAlerta(alertaId, comentario, btn) {
-    fetch('/cerrar-alerta-pedagogia/', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrf() },
-        body:    JSON.stringify({ alerta_id: alertaId, comentario })
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (data.success) {
-            _removerCard(alertaId);
-            mostrarSnack('Alerta cerrada correctamente', 'success');
+        if (accion === 'cerrar') {
+            _cerrarAlerta(alertaId, comentario, btn);
         } else {
+            _derivarAlerta(alertaId, accion, comentario, btn);
+        }
+    }
+
+    // ── Cerrar ───────────────────────────────────────────────────────────────
+    function _cerrarAlerta(alertaId, comentario, btn) {
+        fetch('/cerrar-alerta-psicologia/', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrf() },
+            body:    JSON.stringify({ alerta_id: alertaId, comentario })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                _removerCard(alertaId);
+                mostrarSnack('Alerta cerrada correctamente', 'success');
+            } else {
+                btn.disabled  = false;
+                btn.innerHTML = '<span class="mdi mdi-check"></span> <span>Cerrar alerta</span>';
+                mostrarSnack(data.error || 'Error al cerrar', 'error');
+            }
+        })
+        .catch(() => {
             btn.disabled  = false;
             btn.innerHTML = '<span class="mdi mdi-check"></span> <span>Cerrar alerta</span>';
-            mostrarSnack(data.error || 'Error al cerrar', 'error');
-        }
-    })
-    .catch(() => {
-        btn.disabled  = false;
-        btn.innerHTML = '<span class="mdi mdi-check"></span> <span>Cerrar alerta</span>';
-        mostrarSnack('Error de conexión', 'error');
-    });
-}
+            mostrarSnack('Error de conexión', 'error');
+        });
+    }
 
-// ── Derivar ───────────────────────────────────────────────────────────────
-function _derivarAlerta(alertaId, comentario, btn) {
-    const destino = accionPendiente[alertaId];
-
-    fetch('/derivar-alerta-pedagogia/', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrf() },
-        body:    JSON.stringify({ alerta_id: alertaId, destino, comentario })
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (data.success) {
-            _removerCard(alertaId);
-            mostrarSnack(`Alerta derivada a ${destino}`, 'success');
-        } else {
+    // ── Derivar ───────────────────────────────────────────────────────────────
+    function _derivarAlerta(alertaId, destino, comentario, btn) {
+        fetch('/derivar-alerta-psicologia/', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrf() },
+            body:    JSON.stringify({ alerta_id: alertaId, destino, comentario })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                _removerCard(alertaId);
+                mostrarSnack(`Alerta derivada a ${destino}`, 'success');
+            } else {
+                btn.disabled  = false;
+                btn.innerHTML = '<span class="mdi mdi-send-outline"></span> <span>Derivar</span>';
+                mostrarSnack(data.error || 'Error al derivar', 'error');
+            }
+        })
+        .catch(() => {
             btn.disabled  = false;
             btn.innerHTML = '<span class="mdi mdi-send-outline"></span> <span>Derivar</span>';
-            mostrarSnack(data.error || 'Error al derivar', 'error');
-        }
-    })
-    .catch(() => {
-        btn.disabled  = false;
-        btn.innerHTML = '<span class="mdi mdi-send-outline"></span> <span>Derivar</span>';
-        mostrarSnack('Error de conexión', 'error');
-    });
-}
-
-// ── Helpers ───────────────────────────────────────────────────────────────
-function _removerCard(alertaId) {
-    const card = document.getElementById(`alerta-${alertaId}`);
-    card.style.transition = 'opacity 0.3s, transform 0.3s';
-    card.style.opacity    = '0';
-    card.style.transform  = 'translateX(16px)';
-    setTimeout(() => { card.remove(); checkEmpty(); }, 300);
-}
-
-function checkEmpty() {
-    if (document.querySelectorAll('.alerta-card').length === 0) {
-        document.getElementById('alertasLista').innerHTML = `
-            <div class="empty-state">
-                <span class="mdi mdi-check-circle-outline" style="font-size:48px;color:#bbf7d0;display:block;margin-bottom:16px;"></span>
-                <h3 style="font-size:18px;color:#111827;margin-bottom:8px;">Sin alertas pendientes</h3>
-                <p style="font-size:14px;color:#6b7280;">No hay alertas derivadas a Pedagogía en este momento.</p>
-            </div>`;
+            mostrarSnack('Error de conexión', 'error');
+        });
     }
-}
 
-let snackTimer;
-function mostrarSnack(msg, tipo) {
-    const el  = document.getElementById('snackbar');
-    const ico = document.getElementById('snackIcon');
-    ico.className   = `mdi ${tipo === 'success' ? 'mdi-check-circle' : 'mdi-alert-circle'}`;
-    ico.style.color = tipo === 'success' ? '#4ade80' : '#f87171';
-    document.getElementById('snackMsg').textContent = msg;
-    el.classList.add('show');
-    clearTimeout(snackTimer);
-    snackTimer = setTimeout(() => el.classList.remove('show'), 3000);
-}
+    // ── Helpers ───────────────────────────────────────────────────────────────
+    function _removerCard(alertaId) {
+        const card = document.getElementById(`alerta-${alertaId}`);
+        card.style.transition = 'opacity 0.3s, transform 0.3s';
+        card.style.opacity    = '0';
+        card.style.transform  = 'translateX(16px)';
+        setTimeout(() => { card.remove(); checkEmpty(); }, 300);
+    }
 
-function getCsrf() {
-    const m = document.cookie.match(/csrftoken=([^;]+)/);
-    return m ? m[1] : '';
-}
+    function checkEmpty() {
+        if (document.querySelectorAll('.alerta-card').length === 0) {
+            document.getElementById('alertasLista').innerHTML = `
+                <div class="empty-state">
+                    <span class="mdi mdi-check-circle-outline" style="font-size:48px;color:#bbf7d0;display:block;margin-bottom:16px;"></span>
+                    <h3 style="font-size:18px;color:#111827;margin-bottom:8px;">Sin alertas pendientes</h3>
+                    <p style="font-size:14px;color:#6b7280;">No hay alertas derivadas a Psicología en este momento.</p>
+                </div>`;
+        }
+    }
+
+    let snackTimer;
+    function mostrarSnack(msg, tipo) {
+        const el  = document.getElementById('snackbar');
+        const ico = document.getElementById('snackIcon');
+        ico.className   = `mdi ${tipo === 'success' ? 'mdi-check-circle' : 'mdi-alert-circle'}`;
+        ico.style.color = tipo === 'success' ? '#4ade80' : '#f87171';
+        document.getElementById('snackMsg').textContent = msg;
+        el.classList.add('show');
+        clearTimeout(snackTimer);
+        snackTimer = setTimeout(() => el.classList.remove('show'), 3000);
+    }
+
+    function getCsrf() {
+        const m = document.cookie.match(/csrftoken=([^;]+)/);
+        return m ? m[1] : '';
+    }
 </script>
 
 {% endblock %}
@@ -441,7 +456,6 @@ function getCsrf() {
         box-shadow: 0 1px 3px rgba(0,0,0,0.08);
     }
 
-    /* ── Pills ── */
     .pill {
         display: inline-flex;
         align-items: center;
@@ -453,9 +467,9 @@ function getCsrf() {
         border: 1px solid;
     }
 
-    .pill-alto     { background: #fee2e2; color: #b91c1c; border-color: #fca5a5; }
-    .pill-medio    { background: #fef3c7; color: #92400e; border-color: #fcd34d; }
-    .pill-bajo     { background: #dbeafe; color: #1e40af; border-color: #93c5fd; }
+    .pill-alto  { background: #fee2e2; color: #b91c1c; border-color: #fca5a5; }
+    .pill-medio { background: #fef3c7; color: #92400e; border-color: #fcd34d; }
+    .pill-bajo  { background: #dbeafe; color: #1e40af; border-color: #93c5fd; }
 
     /* ── Tarjeta ── */
     .alerta-card {
@@ -468,7 +482,6 @@ function getCsrf() {
     }
 
     .alerta-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-
     .alerta-card[data-nivel="Alto"]  { border-left-color: #ef4444; }
     .alerta-card[data-nivel="Medio"] { border-left-color: #f59e0b; }
     .alerta-card[data-nivel="Bajo"]  { border-left-color: #3b82f6; }
@@ -497,7 +510,6 @@ function getCsrf() {
         flex-shrink: 0;
     }
 
-    /* ── Avatar ── */
     .alumno-avatar {
         width: 40px;
         height: 40px;
@@ -515,7 +527,6 @@ function getCsrf() {
     .avatar-medio { background: #fef3c7; color: #92400e; }
     .avatar-bajo  { background: #dbeafe; color: #1e40af; }
 
-    /* ── Badges ── */
     .badge {
         display: inline-flex;
         align-items: center;
@@ -530,7 +541,7 @@ function getCsrf() {
     .badge-alto      { background: #fee2e2; color: #b91c1c; border-color: #fca5a5; }
     .badge-medio     { background: #fef3c7; color: #92400e; border-color: #fcd34d; }
     .badge-bajo      { background: #dbeafe; color: #1e40af; border-color: #93c5fd; }
-    .badge-pedagogia { background: #f5f3ff; color: #7c3aed; border-color: #ddd6fe; }
+    .badge-psicologia { background: #fdf2f8; color: #9d174d; border-color: #fbcfe8; }
 
     /* ── Motivos ── */
     .motivos-wrapper {
@@ -553,7 +564,7 @@ function getCsrf() {
 
     .motivo-item:last-child { border-bottom: none; }
 
-    /* ── Seguimiento / historial ── */
+    /* ── Seguimiento ── */
     .seguimiento-wrapper {
         background: #f8f9fb;
         border: 1px solid #e5e7eb;
@@ -591,8 +602,10 @@ function getCsrf() {
     }
 
     .dot-cerrada   { background: #22c55e; }
+    .dot-psicologia { background: #9d174d; }
     .dot-pedagogia { background: #7c3aed; }
     .dot-direccion { background: #c2410c; }
+    .dot-tutor     { background: #2563eb; }
     .dot-default   { background: #9ca3af; }
 
     .seguimiento-body { flex: 1; min-width: 0; }
@@ -616,8 +629,10 @@ function getCsrf() {
     }
 
     .accion-cerrada   { background: #dcfce7; color: #15803d; border-color: #86efac; }
+    .accion-psicologia { background: #fdf2f8; color: #9d174d; border-color: #fbcfe8; }
     .accion-pedagogia { background: #f5f3ff; color: #7c3aed; border-color: #ddd6fe; }
     .accion-direccion { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
+    .accion-tutor     { background: #eff6ff; color: #1e40af; border-color: #93c5fd; }
     .accion-default   { background: #f3f4f6; color: #6b7280; border-color: #e5e7eb; }
 
     .seguimiento-comentario {
@@ -633,9 +648,42 @@ function getCsrf() {
         display: flex;
         gap: 8px;
         flex-wrap: wrap;
+        position: relative;
     }
 
-    /* ── Formulario comentario ── */
+    /* ── Dropdown derivar ── */
+    .derivar-dropdown {
+        position: absolute;
+        top: calc(100% + 6px);
+        left: 0;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        min-width: 180px;
+        overflow: hidden;
+        z-index: 100;
+    }
+
+    .dropdown-item-derivar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 14px;
+        font-size: 13px;
+        font-weight: 500;
+        background: white;
+        border: none;
+        width: 100%;
+        cursor: pointer;
+        transition: background 0.15s;
+        font-family: inherit;
+        color: #374151;
+    }
+
+    .dropdown-item-derivar:hover { background: #f3f4f6; }
+
+    /* ── Formulario ── */
     .form-comentario {
         margin-top: 12px;
         background: #f8f9fb;
@@ -702,28 +750,28 @@ function getCsrf() {
     .btn-accion:disabled { cursor: not-allowed; opacity: 0.7; }
 
     .btn-cerrar:hover:not(:disabled) {
-        border-color: #2563eb;
-        color: #2563eb;
-        background: #eff6ff;
+        border-color: #2563eb; color: #2563eb; background: #eff6ff;
     }
 
-    .btn-direccion {
-        background: #fff7ed;
-        border-color: #fed7aa;
-        color: #c2410c;
+    .btn-derivar {
+        background: #f8f9fb;
+        border-color: #e5e7eb;
+        color: #374151;
     }
-    .btn-direccion:hover:not(:disabled) { background: #ffedd5; border-color: #fdba74; }
+    .btn-derivar:hover:not(:disabled) { background: #f3f4f6; border-color: #9ca3af; }
 
     .btn-cancelar:hover:not(:disabled) { background: #f3f4f6; }
 
-    .btn-confirmar-cerrar {
-        background: #2563eb; border-color: #2563eb; color: white;
-    }
+    .btn-confirmar-cerrar     { background: #2563eb; border-color: #2563eb; color: white; }
     .btn-confirmar-cerrar:hover:not(:disabled) { background: #1e40af; }
 
-    .btn-confirmar-direccion {
-        background: #c2410c; border-color: #c2410c; color: white;
-    }
+    .btn-confirmar-tutor      { background: #2563eb; border-color: #2563eb; color: white; }
+    .btn-confirmar-tutor:hover:not(:disabled) { background: #1e40af; }
+
+    .btn-confirmar-pedagogia  { background: #7c3aed; border-color: #7c3aed; color: white; }
+    .btn-confirmar-pedagogia:hover:not(:disabled) { background: #6d28d9; }
+
+    .btn-confirmar-direccion  { background: #c2410c; border-color: #c2410c; color: white; }
     .btn-confirmar-direccion:hover:not(:disabled) { background: #9a3412; }
 
     /* ── Empty ── */
@@ -771,64 +819,5 @@ function getCsrf() {
         .form-comentario-acciones { justify-content: stretch; }
         .form-comentario-acciones .btn-accion { flex: 1; justify-content: center; }
     }
-
-    .btn-derivar {
-    background: #f8f9fb;
-    border-color: #e5e7eb;
-    color: #374151;
-}
-.btn-derivar:hover:not(:disabled) { background: #f3f4f6; border-color: #9ca3af; }
-
-.derivar-dropdown {
-    position: absolute;
-    top: calc(100% + 6px);
-    left: 0;
-    background: white;
-    border: 1px solid #e5e7eb;
-    border-radius: 10px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-    min-width: 180px;
-    overflow: hidden;
-    z-index: 100;
-}
-
-.dropdown-item-derivar {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 14px;
-    font-size: 13px;
-    font-weight: 500;
-    background: white;
-    border: none;
-    width: 100%;
-    cursor: pointer;
-    transition: background 0.15s;
-    font-family: inherit;
-    color: #374151;
-}
-.dropdown-item-derivar:hover { background: #f3f4f6; }
-
-/* Asegura que el contenedor tenga position relative para el dropdown */
-.acciones-principales { position: relative; }
-
-.btn-confirmar-tutor      { background: #2563eb; border-color: #2563eb; color: white; }
-.btn-confirmar-tutor:hover:not(:disabled) { background: #1e40af; }
-
-.btn-confirmar-psicologia { background: #9d174d; border-color: #9d174d; color: white; }
-.btn-confirmar-psicologia:hover:not(:disabled) { background: #831843; }
-
-.btn-psicologia {
-    background: #fdf2f8;
-    border-color: #fbcfe8;
-    color: #9d174d;
-}
-.btn-psicologia:hover:not(:disabled) { background: #fce7f3; border-color: #f9a8d4; }
-
-.btn-confirmar-tutor { background: #2563eb; border-color: #2563eb; color: white; }
-.btn-confirmar-tutor:hover:not(:disabled) { background: #1e40af; }
-
-.btn-confirmar-psicologia { background: #9d174d; border-color: #9d174d; color: white; }
-.btn-confirmar-psicologia:hover:not(:disabled) { background: #831843; }
 </style>
 {% endblock %}
