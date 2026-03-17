@@ -735,13 +735,11 @@
 {{ grupos_con_materias|json_script:"grupos-data" }}
 
 <script>
-// Pasar los datos de Django a JavaScript - CORREGIDO
+// Pasar los datos de Django a JavaScript
 var gruposData = [];
 try {
     gruposData = JSON.parse(document.getElementById('grupos-data').textContent);
-    console.log("✅ Datos de grupos parseados:", gruposData);
 } catch (e) {
-    console.error("❌ Error parseando grupos-data:", e);
     gruposData = [];
 }
 
@@ -752,7 +750,6 @@ function openActivityForm() {
     var today = new Date().toISOString().split('T')[0];
     document.getElementById('activityDueDate').min = today;
     
-    // Resetear selects
     document.getElementById('activityGroup').value = '';
     var materiaSelect = document.getElementById('activityMateria');
     materiaSelect.innerHTML = '<option value="">Primero selecciona un grupo</option>';
@@ -765,22 +762,14 @@ function closeActivityForm() {
     document.getElementById('activityMateria').disabled = true;
 }
 
-// Cargar materias cuando se selecciona un grupo
 document.addEventListener('DOMContentLoaded', function() {
-    console.log("🔵 DOM completamente cargado");
-    
     var groupSelect = document.getElementById('activityGroup');
     
     if (groupSelect) {
-        console.log("✅ Select de grupos encontrado");
-        
         groupSelect.addEventListener('change', function() {
             var grupoId = parseInt(this.value);
             var materiaSelect = document.getElementById('activityMateria');
             
-            console.log("🔵 Grupo seleccionado ID:", grupoId);
-            
-            // Limpiar opciones actuales
             materiaSelect.innerHTML = '<option value="">Selecciona una materia</option>';
             materiaSelect.disabled = true;
             
@@ -788,7 +777,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            // Buscar el grupo seleccionado
             var grupo = null;
             for (var i = 0; i < gruposData.length; i++) {
                 if (gruposData[i].id === grupoId) {
@@ -797,10 +785,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
             
-            console.log("🔵 Grupo encontrado:", grupo);
-            
             if (grupo && grupo.materias && grupo.materias.length > 0) {
-                // Filtrar materias que tienen parcial (aunque esté cerrado)
                 var materiasConParcial = [];
                 for (var j = 0; j < grupo.materias.length; j++) {
                     if (grupo.materias[j].tiene_parcial === true) {
@@ -808,15 +793,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
                 
-                console.log("🔵 Materias con parcial:", materiasConParcial);
-                
                 if (materiasConParcial.length === 0) {
                     materiaSelect.innerHTML = '<option value="">No hay materias con parciales</option>';
                     materiaSelect.disabled = true;
                     return;
                 }
                 
-                // Agregar opciones de materias
                 for (var k = 0; k < materiasConParcial.length; k++) {
                     var materia = materiasConParcial[k];
                     var option = document.createElement('option');
@@ -833,40 +815,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 
                 materiaSelect.disabled = false;
-                console.log("✅ Materias cargadas correctamente");
             } else {
                 materiaSelect.innerHTML = '<option value="">No hay materias disponibles</option>';
                 materiaSelect.disabled = true;
-                console.log("⚠️ No hay materias disponibles para este grupo");
             }
         });
-    } else {
-        console.error("❌ Select de grupos NO encontrado");
     }
 });
 
 function openActivityDetail(activityId) {
-    console.log("🔵 Abriendo detalle de actividad ID:", activityId);
-    
     var url = `/actividades/${activityId}/detalle/`;
-    console.log("📡 Fetching URL:", url);
     
     fetch(url)
         .then(function(response) {
-            console.log("📥 Response status:", response.status);
-            console.log("📥 Response headers:", response.headers);
-            
             if (!response.ok) {
-                return response.text().then(text => {
-                    console.error("🔴 Error response body:", text);
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                });
+                throw new Error('Error al cargar el detalle');
             }
             return response.json();
         })
         .then(function(data) {
-            console.log("✅ Datos recibidos:", data);
-            
             document.getElementById('detailTitle').textContent = data.titulo || '';
             document.getElementById('detailDescription').textContent = data.descripcion || '';
             document.getElementById('detailGroup').textContent = data.grupo || '';
@@ -909,7 +876,6 @@ function openActivityDetail(activityId) {
             document.getElementById('activityDetailModal').style.display = 'flex';
         })
         .catch(function(error) {
-            console.error("🔥 Error completo:", error);
             alert("Error al cargar el detalle: " + error.message);
         });
 }
@@ -936,8 +902,6 @@ function saveEntregas() {
             });
         }
     }
-    
-    console.log("📤 Enviando entregas:", entregas);
 
     fetch("/guardar-entregas/", {
         method: "POST",
@@ -948,13 +912,11 @@ function saveEntregas() {
         body: JSON.stringify({ entregas: entregas })
     })
         .then(function(response) { 
-            console.log("📥 Response status:", response.status);
             return response.json(); 
         })
         .then(function(data) {
-            console.log("✅ Respuesta:", data);
             if (data.success) {
-                alert("✅ Cambios guardados correctamente");
+                alert("Cambios guardados correctamente");
                 closeActivityDetail();
                 location.reload();
             } else {
@@ -962,17 +924,13 @@ function saveEntregas() {
             }
         })
         .catch(function(error) {
-            console.error("🔥 Error:", error);
-            alert("❌ Error al guardar: " + error.message);
+            alert("Error al guardar: " + error.message);
             saveBtn.disabled = false;
             saveBtn.textContent = 'Guardar Cambios';
         });
 }
 
-// Cerrar modales al hacer clic fuera
 document.addEventListener('DOMContentLoaded', function() {
-    console.log("🔵 Inicializando event listeners");
-    
     var modalCreate = document.getElementById('activityModal');
     var modalDetail = document.getElementById('activityDetailModal');
     var form = document.getElementById("activityForm");
@@ -1007,8 +965,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            console.log("📤 Enviando actividad:", {titulo, descripcion, grupo_docente_materia, fecha});
-
             submitBtn.disabled = true;
             submitBtn.textContent = 'Creando...';
 
@@ -1018,11 +974,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: formData
             })
                 .then(function(response) { 
-                    console.log("📥 Response status:", response.status);
                     return response.json(); 
                 })
                 .then(function(data) {
-                    console.log("✅ Respuesta:", data);
                     if (data.error) {
                         alert("Error: " + data.error);
                         submitBtn.disabled = false;
@@ -1031,20 +985,17 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
 
                     if (data.success) {
-                        alert("✅ Actividad creada correctamente");
+                        alert("Actividad creada correctamente");
                         location.reload();
                     }
                 })
                 .catch(function(error) {
-                    console.error("🔥 Error:", error);
                     alert("Error al crear: " + error.message);
                     submitBtn.disabled = false;
                     submitBtn.textContent = 'Crear Actividad';
                 });
         });
     }
-    
-    console.log("✅ Event listeners inicializados");
 });
 </script>
 
