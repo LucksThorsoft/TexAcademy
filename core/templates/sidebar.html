@@ -45,6 +45,15 @@
                 </a>
             </li>
             {% endif %}
+            {% if 'Psicologia' in request.session.usuario_roles %}
+            <li>
+                <a href="/psicologia">
+                    <i class='mdi mdi-head-cog'></i>
+                    <span class="links_name">Psicología</span>
+                </a>
+                <span class="tooltip">Psicologia</span>
+            </li>
+            {% endif %}
             {% if 'Docente' in request.session.usuario_roles %}
             <li>
                 <a href="/dashboard">
@@ -479,6 +488,7 @@
             background-color: #e74c3c;
             border-radius: 50%;
             border: 1px solid #fff;
+            padding: 4px;
         }
     </style>
 </body>
