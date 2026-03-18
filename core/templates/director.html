@@ -1,519 +1,1182 @@
+    {% extends 'sidebar.html' %}
 
-{% extends 'sidebar.html' %}
+    {% block header_title %}Direccion{% endblock %}
 
-{% block header_title %}Direccion{% endblock %}
-
-{% block content %}
- 
-<div class="header-actions">
-    <div class="view-switch" id="viewSwitch">
-        <button class="view-option active" data-view="groups">Grupos</button>
-        <button class="view-option" data-view="students">Todos los Alumnos</button>
-    </div>
-
-    <div class="botons-header">
-
-        <button class="btn-secondary" id="btnNuevaMateria">
-            <span class="mdi mdi-plus"></span>
-            Nueva Materia
-        </button>
-
-        <button class="btn-tercerio" id="btnNuevoGrupo">
-            <span class="mdi mdi-plus"></span>
-            Nuevo Grupo
-        </button>
-
-        <button class="btn-primary" id="btnNuevoDocente">
-            <span class="mdi mdi-plus"></span>
-            Nuevo Docente
-        </button>
-    </div>
-
-</div>
-
-<div class="modal" id="modalDocente">
-    <div class="modal-content">
-
-        <form method="POST" action="{% url 'new_user' %}">
-            {% csrf_token %}
-
-            <div class="modal-header">
-                <h3>Agregar Docente</h3>
-                <span class="modal-close" id="closeModal">&times;</span>
-            </div>
-
-            <div class="modal-body">
-                <div class="form-group">
-                    <label>Nombre completo</label>
-                    {{ form.nombre }}
-                </div>
-
-                <div class="form-group">
-                    <label>Correo electrónico</label>
-                    {{ form.correo }}
-                </div>
-
-                <div class="form-group">
-                    <label>Contraseña</label>
-                    {{ form.password }}
-                </div>
-            </div>
-
-            <div class="modal-footer">
-                <button type="button" class="btn-secondary" id="cancelarModal">
-                    Cancelar
-                </button>
-                <button type="submit" class="btn-primary">
-                    Guardar
-                </button>
-            </div>
-        </form>
-
-
-    </div>
-</div>
-
-<div class="modal" id="modalGrupo">
-    <div class="modal-content">
-
-        <form method="POST" action="{% url 'new_group' %}" enctype="multipart/form-data">
-            {% csrf_token %}
-
-            <div class="modal-header">
-                <h3>Agregar Grupo</h3>
-                <span class="modal-close" id="closeModalGrupo">&times;</span>
-            </div>
-
-            <div class="modal-body">
-                <div class="form-group">
-                    <label>Clave de Grupo</label>
-                    {{ grupo_form.clave }}
-                </div>
-
-                <div class="form-group">
-                    <label>Tutor</label>
-                    {{ grupo_form.tutor }}
-                </div>
-
-                <div class="form-group">
-            <label>Lista de alumnos (CSV)</label>
-
-            <label class="file-input-wrapper">
-                <span class="file-btn">
-                    <span class="mdi mdi-upload"></span>
-                    Seleccionar archivo
-                </span>
-                {{ grupo_form.archivo_alumnos }}
-                <span class="file-name" id="fileName">Ningún archivo seleccionado</span>
-            </label>
-
-            <small>Solo se permiten formatos CSV</small>
+    {% block content %}
+    
+    <div class="header-actions">
+        <div class="view-switch" id="viewSwitch">
+            <button class="view-option active" data-view="groups">Grupos</button>
+            <button class="view-option" data-view="students">Histórico</button>
+            <button class="view-option" data-view="docentes">Docentes</button>
+            <button class="view-option" data-view="alertas">Alertas</button>  <!-- NUEVO -->
         </div>
 
-            </div>
+        <div class="actions-dropdown">
 
-            <div class="modal-footer">
-                <button type="button" class="btn-secondary" id="cancelarModalGrupo">
-                    Cancelar
+            <button class="btn-primary dropdown-toggle" id="toggleActions">
+                <span class="mdi mdi-plus"></span>
+                Nuevo
+                <span class="mdi mdi-chevron-down"></span>
+            </button>
+
+            <div class="dropdown-menu" id="actionsMenu">
+
+                <button class="dropdown-item" id="btnNuevaMateria">
+                    <span class="mdi mdi-book-plus"></span>
+                    Nueva Materia
                 </button>
-                <button type="submit" class="btn-primary">
-                    Guardar
+
+                <button class="dropdown-item" id="btnNuevoGrupo">
+                    <span class="mdi mdi-account-group"></span>
+                    Nuevo Grupo
                 </button>
-            </div>
-        </form>
 
-
-    </div>
-</div>
-
-<div class="modal" id="modalMateria">
-    <div class="modal-content">
-
-        <form method="POST" action="{% url 'new_materia' %}">
-            {% csrf_token %}
-
-            <div class="modal-header">
-                <h3>Agregar Materia</h3>
-                <span class="modal-close" id="closeModalMateria">&times;</span>
-            </div>
-
-            <div class="modal-body">
-
-                <div class="form-group">
-                    <label>Nombre de la materia</label>
-                    {{ materia_form.nombre_materia }}
-                </div>
-
-                <div class="form-group">
-                    <label>Grupo</label>
-                    {{ materia_form.grupo }}
-                </div>
-
-                <div class="form-group">
-                    <label>Docente</label>
-                    {{ materia_form.docente }}
-                </div>
-
-            </div>
-
-            <div class="modal-footer">
-                <button type="button" class="btn-secondary" id="cancelarModalMateria">
-                    Cancelar
+                <button class="dropdown-item" id="btnNuevoDocente">
+                    <span class="mdi mdi-account-plus"></span>
+                    Nuevo Docente
                 </button>
-                <button type="submit" class="btn-primary">
-                    Guardar
-                </button>
+
             </div>
 
-        </form>
-
-    </div>
-</div>
-
-
-
-
-
-<div id="groupsView" class="view-content">
-    <div class="groups-grid">
-        {% for grupo in grupos %}
-        <div class="group-card">
-            <div class="group-header">
-                <div class="group-header-main">
-                    <span class="materia-principal">{{ grupo.materia }}</span>
-                    <span class="group-separator">|</span>
-                    <span class="group-clave">{{ grupo.clave }}</span>
-
-                </div>
-                
-                <div class="group-meta">
-                    <span>{{ grupo.num_alumnos }} alumnos</span>
-
-                </div>
-                <div class="group-meta" >
-                    <strong>Docente:</strong> {{ grupo.docente }}
-                </div>
-
-                <div class="group-meta">
-                    <strong>Tutor:</strong> {{ grupo.tutor }}
-                </div>
-            </div>
-            
-            <div class="group-stats">
-                <div class="stat-item promedio">
-                    <div class="stat-label">Promedio Grupal</div>
-                    <div class="stat-value">--</div>
-                </div>
-                
-                <div class="stat-item riesgo">
-                    <div class="stat-label">En Riesgo</div>
-                    <div class="stat-value">--</div>
-                </div>
-            </div>
-            
-            <div class="attention-btn">
-                <span>-- alumnos requieren atención</span>
-            </div>
         </div>
-        {% empty %}
-        <div class="no-groups">
+
+    </div>
+
+    <!-- Modal Docente -->
+    <div class="modal" id="modalDocente">
+        <div class="modal-content">
+
+            <form method="POST" action="{% url 'new_user' %}">
+                {% csrf_token %}
+
+                <div class="modal-header">
+                    <h3>Agregar Docente</h3>
+                    <span class="modal-close" id="closeModal">&times;</span>
+                </div>
+
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Nombre completo</label>
+                        {{ form.nombre }}
+                    </div>
+
+                    <div class="form-group">
+                        <label>Correo electrónico</label>
+                        {{ form.correo }}
+                    </div>
+
+                    <div class="form-group">
+                        <label>Contraseña</label>
+                        {{ form.password }}
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" id="cancelarModal">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn-primary">
+                        Guardar
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+
+    <!-- Modal Grupo -->
+    <div class="modal" id="modalGrupo">
+        <div class="modal-content">
+
+            <form method="POST" action="{% url 'new_group' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <div class="modal-header">
+                    <h3>Agregar Grupo</h3>
+                    <span class="modal-close" id="closeModalGrupo">&times;</span>
+                </div>
+
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Clave de Grupo</label>
+                        {{ grupo_form.clave }}
+                    </div>
+
+                    <div class="form-group">
+                        <label>Tutor</label>
+                        {{ grupo_form.tutor }}
+                    </div>
+
+                    <div class="form-group">
+                        <label>Lista de alumnos (CSV)</label>
+
+                        <label class="file-input-wrapper">
+                            <span class="file-btn">
+                                <span class="mdi mdi-upload"></span>
+                                Seleccionar archivo
+                            </span>
+                            {{ grupo_form.archivo_alumnos }}
+                            <span class="file-name" id="fileName">Ningún archivo seleccionado</span>
+                        </label>
+
+                        <small>Solo se permiten formatos CSV</small>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" id="cancelarModalGrupo">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn-primary">
+                        Guardar
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+
+    <!-- Modal Materia -->
+    <div class="modal" id="modalMateria">
+        <div class="modal-content">
+
+            <form method="POST" action="{% url 'new_materia' %}">
+                {% csrf_token %}
+
+                <div class="modal-header">
+                    <h3>Agregar Materia</h3>
+                    <span class="modal-close" id="closeModalMateria">&times;</span>
+                </div>
+
+                <div class="modal-body">
+
+                    <div class="form-group">
+                        <label>Nombre de la materia</label>
+                        {{ materia_form.nombre_materia }}
+                    </div>
+
+                    <div class="form-group">
+                        <label>Grupo</label>
+                        {{ materia_form.grupo }}
+                    </div>
+
+                    <div class="form-group">
+                        <label>Docente</label>
+                        {{ materia_form.docente }}
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" id="cancelarModalMateria">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn-primary">
+                        Guardar
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+
+    <!-- ===== MODAL CUATRIMESTRE (se abre automáticamente si no hay activo) ===== -->
+    <div class="modal" id="modalCuatrimestre">
+        <div class="modal-content">
+            <form method="POST" action="{% url 'new_cuatrimestre' %}">
+                {% csrf_token %}
+
+                <div class="modal-header">
+                    <h3>⚠️ Nuevo Cuatrimestre</h3>
+                </div>
+
+                <div class="modal-body">
+                    <p style="color:#666; font-size:13px; margin-bottom:16px;">
+                        No hay un cuatrimestre activo. Crea uno para comenzar a operar.
+                    </p>
+
+                    <div class="form-group">
+                        <label>Nombre del cuatrimestre</label>
+                        <input type="text" name="nombre" id="nombreCuatrimestre" readonly
+                            style="background:#f3f4f6; color:#6b7280; cursor:not-allowed;">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Fecha de inicio</label>
+                        <input type="date" name="fecha_inicio" id="fechaInicio" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Fecha de fin</label>
+                        <input type="date" name="fecha_fin" id="fechaFin" required>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn-primary">Crear Cuatrimestre</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- Vista: Grupos del cuatrimestre activo -->
+    <div id="groupsView" class="view-content">
+
+        <div class="groups-search">
+            <span class="mdi mdi-magnify search-icon"></span>
+            <input type="text" id="searchGroups" placeholder="Buscar grupo, materia o docente...">
+        </div>
+
+        <div class="groups-grid">
+            {% for grupo in grupos %}
+            <div class="group-card">
+                <div class="group-header">
+                    <div class="group-header-main">
+                        <span class="materia-principal">{{ grupo.materia }}</span>
+                        <span class="group-separator">|</span>
+                        <span class="group-clave">{{ grupo.clave }}</span>
+                    </div>
+
+                    <div class="group-meta">
+                        <span>{{ grupo.num_alumnos }} alumnos</span>
+                    </div>
+                    <div class="group-meta">
+                        <strong>Docente:</strong> {{ grupo.docente }}
+                    </div>
+                    <div class="group-meta">
+                        <strong>Tutor:</strong> {{ grupo.tutor }}
+                    </div>
+                </div>
+
+                <div class="group-stats">
+                    <div class="stat-item promedio">
+                        <div class="stat-label">Promedio Grupal</div>
+                        <div class="stat-value">--</div>
+                    </div>
+
+                    <div class="stat-item riesgo">
+                        <div class="stat-label">En Riesgo</div>
+                        <div class="stat-value">--</div>
+                    </div>
+                </div>
+
+                <div class="attention-btn">
+                    <span>-- alumnos requieren atención</span>
+                </div>
+            </div>
+            {% empty %}
+            <div class="no-groups">
+                <div style="text-align: center; padding: 40px;">
+                    <p style="color: #666; font-size: 16px; margin-bottom: 10px;">
+                        No hay grupos en el cuatrimestre actual
+                    </p>
+                    <p style="color: #999; font-size: 14px;">
+                        Usa el botón "Nuevo" para agregar grupos y materias
+                    </p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Vista: Histórico de cuatrimestres -->
+    <div id="studentsView" class="view-content" style="display: none;">
+
+        <div class="groups-search">
+            <span class="mdi mdi-magnify search-icon"></span>
+            <input type="text" id="searchHistorico" placeholder="Buscar cuatrimestre...">
+        </div>
+
+        <div class="groups-grid" id="historico-grid">
+            {% for c in cuatrimestres_data %}
+            <div class="group-card historico-card">
+                <div class="group-header">
+                    <div class="group-header-main">
+                        <span class="materia-principal">{{ c.nombre }}</span>
+                        {% if c.activo %}
+                            <span class="badge-activo">Activo</span>
+                        {% endif %}
+                    </div>
+                    <div class="group-meta">
+                        <strong>Inicio:</strong> {{ c.fecha_inicio|date:"d/m/Y" }}
+                    </div>
+                    <div class="group-meta">
+                        <strong>Fin:</strong> {{ c.fecha_fin|date:"d/m/Y" }}
+                    </div>
+                    <div class="group-meta">
+                        <strong>Grupos:</strong> {{ c.total_grupos }}
+                    </div>
+                </div>
+
+                <div class="group-stats">
+                    <div class="stat-item">
+                        <div class="stat-label">Total Alumnos</div>
+                        <div class="stat-value">{{ c.total_alumnos }}</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Grupos</div>
+                        <div class="stat-value">{{ c.total_grupos }}</div>
+                    </div>
+                </div>
+
+                <div class="attention-btn" style="background:#eff6ff; color:#2563eb;">
+                    <span>{{ c.total_grupos }} grupos registrados</span>
+                </div>
+            </div>
+            {% empty %}
             <div style="text-align: center; padding: 40px;">
-                <p style="color: #666; font-size: 16px; margin-bottom: 10px;">
-                    No tienes grupos asignados
-                </p>
-                <p style="color: #999; font-size: 14px;">
-                    Contacta con el administrador para que te asigne grupos y materias
-                </p>
+                <p style="color: #666; font-size: 16px;">No hay cuatrimestres registrados</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Vista: Docentes -->
+    <div id="docentesView" class="view-content" style="display: none;">
+
+        <div class="docentes-header">
+            <div class="groups-search" style="margin-bottom: 0;">
+                <span class="mdi mdi-magnify search-icon"></span>
+                <input type="text" id="searchDocentes" placeholder="Buscar docente o correo...">
+            </div>
+            <p class="docentes-count">
+                <span id="totalDocentes">{{ docentes_data|length }}</span> docentes registrados
+            </p>
+        </div>
+
+        <div class="tabla-docentes-wrapper">
+            <table class="tabla-docentes">
+                <thead>
+                    <tr>
+                        <th>Docente</th>
+                        <th>Correo</th>
+                        <th>Materias asignadas</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="tablaDocentesBody">
+                    {% for docente in docentes_data %}
+                    <tr class="docente-row">
+                        <td>
+                            <div class="docente-nombre">
+                                <div class="docente-avatar">
+                                    {{ docente.nombre|slice:":1" }}
+                                </div>
+                                <div>
+                                    <div>{{ docente.nombre }}</div>
+                                    <div style="font-size:12px; font-weight:400; color:#9ca3af;">
+                                        {{ docente.total_grupos }} grupo{{ docente.total_grupos|pluralize }}
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="docente-correo">{{ docente.correo }}</td>
+                        <td>
+                            {% if docente.materias_grupos %}
+                                <div class="materias-tags">
+                                    {% for mg in docente.materias_grupos %}
+                                        <span class="materia-tag">{{ mg }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <span style="color:#d1d5db; font-size:13px;">Sin asignaciones</span>
+                            {% endif %}
+                        </td>
+                        <td style="text-align:right;">
+                            <button class="btn-editar-docente"
+                                data-id="{{ docente.id }}"
+                                data-nombre="{{ docente.nombre }}"
+                                data-correo="{{ docente.correo }}">
+                                <span class="mdi mdi-pencil-outline"></span>
+                                Editar
+                            </button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" style="text-align:center; color:#9ca3af; padding: 50px 0;">
+                            <span class="mdi mdi-account-off" style="font-size:32px; display:block; margin-bottom:8px;"></span>
+                            No hay docentes registrados
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal Editar Docente -->
+    <div class="modal" id="modalEditarDocente">
+        <div class="modal-content">
+            <form method="POST" id="formEditarDocente" action="">
+                {% csrf_token %}
+
+                <div class="modal-header">
+                    <h3>Editar Docente</h3>
+                    <span class="modal-close" id="closeModalEditarDocente">&times;</span>
+                </div>
+
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Nombre completo</label>
+                        <input type="text" name="nombre" id="editNombre" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Correo electrónico</label>
+                        <input type="email" name="correo" id="editCorreo" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Nueva contraseña <span style="color:#9ca3af; font-weight:400;">(dejar vacío para no cambiar)</span></label>
+                        <input type="password" name="password" id="editPassword" placeholder="••••••••">
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" id="cancelarModalEditarDocente">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn-primary">
+                        Guardar cambios
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Vista: Alertas -->
+<div id="alertasView" class="view-content" style="display:none;">
+
+    <!-- Filtros por nivel -->
+    <div style="display:flex;align-items:center;justify-content:space-between;
+                flex-wrap:wrap;gap:12px;margin-bottom:20px;">
+        <div class="view-switch" id="alertasFiltroSwitch">
+            <button class="view-option active" data-filtro="todas">Todas</button>
+            <button class="view-option" data-filtro="Alto">Alto</button>
+            <button class="view-option" data-filtro="Medio">Medio</button>
+            <button class="view-option" data-filtro="Bajo">Bajo</button>
+        </div>
+    </div>
+
+    <!-- Sección General -->
+    <div class="alerta-seccion" id="seccionGeneral">
+        <button class="alerta-seccion-header" onclick="toggleSeccion('general')">
+            <div style="display:flex;align-items:center;gap:10px;">
+                <span class="mdi mdi-bell-outline" style="font-size:18px;color:#6b7280;"></span>
+                <span class="alerta-seccion-titulo">General</span>
+                <span class="alerta-seccion-badge" id="badge-general">...</span>
+            </div>
+            <span class="mdi mdi-chevron-down alerta-seccion-chevron"
+                  id="chevron-general"></span>
+        </button>
+        <div class="alerta-seccion-body" id="body-general">
+            <div id="lista-general" style="display:flex;flex-direction:column;gap:12px;">
+                <div style="text-align:center;padding:40px;color:#9ca3af;">
+                    <span class="mdi mdi-loading mdi-spin"
+                          style="font-size:28px;display:block;margin-bottom:10px;"></span>
+                    Cargando...
+                </div>
             </div>
         </div>
-        {% endfor %}
     </div>
-</div>
 
-<div id="studentsView" class="view-content" style="display: none;">
-    <div class="students-grid">
-        <div style="text-align: center; padding: 40px;">
-            <p style="color: #666; font-size: 16px;">
-                Vista de todos los alumnos (en desarrollo)
-            </p>
-            <p style="color: #999; font-size: 14px;">
-                Esta funcionalidad estará disponible próximamente
-            </p>
+    <!-- Sección Dirección -->
+    <div class="alerta-seccion" id="seccionDireccion" style="margin-top:12px;">
+        <button class="alerta-seccion-header" onclick="toggleSeccion('direccion')">
+            <div style="display:flex;align-items:center;gap:10px;">
+                <span class="mdi mdi-office-building-outline"
+                      style="font-size:18px;color:#6b7280;"></span>
+                <span class="alerta-seccion-titulo">Dirección</span>
+                <span class="alerta-seccion-badge alerta-seccion-badge-dir"
+                      id="badge-direccion">...</span>
+            </div>
+            <span class="mdi mdi-chevron-down alerta-seccion-chevron"
+                  id="chevron-direccion"></span>
+        </button>
+        <div class="alerta-seccion-body alerta-seccion-body-closed"
+             id="body-direccion">
+            <div id="lista-direccion" style="display:flex;flex-direction:column;gap:12px;">
+                <div style="text-align:center;padding:40px;color:#9ca3af;">
+                    <span class="mdi mdi-loading mdi-spin"
+                          style="font-size:28px;display:block;margin-bottom:10px;"></span>
+                    Cargando...
+                </div>
+            </div>
         </div>
     </div>
+
 </div>
 
-<script>
-document.addEventListener("DOMContentLoaded", () => {
 
-    const btnNuevoDocente = document.getElementById("btnNuevoDocente");
-    const modalDocente = document.getElementById("modalDocente");
-    const closeModal = document.getElementById("closeModal");
-    const cancelarModal = document.getElementById("cancelarModal");
+    <script>
+    document.addEventListener("DOMContentLoaded", () => {
 
-    btnNuevoDocente.addEventListener("click", () => {
-        modalDocente.style.display = "flex";
-    });
+        // ===== MODAL CUATRIMESTRE (automático) =====
+        {% if sin_cuatrimestre %}
+            document.getElementById("modalCuatrimestre").style.display = "flex";
+        {% endif %}
 
-    closeModal.addEventListener("click", () => {
-        cerrarModal();
-    });
+        // ===== MODAL DOCENTE =====
+        const btnNuevoDocente = document.getElementById("btnNuevoDocente");
+        const modalDocente = document.getElementById("modalDocente");
+        const closeModal = document.getElementById("closeModal");
+        const cancelarModal = document.getElementById("cancelarModal");
 
-    cancelarModal.addEventListener("click", () => {
-        cerrarModal();
-    });
+        btnNuevoDocente.addEventListener("click", () => modalDocente.style.display = "flex");
+        closeModal.addEventListener("click", () => cerrarModal());
+        cancelarModal.addEventListener("click", () => cerrarModal());
+        modalDocente.addEventListener("click", (e) => { if (e.target === modalDocente) cerrarModal(); });
 
-    modalDocente.addEventListener("click", (e) => {
-        if (e.target === modalDocente) {
-            cerrarModal();
+        function cerrarModal() { modalDocente.style.display = "none"; }
+
+        // ===== MODAL GRUPO =====
+        const btnNuevoGrupo = document.getElementById("btnNuevoGrupo");
+        const modalGrupo = document.getElementById("modalGrupo");
+        const closeModalGrupo = document.getElementById("closeModalGrupo");
+        const cancelarModalGrupo = document.getElementById("cancelarModalGrupo");
+
+        btnNuevoGrupo.addEventListener("click", () => modalGrupo.style.display = "flex");
+        closeModalGrupo.addEventListener("click", cerrarModalGrupo);
+        cancelarModalGrupo.addEventListener("click", cerrarModalGrupo);
+        modalGrupo.addEventListener("click", (e) => { if (e.target === modalGrupo) cerrarModalGrupo(); });
+
+        function cerrarModalGrupo() { modalGrupo.style.display = "none"; }
+
+        // ===== VIEW SWITCH =====
+        const viewSwitch = document.getElementById('viewSwitch');
+        const viewOptions = viewSwitch.querySelectorAll('.view-option');
+        const groupsView = document.getElementById('groupsView');
+        const studentsView = document.getElementById('studentsView');
+
+        viewOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                viewOptions.forEach(opt => opt.classList.remove('active'));
+                this.classList.add('active');
+                groupsView.style.display = 'none';
+                studentsView.style.display = 'none';
+                document.getElementById('docentesView').style.display = 'none';
+                document.getElementById('alertasView').style.display = 'none';
+
+                if (this.dataset.view === 'groups') {
+                    groupsView.style.display = 'block';
+                } else if (this.dataset.view === 'students') {
+                    studentsView.style.display = 'block';
+                } else if (this.dataset.view === 'docentes') {
+                    document.getElementById('docentesView').style.display = 'block';
+                } else if (this.dataset.view === 'alertas') {
+                    document.getElementById('alertasView').style.display = 'block';
+                    iniciarAlertas();
+                }
+            });
+        });
+
+        // ===== MODAL EDITAR DOCENTE =====
+        const modalEditarDocente = document.getElementById('modalEditarDocente');
+        const formEditarDocente = document.getElementById('formEditarDocente');
+
+        document.querySelectorAll('.btn-editar-docente').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.getElementById('editNombre').value = this.dataset.nombre;
+                document.getElementById('editCorreo').value = this.dataset.correo;
+                document.getElementById('editPassword').value = '';
+                formEditarDocente.action = `/director/editar-docente/${this.dataset.id}/`;
+                modalEditarDocente.style.display = 'flex';
+            });
+        });
+
+        document.getElementById('closeModalEditarDocente').addEventListener('click', () => {
+            modalEditarDocente.style.display = 'none';
+        });
+        document.getElementById('cancelarModalEditarDocente').addEventListener('click', () => {
+            modalEditarDocente.style.display = 'none';
+        });
+        modalEditarDocente.addEventListener('click', (e) => {
+            if (e.target === modalEditarDocente) modalEditarDocente.style.display = 'none';
+        });
+
+        // ===== BUSCADOR DOCENTES =====
+        document.getElementById('searchDocentes').addEventListener('keyup', function() {
+            const filter = this.value.toLowerCase();
+            document.querySelectorAll('.docente-row').forEach(row => {
+                row.style.display = row.textContent.toLowerCase().includes(filter) ? '' : 'none';
+            });
+        });
+
+        // ===== BUSCADOR GRUPOS =====
+        const searchInput = document.getElementById("searchGroups");
+        const groupCards = document.querySelectorAll("#groupsView .group-card");
+
+        searchInput.addEventListener("keyup", function() {
+            const filter = this.value.toLowerCase();
+            groupCards.forEach(card => {
+                card.style.display = card.textContent.toLowerCase().includes(filter) ? "block" : "none";
+            });
+        });
+
+        // ===== BUSCADOR HISTÓRICO =====
+        const searchHistorico = document.getElementById("searchHistorico");
+        const historicoCards = document.querySelectorAll("#historico-grid .group-card");
+
+        searchHistorico.addEventListener("keyup", function() {
+            const filter = this.value.toLowerCase();
+            historicoCards.forEach(card => {
+                card.style.display = card.textContent.toLowerCase().includes(filter) ? "block" : "none";
+            });
+        });
+
+        // ===== FILE INPUT =====
+        const fileInput = document.querySelector('input[type="file"]');
+        const fileName = document.getElementById('fileName');
+
+        if (fileInput) {
+            fileInput.addEventListener('change', () => {
+                fileName.textContent = fileInput.files.length
+                    ? fileInput.files[0].name
+                    : 'Ningún archivo seleccionado';
+            });
         }
-    });
 
-    function cerrarModal() {
-        modalDocente.style.display = "none";
-    }
+        // ===== DROPDOWN ACCIONES =====
+        const toggle = document.getElementById("toggleActions");
+        const menu = document.getElementById("actionsMenu");
 
-    // ===== MODAL GRUPO =====
-    const btnNuevoGrupo = document.getElementById("btnNuevoGrupo");
-    const modalGrupo = document.getElementById("modalGrupo");
-    const closeModalGrupo = document.getElementById("closeModalGrupo");
-    const cancelarModalGrupo = document.getElementById("cancelarModalGrupo");
+        toggle.addEventListener("click", () => {
+            menu.style.display = menu.style.display === "flex" ? "none" : "flex";
+        });
 
-    btnNuevoGrupo.addEventListener("click", () => {
-        modalGrupo.style.display = "flex";
-    });
+        document.addEventListener("click", (e) => {
+            if (!toggle.contains(e.target) && !menu.contains(e.target)) {
+                menu.style.display = "none";
+            }
+        });
 
-    closeModalGrupo.addEventListener("click", cerrarModalGrupo);
-    cancelarModalGrupo.addEventListener("click", cerrarModalGrupo);
+        // ===== NOMBRE AUTOMÁTICO CUATRIMESTRE =====
+        const hoy = new Date();
+        const mes = hoy.getMonth() + 1;
+        const anio = hoy.getFullYear();
+        let nombreCuat = "";
 
-    modalGrupo.addEventListener("click", (e) => {
-        if (e.target === modalGrupo) {
-            cerrarModalGrupo();
+        if (mes >= 1 && mes <= 4) {
+            nombreCuat = `Enero-Abril ${anio}`;
+        } else if (mes >= 5 && mes <= 8) {
+            nombreCuat = `Mayo-Agosto ${anio}`;
+        } else {
+            nombreCuat = `Septiembre-Diciembre ${anio}`;
         }
-    });
 
-    function cerrarModalGrupo() {
-        modalGrupo.style.display = "none";
-    }
-});
+        const inputNombre = document.getElementById("nombreCuatrimestre");
+        if (inputNombre) inputNombre.value = nombreCuat;
 
-// ===== MODAL MATERIA =====
-const btnNuevaMateria = document.getElementById("btnNuevaMateria");
-const modalMateria = document.getElementById("modalMateria");
-const closeModalMateria = document.getElementById("closeModalMateria");
-const cancelarModalMateria = document.getElementById("cancelarModalMateria");
+        // ===== VALIDACIÓN FECHAS CUATRIMESTRE =====
+        const fechaInicio = document.getElementById("fechaInicio");
+        const fechaFin = document.getElementById("fechaFin");
 
-btnNuevaMateria.addEventListener("click", () => {
-    modalMateria.style.display = "flex";
-});
-
-closeModalMateria.addEventListener("click", cerrarModalMateria);
-cancelarModalMateria.addEventListener("click", cerrarModalMateria);
-
-modalMateria.addEventListener("click", (e) => {
-    if (e.target === modalMateria) {
-        cerrarModalMateria();
-    }
-});
-
-function cerrarModalMateria() {
-    modalMateria.style.display = "none";
-}
-
-
-document.addEventListener('DOMContentLoaded', function() {
-    const viewSwitch = document.getElementById('viewSwitch');
-    const viewOptions = viewSwitch.querySelectorAll('.view-option');
-    const groupsView = document.getElementById('groupsView');
-    const studentsView = document.getElementById('studentsView');
-
-    viewOptions.forEach(option => {
-        option.addEventListener('click', function() {
-            viewOptions.forEach(opt => opt.classList.remove('active'));
-
-            this.classList.add('active');
-
-            groupsView.style.display = 'none';
-            studentsView.style.display = 'none';
-
-            const viewType = this.dataset.view;
-            if (viewType === 'groups') {
-                groupsView.style.display = 'block';
-            } else {
-                studentsView.style.display = 'block';
+        fechaInicio.addEventListener("change", function() {
+            fechaFin.min = this.value;
+            if (fechaFin.value && fechaFin.value < this.value) {
+                fechaFin.value = "";
             }
         });
     });
-});
 
-document.addEventListener("DOMContentLoaded", () => {
-    const fileInput = document.querySelector('input[type="file"]');
-    const fileName = document.getElementById('fileName');
+    // ===== MODAL MATERIA =====
+    const btnNuevaMateria = document.getElementById("btnNuevaMateria");
+    const modalMateria = document.getElementById("modalMateria");
+    const closeModalMateria = document.getElementById("closeModalMateria");
+    const cancelarModalMateria = document.getElementById("cancelarModalMateria");
 
-    if (fileInput) {
-        fileInput.addEventListener('change', () => {
-            fileName.textContent = fileInput.files.length
-                ? fileInput.files[0].name
-                : 'Ningún archivo seleccionado';
+    btnNuevaMateria.addEventListener("click", () => modalMateria.style.display = "flex");
+    closeModalMateria.addEventListener("click", cerrarModalMateria);
+    cancelarModalMateria.addEventListener("click", cerrarModalMateria);
+    modalMateria.addEventListener("click", (e) => { if (e.target === modalMateria) cerrarModalMateria(); });
+
+    function cerrarModalMateria() { modalMateria.style.display = "none"; }
+
+
+    // ╔══════════════════════════════════════════════════════╗
+    // ║              ALERTAS — DIRECTOR                      ║
+    // ╚══════════════════════════════════════════════════════╝
+
+    const _dirAccionPendiente = {};
+    let   _alertasIniciadas   = false;
+
+    function iniciarAlertas() {
+        if (!_alertasIniciadas) {
+            _alertasIniciadas = true;
+
+            document.getElementById('alertasFiltroSwitch')
+                    .querySelectorAll('.view-option').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    document.querySelectorAll('#alertasFiltroSwitch .view-option')
+                            .forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    const filtro = this.dataset.filtro;
+                    document.querySelectorAll('.alerta-dir-card').forEach(card => {
+                        card.style.display =
+                            (filtro === 'todas' || card.dataset.nivel === filtro) ? '' : 'none';
+                    });
+                });
+            });
+        }
+
+        cargarSeccion('general');
+        cargarSeccion('direccion');
+    }
+
+    // ── Toggle acordeón ──────────────────────────────────────────────────────────
+    const _seccionAbierta = { general: true, direccion: false };
+
+    function toggleSeccion(cual) {
+        const body    = document.getElementById(`body-${cual}`);
+        const chevron = document.getElementById(`chevron-${cual}`);
+        const abierta = _seccionAbierta[cual];
+
+        if (abierta) {
+            body.classList.add('alerta-seccion-body-closed');
+            chevron.style.transform = 'rotate(-90deg)';
+        } else {
+            body.classList.remove('alerta-seccion-body-closed');
+            chevron.style.transform = 'rotate(0deg)';
+        }
+        _seccionAbierta[cual] = !abierta;
+    }
+
+    // ── Fetch por sección ────────────────────────────────────────────────────────
+    const _seccionCargada = { general: false, direccion: false };
+
+    async function cargarSeccion(cual) {
+        if (_seccionCargada[cual]) return;
+        _seccionCargada[cual] = true;
+
+        const url = cual === 'general'
+            ? '/director/alertas/'
+            : '/director/alertas/direccion/';
+
+        try {
+            const res  = await fetch(url);
+            const data = await res.json();
+            _renderSeccion(cual, data.alertas || [], data.stats || {});
+        } catch {
+            document.getElementById(`lista-${cual}`).innerHTML =
+                `<p style="color:#ef4444;text-align:center;padding:30px;">
+                    Error al cargar las alertas
+                </p>`;
+        }
+    }
+
+    // ── Render de una sección ────────────────────────────────────────────────────
+    function _renderSeccion(cual, alertas, stats) {
+        const badge = document.getElementById(`badge-${cual}`);
+        badge.textContent = stats.total || '0';
+
+        const lista = document.getElementById(`lista-${cual}`);
+        if (!alertas.length) {
+            lista.innerHTML = `
+                <div style="background:#f8f9fb;border-radius:10px;
+                            padding:40px;text-align:center;">
+                    <span class="mdi mdi-check-circle-outline"
+                        style="font-size:36px;color:#bbf7d0;
+                                display:block;margin-bottom:12px;"></span>
+                    <p style="font-size:14px;color:#6b7280;margin:0;">
+                        ${cual === 'general'
+                            ? 'No hay alertas activas en el sistema.'
+                            : 'No hay alertas derivadas a Dirección.'}
+                    </p>
+                </div>`;
+            return;
+        }
+
+        lista.innerHTML = alertas.map(a => _cardDirHTML(a, cual)).join('');
+    }
+
+    // ── HTML de una tarjeta ──────────────────────────────────────────────────────
+    function _cardDirHTML(a, seccion) {
+        const colores   = { Alto:'#ef4444', Medio:'#f59e0b', Bajo:'#3b82f6' };
+        const avatarCls = { Alto:'avatar-alto', Medio:'avatar-medio', Bajo:'avatar-bajo' };
+        const badgeCls  = { Alto:'badge-alto',  Medio:'badge-medio',  Bajo:'badge-bajo'  };
+        const badgeIco  = { Alto:'mdi-alert-circle', Medio:'mdi-alert', Bajo:'mdi-information-outline' };
+
+        const derivadaBadge = a.derivada_a
+            ? `<span class="badge badge-derivada">
+                <span class="mdi mdi-send-check"></span> ${a.derivada_a}
+            </span>`
+            : '';
+
+        const motivosHtml = a.motivos_lista.map(m => `
+            <div class="motivo-item">
+                <span class="mdi mdi-chevron-right"
+                    style="color:#9ca3af;flex-shrink:0;margin-top:2px;"></span>
+                <span>${m}</span>
+            </div>`).join('');
+
+        const historialHtml = a.seguimientos.length ? `
+            <div style="margin-top:12px;">
+                <div style="font-size:11px;font-weight:600;color:#9ca3af;
+                            text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">
+                    <span class="mdi mdi-history"></span> Historial de seguimiento
+                </div>
+                ${a.seguimientos.map(s => `
+                    <div style="background:#f8f9fb;border:1px solid #e5e7eb;border-radius:8px;
+                                padding:8px 12px;margin-bottom:6px;font-size:12px;">
+                        <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
+                            <strong style="color:#374151;">${s.usuario}</strong>
+                            <span style="color:#9ca3af;">${s.fecha}</span>
+                        </div>
+                        <div style="color:#4b5563;">${s.comentario}</div>
+                    </div>`).join('')}
+            </div>` : '';
+
+        const uid = `${seccion}-${a.id}`;
+
+        return `
+        <div class="alerta-dir-card"
+            id="alerta-dir-${uid}"
+            data-nivel="${a.nivel_riesgo}"
+            style="background:white;border-radius:12px;border:2px solid #e4e4e4;
+                    border-left:4px solid ${colores[a.nivel_riesgo] || '#e4e4e4'};
+                    transition:box-shadow .2s ease,opacity .3s,transform .3s;
+                    animation:fadeInUp .2s ease both;">
+
+            <div style="padding:18px 20px;display:flex;gap:14px;align-items:flex-start;">
+
+                <div class="alumno-avatar ${avatarCls[a.nivel_riesgo]}">
+                    ${a.alumno_nombre.charAt(0)}
+                </div>
+
+                <div style="flex:1;min-width:0;">
+
+                    <div style="display:flex;align-items:flex-start;justify-content:space-between;
+                                gap:12px;margin-bottom:10px;flex-wrap:wrap;">
+                        <div>
+                            <div style="font-weight:600;font-size:15px;color:#111827;
+                                        margin-bottom:2px;">${a.alumno_nombre}</div>
+                            <div style="font-size:12px;color:#9ca3af;">
+                                ${a.alumno_matricula}
+                                &nbsp;·&nbsp; Grupo
+                                <strong style="color:#6b7280;">${a.grupo}</strong>
+                            </div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:6px;
+                                    flex-wrap:wrap;flex-shrink:0;">
+                            <span class="badge ${badgeCls[a.nivel_riesgo]}">
+                                <span class="mdi ${badgeIco[a.nivel_riesgo]}"></span>
+                                ${a.nivel_riesgo}
+                            </span>
+                            ${derivadaBadge}
+                            <span style="font-size:11px;color:#9ca3af;">${a.fecha}</span>
+                        </div>
+                    </div>
+
+                    <div class="motivos-wrapper">${motivosHtml}</div>
+                    ${historialHtml}
+
+                    <div id="acciones-dir-${uid}"
+                        style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
+                        <button class="btn-accion btn-cerrar"
+                                onclick="_mostrarFormDir('${uid}','cerrar')">
+                            <span class="mdi mdi-check"></span> Cerrar alerta
+                        </button>
+                        <button class="btn-accion btn-pedagogia"
+                                onclick="_mostrarFormDir('${uid}','Pedagogia')">
+                            <span class="mdi mdi-school-outline"></span> Pedagogía
+                        </button>
+                        <button class="btn-accion btn-psicologia"
+                                onclick="_mostrarFormDir('${uid}','Psicologia')">
+                            <span class="mdi mdi-head-heart-outline"></span> Psicología
+                        </button>
+                        <button class="btn-accion"
+                                style="background:#fff7ed;border-color:#fed7aa;color:#c2410c;"
+                                onclick="_mostrarFormDir('${uid}','Tutor')">
+                            <span class="mdi mdi-account-tie-outline"></span> Tutor
+                        </button>
+                    </div>
+
+                    <div id="form-dir-${uid}"
+                        style="display:none;margin-top:12px;background:#f8f9fb;
+                                border:1px solid #e5e7eb;border-radius:10px;padding:14px;">
+                        <div style="display:flex;align-items:center;gap:7px;margin-bottom:10px;">
+                            <span class="mdi mdi-comment-text-outline" style="color:#6b7280;"></span>
+                            <span id="form-dir-label-${uid}"
+                                style="font-size:13px;font-weight:600;color:#374151;">
+                                Comentario
+                            </span>
+                        </div>
+                        <textarea id="textarea-dir-${uid}"
+                                placeholder="Describe el motivo de la acción..."
+                                rows="3"
+                                style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;
+                                        border-radius:8px;font-size:13px;font-family:inherit;
+                                        color:#111827;resize:vertical;outline:none;
+                                        background:white;box-sizing:border-box;line-height:1.5;
+                                        transition:border-color .2s,box-shadow .2s;">
+                        </textarea>
+                        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px;">
+                            <button class="btn-accion btn-secondary" style="height:auto;"
+                                    onclick="_cancelarFormDir('${uid}')">
+                                Cancelar
+                            </button>
+                            <button id="btn-dir-${uid}"
+                                    class="btn-accion btn-primary" style="height:auto;"
+                                    onclick="_confirmarAccionDir('${uid}', ${a.id})">
+                                <span class="mdi mdi-check"></span>
+                                <span id="btn-dir-label-${uid}">Confirmar</span>
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>`;
+    }
+
+    // ── Mostrar / cancelar formulario ────────────────────────────────────────────
+    function _mostrarFormDir(uid, accion) {
+        _dirAccionPendiente[uid] = accion;
+        document.getElementById(`acciones-dir-${uid}`).style.display = 'none';
+
+        const configs = {
+            'cerrar':    { label:'Comentario de cierre',       btn:'Cerrar alerta'      },
+            'Pedagogia': { label:'Comentario para Pedagogía',  btn:'Enviar a Pedagogía' },
+            'Psicologia':{ label:'Comentario para Psicología', btn:'Enviar a Psicología'},
+            'Tutor':     { label:'Comentario para Tutor',      btn:'Enviar a Tutor'     },
+        };
+        const cfg = configs[accion] || {};
+        document.getElementById(`form-dir-label-${uid}`).textContent = cfg.label;
+        document.getElementById(`btn-dir-label-${uid}`).textContent  = cfg.btn;
+
+        const form = document.getElementById(`form-dir-${uid}`);
+        form.style.display   = 'block';
+        form.style.opacity   = '0';
+        form.style.transform = 'translateY(-6px)';
+        requestAnimationFrame(() => {
+            form.style.transition = 'opacity .2s ease,transform .2s ease';
+            form.style.opacity    = '1';
+            form.style.transform  = 'translateY(0)';
         });
+        setTimeout(() => document.getElementById(`textarea-dir-${uid}`).focus(), 150);
     }
-});
-</script>
 
-    
-{% endblock %}
-
-
-{% block extra_css %}
-<style>
-
-.header-actions {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 25px;
-    flex-wrap: wrap;
-    gap: 15px;
-}
-
-
-
-.botons-header {
-    display: flex;
-    gap: 10px;
-    margin-left: auto;
-}
-
-
-.botons-header button {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 14px;
-    height: 34px;
-    border-radius: 10px;
-    border: 1px solid transparent;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-
-.btn-primary {
-    background: #2563eb;
-    color: white;
-    border: 1px solid #2563eb;
-}
-
-.btn-primary:hover {
-    background: #1e40af;
-    border-color: #1e40af;
-}
-
-
-.btn-secondary {
-    background: #f5f5f5;
-    color: #333;
-    border: 1px solid #e0e0e0;
-}
-
-.btn-secondary:hover {
-    background: #eaeaea;
-}
-
-
-.mdi {
-    font-size: 16px;
-}
-
-.modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 999;
-}
-
-.modal-content {
-    background: #fff;
-    width: 400px;
-    border-radius: 10px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
-    animation: fadeIn 0.25s ease;
-}
-
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 14px 16px;
-    border-bottom: 1px solid #eee;
-}
-
-.modal-header h3 {
-    margin: 0;
-    font-size: 18px;
-}
-
-.modal-close {
-    font-size: 22px;
-    cursor: pointer;
-}
-
-.modal-body {
-    padding: 16px;
-}
-
-.modal-footer {
-    padding: 14px 16px;
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    border-top: 1px solid #eee;
-}
-
-@keyframes fadeIn {
-    from {
-        transform: translateY(-10px);
-        opacity: 0;
+    function _cancelarFormDir(uid) {
+        document.getElementById(`form-dir-${uid}`).style.display     = 'none';
+        document.getElementById(`textarea-dir-${uid}`).value         = '';
+        document.getElementById(`acciones-dir-${uid}`).style.display = 'flex';
+        delete _dirAccionPendiente[uid];
     }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
-}
 
-    .page-title {
-        margin-bottom: 30px;
+    // ── Confirmar ────────────────────────────────────────────────────────────────
+    async function _confirmarAccionDir(uid, alertaId) {
+        const comentario = document.getElementById(`textarea-dir-${uid}`).value.trim();
+        const accion     = _dirAccionPendiente[uid];
+        const btn        = document.getElementById(`btn-dir-${uid}`);
+
+        if (!comentario) {
+            document.getElementById(`textarea-dir-${uid}`).style.borderColor = '#ef4444';
+            _snackDir('Escribe un comentario antes de continuar', 'error');
+            return;
+        }
+        document.getElementById(`textarea-dir-${uid}`).style.borderColor = '';
+
+        btn.disabled  = true;
+        btn.innerHTML = '<span class="mdi mdi-loading mdi-spin"></span> Guardando…';
+
+        const url  = accion === 'cerrar' ? '/cerrar-alerta-direccion/' : '/derivar-alerta-direccion/';
+        const body = accion === 'cerrar'
+            ? { alerta_id: alertaId, comentario }
+            : { alerta_id: alertaId, destino: accion, comentario };
+
+        try {
+            const res  = await fetch(url, {
+                method:  'POST',
+                headers: { 'Content-Type':'application/json', 'X-CSRFToken':_getCsrfDir() },
+                body:    JSON.stringify(body),
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                const card = document.getElementById(`alerta-dir-${uid}`);
+                card.style.opacity   = '0';
+                card.style.transform = 'translateX(16px)';
+                setTimeout(() => {
+                    card.remove();
+                    const seccion   = uid.startsWith('general') ? 'general' : 'direccion';
+                    const lista     = document.getElementById(`lista-${seccion}`);
+                    const restantes = lista.querySelectorAll('.alerta-dir-card').length;
+                    document.getElementById(`badge-${seccion}`).textContent = restantes;
+
+                    if (!restantes) {
+                        lista.innerHTML = `
+                            <div style="background:#f8f9fb;border-radius:10px;
+                                        padding:40px;text-align:center;">
+                                <span class="mdi mdi-check-circle-outline"
+                                    style="font-size:36px;color:#bbf7d0;
+                                            display:block;margin-bottom:12px;"></span>
+                                <p style="font-size:14px;color:#6b7280;margin:0;">
+                                    Todas las alertas han sido atendidas.
+                                </p>
+                            </div>`;
+                    }
+                }, 300);
+
+                _snackDir(accion === 'cerrar'
+                    ? 'Alerta cerrada correctamente'
+                    : `Alerta derivada a ${accion}`, 'success');
+            } else {
+                btn.disabled  = false;
+                btn.innerHTML = '<span class="mdi mdi-check"></span> <span>Confirmar</span>';
+                _snackDir(data.error || 'Error al procesar', 'error');
+            }
+        } catch {
+            btn.disabled  = false;
+            btn.innerHTML = '<span class="mdi mdi-check"></span> <span>Confirmar</span>';
+            _snackDir('Error de conexión', 'error');
+        }
     }
-    
-    .page-title h1 {
+
+    // ── Snackbar y CSRF ──────────────────────────────────────────────────────────
+    let _snackDirTimer;
+    function _snackDir(msg, tipo) {
+        let el = document.getElementById('snackbar-dir');
+        if (!el) {
+            document.body.insertAdjacentHTML('beforeend', `
+                <div id="snackbar-dir"
+                    style="position:fixed;bottom:24px;left:50%;
+                            transform:translateX(-50%) translateY(80px);
+                            background:#1a1a1a;color:white;padding:12px 20px;
+                            border-radius:100px;font-size:13px;font-weight:500;
+                            display:flex;align-items:center;gap:8px;z-index:9999;
+                            transition:transform .3s ease;white-space:nowrap;
+                            box-shadow:0 8px 24px rgba(0,0,0,.2);pointer-events:none;">
+                    <span id="snack-dir-icon" class="mdi"></span>
+                    <span id="snack-dir-msg"></span>
+                </div>`);
+            el = document.getElementById('snackbar-dir');
+        }
+        document.getElementById('snack-dir-icon').className =
+            `mdi ${tipo === 'success' ? 'mdi-check-circle' : 'mdi-alert-circle'}`;
+        document.getElementById('snack-dir-icon').style.color =
+            tipo === 'success' ? '#4ade80' : '#f87171';
+        document.getElementById('snack-dir-msg').textContent = msg;
+        el.style.transform = 'translateX(-50%) translateY(0)';
+        clearTimeout(_snackDirTimer);
+        _snackDirTimer = setTimeout(
+            () => el.style.transform = 'translateX(-50%) translateY(80px)', 3000);
+    }
+
+    function _getCsrfDir() {
+        const m = document.cookie.match(/csrftoken=([^;]+)/);
+        return m ? m[1] : '';
+    }
+    </script>
+
+    {% endblock %}
+
+
+    {% block extra_css %}
+    <style>
+
+    .header-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 25px;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .btn-primary {
+        background: #2563eb;
+        color: white;
+        border: 1px solid #2563eb;
+    }
+
+    .btn-primary:hover {
+        background: #1e40af;
+        border-color: #1e40af;
+    }
+
+    .btn-secondary {
+        background: #f5f5f5;
         color: #333;
-        font-size: 24px;
-        font-weight: 600;
-        margin-bottom: 5px;
+        border: 1px solid #e0e0e0;
     }
-    
-    .page-title .subtitle {
-        color: #666;
-        font-size: 14px;
+
+    .btn-secondary:hover {
+        background: #eaeaea;
     }
-    
+
+    .mdi {
+        font-size: 16px;
+    }
+
+    .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 999;
+    }
+
+    .modal-content {
+        background: #fff;
+        width: 400px;
+        border-radius: 10px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+        animation: fadeIn 0.25s ease;
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 16px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .modal-header h3 {
+        margin: 0;
+        font-size: 18px;
+    }
+
+    .modal-close {
+        font-size: 22px;
+        cursor: pointer;
+    }
+
+    .modal-body {
+        padding: 16px;
+    }
+
+    .modal-footer {
+        padding: 14px 16px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        border-top: 1px solid #eee;
+    }
+
+    @keyframes fadeIn {
+        from { transform: translateY(-10px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
     .view-switch {
         display: inline-flex;
         background: #f5f5f5;
         border-radius: 12px;
         padding: 4px;
-        margin-bottom: 25px;
         border: 1px solid #e0e0e0;
     }
-    
+
     .view-option {
         padding: 5px 60px;
         border-radius: 10px;
@@ -525,12 +1188,12 @@ document.addEventListener("DOMContentLoaded", () => {
         border: none;
         background: transparent;
     }
-    
+
     .view-option.active {
         background: white;
         color: #333;
     }
-    
+
     .groups-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -538,16 +1201,8 @@ document.addEventListener("DOMContentLoaded", () => {
         margin-bottom: 40px;
         width: 100%;
     }
-    
-    .students-grid {
-        display: none;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 20px;
-        margin-bottom: 40px;
-        width: 100%;
-    }
-    
-    .group-card, .student-card {
+
+    .group-card {
         background: white;
         border-radius: 12px;
         padding: 20px;
@@ -556,76 +1211,77 @@ document.addEventListener("DOMContentLoaded", () => {
         height: 100%;
         box-sizing: border-box;
     }
-    
-    .group-card:hover, .student-card:hover {
+
+    .group-card:hover {
         border: 2px solid rgb(0, 0, 180);
         box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
     }
-    
-    .group-header, .student-header {
+
+    .group-header {
         border-bottom: 1px solid #eee;
         padding-bottom: 15px;
         margin-bottom: 15px;
     }
-    
+
     .group-header-main {
         display: flex;
         align-items: center;
         flex-wrap: wrap;
         margin-bottom: 8px;
     }
-    
+
     .materia-principal {
         color: #333;
         font-size: 16px;
         font-weight: 600;
         margin-right: 8px;
     }
-    
+
     .group-separator {
         color: #666;
         margin-right: 8px;
         font-weight: 500;
     }
-    
+
     .group-clave {
         color: #666;
         font-size: 16px;
         font-weight: 400;
     }
-    
+
     .group-meta {
         display: flex;
         justify-content: flex-start;
+        gap: 3px;
         color: #666;
         font-size: 14px;
-        margin-top: 6px
+        margin-top: 6px;
     }
-    
+
     .group-stats {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
         gap: 15px;
         margin-bottom: 20px;
     }
-    
+
     .stat-value {
         font-size: 22px;
         color: #333;
         line-height: 1.2;
         font-weight: 600;
     }
-    
+
     .stat-label {
         font-size: 12px;
         color: #666;
         margin-bottom: 4px;
     }
-    
+
     .riesgo .stat-value {
         color: #DC2626;
     }
-    
+
     .attention-btn {
         display: flex;
         align-items: center;
@@ -635,146 +1291,497 @@ document.addEventListener("DOMContentLoaded", () => {
         color: #DC2626;
         font-size: 12px;
     }
-    
+
+    .badge-activo {
+        background: #dcfce7;
+        color: #16a34a;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 2px 8px;
+        border-radius: 20px;
+        margin-left: 8px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-bottom: 16px;
+    }
+
+    .form-group label {
+        font-size: 13px;
+        font-weight: 500;
+        color: #374151;
+    }
+
+    .form-group input {
+        height: 38px;
+        padding: 8px 12px;
+        border-radius: 10px;
+        border: 1px solid #e5e7eb;
+        font-size: 14px;
+        color: #111827;
+        outline: none;
+        transition: all 0.2s ease;
+        background: #fff;
+    }
+
+    .form-group input::placeholder {
+        color: #9ca3af;
+    }
+
+    .form-group input:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+    }
+
+    .modal-footer .btn-primary,
+    .modal-footer .btn-secondary {
+        height: 36px;
+        padding: 6px 18px;
+        font-size: 13px;
+        border-radius: 10px;
+    }
+
+    .form-group select {
+        height: 38px;
+        padding: 8px 12px;
+        border-radius: 10px;
+        border: 1px solid #e5e7eb;
+        font-size: 14px;
+        color: #111827;
+        background: #fff;
+        outline: none;
+        transition: all 0.2s ease;
+    }
+
+    .form-group select:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+    }
+
+    .file-input-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        height: 38px;
+        border-radius: 10px;
+        border: 1px solid #e5e7eb;
+        cursor: pointer;
+        background: #fff;
+        transition: all 0.2s ease;
+    }
+
+    .file-input-wrapper:hover {
+        border-color: #2563eb;
+    }
+
+    .file-input-wrapper input[type="file"] {
+        display: none;
+    }
+
+    .file-btn {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: #2563eb;
+        color: #fff;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 500;
+        white-space: nowrap;
+    }
+
+    .file-name {
+        font-size: 13px;
+        color: #6b7280;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .groups-search {
+        position: relative;
+        margin-bottom: 20px;
+        max-width: 360px;
+    }
+
+    .groups-search input {
+        width: 100%;
+        height: 38px;
+        padding: 8px 12px 8px 36px;
+        border-radius: 10px;
+        border: 1px solid #e5e7eb;
+        font-size: 14px;
+        outline: none;
+        background: #fff;
+        transition: all 0.2s ease;
+    }
+
+    .groups-search input:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 18px;
+        color: #6b7280;
+        pointer-events: none;
+    }
+
+    .actions-dropdown {
+        position: relative;
+    }
+
+    .dropdown-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        height: 38px;
+        padding: 0 16px;
+        border-radius: 12px;
+        border: 1px solid #2563eb;
+        background: #2563eb;
+        color: white;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all .2s ease;
+    }
+
+    .dropdown-toggle:hover {
+        background: #1e40af;
+        border-color: #1e40af;
+    }
+
+    .dropdown-menu {
+        position: absolute;
+        right: 0;
+        top: 42px;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        display: none;
+        flex-direction: column;
+        min-width: 180px;
+        overflow: hidden;
+    }
+
+    .dropdown-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 14px;
+        font-size: 14px;
+        background: white;
+        border: none;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+    .dropdown-item:hover {
+        background: #f3f4f6;
+    }
+
     @media (max-width: 768px) {
         .groups-grid {
             grid-template-columns: 1fr;
         }
-        
         .group-stats {
             grid-template-columns: repeat(2, 1fr);
         }
-        
         .view-option {
             padding: 8px 40px;
             font-size: 13px;
         }
     }
-    
+
     @media (max-width: 480px) {
         .view-option {
             padding: 8px 20px;
         }
-        
         .group-header-main {
             flex-direction: column;
             align-items: flex-start;
         }
-        
         .materia-principal,
         .group-separator,
         .group-clave {
             margin-bottom: 2px;
         }
     }
+    /* ===== TABLA DOCENTES ===== */
+    .tabla-docentes-wrapper {
+        background: white;
+        border-radius: 16px;
+        border: 1px solid #e8eaf0;
+        overflow: hidden;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
 
-.form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    margin-bottom: 16px;
+    .tabla-docentes {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+    }
+
+    .tabla-docentes thead {
+        background: #f8f9fb;
+        border-bottom: 1px solid #e8eaf0;
+    }
+
+    .tabla-docentes th {
+        padding: 14px 20px;
+        text-align: left;
+        font-size: 11px;
+        font-weight: 600;
+        color: #9ca3af;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+    }
+
+    .tabla-docentes td {
+        padding: 16px 20px;
+        border-bottom: 1px solid #f3f4f6;
+        color: #374151;
+        vertical-align: middle;
+    }
+
+    .tabla-docentes tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .tabla-docentes tbody tr {
+        transition: background 0.15s ease;
+    }
+
+    .tabla-docentes tbody tr:hover {
+        background: #f8f9fb;
+    }
+
+    .docente-nombre {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 600;
+        color: #1a1d23;
+        font-size: 14px;
+    }
+
+    .docente-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: #e8eeff;
+        color: #2563eb;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 14px;
+        flex-shrink: 0;
+        text-transform: uppercase;
+    }
+
+    .docente-correo {
+        color: #6b7280;
+        font-size: 13px;
+    }
+
+    .materias-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .materia-tag {
+        background: #eff6ff;
+        color: #2563eb;
+        font-size: 11px;
+        font-weight: 500;
+        padding: 4px 10px;
+        border-radius: 20px;
+        white-space: nowrap;
+        border: 1px solid #dbeafe;
+    }
+
+    .btn-editar-docente {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 7px 14px;
+        border-radius: 10px;
+        border: 1px solid #e5e7eb;
+        background: white;
+        color: #374151;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-editar-docente:hover {
+        border-color: #2563eb;
+        color: #2563eb;
+        background: #eff6ff;
+    }
+
+    .docentes-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .docentes-count {
+        font-size: 13px;
+        color: #9ca3af;
+        margin: 0;
+    }
+
+    .docentes-count span {
+        font-weight: 600;
+        color: #374151;
+    }
+
+    /* ── Alertas Director ── */
+.pill {
+    display:inline-flex; align-items:center; gap:6px;
+    border-radius:20px; padding:4px 12px;
+    font-size:12px; font-weight:600; border:1px solid;
+}
+.pill-alto  { background:#fee2e2; color:#b91c1c; border-color:#fca5a5; }
+.pill-medio { background:#fef3c7; color:#92400e; border-color:#fcd34d; }
+.pill-bajo  { background:#dbeafe; color:#1e40af; border-color:#93c5fd; }
+
+.alumno-avatar {
+    width:40px; height:40px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-weight:700; font-size:15px; flex-shrink:0; text-transform:uppercase;
+}
+.avatar-alto  { background:#fee2e2; color:#b91c1c; }
+.avatar-medio { background:#fef3c7; color:#92400e; }
+.avatar-bajo  { background:#dbeafe; color:#1e40af; }
+
+.badge {
+    display:inline-flex; align-items:center; gap:4px;
+    border-radius:20px; padding:3px 10px;
+    font-size:11px; font-weight:600; border:1px solid;
+}
+.badge-alto     { background:#fee2e2; color:#b91c1c; border-color:#fca5a5; }
+.badge-medio    { background:#fef3c7; color:#92400e; border-color:#fcd34d; }
+.badge-bajo     { background:#dbeafe; color:#1e40af; border-color:#93c5fd; }
+.badge-derivada { background:#dcfce7; color:#15803d; border-color:#86efac; }
+
+.motivos-wrapper {
+    border:1px solid #f3f4f6; border-radius:8px; overflow:hidden;
+}
+.motivo-item {
+    display:flex; align-items:flex-start; gap:8px;
+    padding:8px 12px; font-size:13px; color:#374151;
+    border-bottom:1px solid #f3f4f6; line-height:1.5;
+}
+.motivo-item:last-child { border-bottom:none; }
+
+.btn-accion {
+    display:inline-flex; align-items:center; gap:6px;
+    padding:7px 14px; border-radius:10px;
+    border:1px solid #e5e7eb; background:white;
+    color:#374151; font-size:13px; font-weight:500;
+    cursor:pointer; transition:all .2s ease; font-family:inherit; white-space:nowrap;
+}
+.btn-accion:disabled { cursor:not-allowed; opacity:.7; }
+.btn-cerrar:hover:not(:disabled) { border-color:#2563eb; color:#2563eb; background:#eff6ff; }
+.btn-pedagogia { background:#f5f3ff; border-color:#ddd6fe; color:#7c3aed; }
+.btn-pedagogia:hover:not(:disabled) { background:#ede9fe; border-color:#c4b5fd; }
+.btn-psicologia { background:#fdf2f8; border-color:#fbcfe8; color:#9d174d; }
+.btn-psicologia:hover:not(:disabled) { background:#fce7f3; border-color:#f9a8d4; }
+
+@keyframes fadeInUp {
+    from { opacity:0; transform:translateY(6px); }
+    to   { opacity:1; transform:translateY(0); }
 }
 
-.form-group label {
-    font-size: 13px;
-    font-weight: 500;
-    color: #374151;
-}
-
-.form-group input {
-    height: 38px;
-    padding: 8px 12px;
-    border-radius: 10px;
-    border: 1px solid #e5e7eb;
-    font-size: 14px;
-    color: #111827;
-    outline: none;
-    transition: all 0.2s ease;
-    background: #fff;
-}
-
-.form-group input::placeholder {
-    color: #9ca3af;
-}
-
-.form-group input:focus {
-    border-color: #2563eb;
-    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
-}
-
-.form-group input.error {
-    border-color: #dc2626;
-}
-
-.modal-footer .btn-primary,
-.modal-footer .btn-secondary {
-    height: 36px;
-    padding: 6px 18px;
-    font-size: 13px;
-    border-radius: 10px;
-}
-
-.form-group select {
-    height: 38px;
-    padding: 8px 12px;
-    border-radius: 10px;
-    border: 1px solid #e5e7eb;
-    font-size: 14px;
-    color: #111827;
-    background: #fff;
-    outline: none;
-    transition: all 0.2s ease;
-}
-
-.form-group select:focus {
-    border-color: #2563eb;
-    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
-}
-
-/* ===== FILE INPUT CUSTOM ===== */
-
-.file-input-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    height: 38px;
-    padding: 0 12px;
-    border-radius: 10px;
-    border: 1px solid #e5e7eb;
-    cursor: pointer;
-    background: #fff;
-    transition: all 0.2s ease;
-}
-
-.file-input-wrapper:hover {
-    border-color: #2563eb;
-}
-
-.file-input-wrapper input[type="file"] {
-    display: none;
-}
-
-.file-btn {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    background: #2563eb;
-    color: #fff;
-    padding: 6px 12px;
-    border-radius: 8px;
-    font-size: 12px;
-    font-weight: 500;
-    white-space: nowrap;
-}
-
-.file-name {
-    font-size: 13px;
-    color: #6b7280;
+/* ── Acordeón de alertas ── */
+.alerta-seccion {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e8eaf0;
     overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
 }
 
+.alerta-seccion-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    background: white;
+    border: none;
+    cursor: pointer;
+    transition: background .15s ease;
+    font-family: inherit;
+}
+
+.alerta-seccion-header:hover { background: #f8f9fb; }
+
+.alerta-seccion-titulo {
+    font-size: 14px;
+    font-weight: 600;
+    color: #111827;
+}
+
+.alerta-seccion-badge {
+    background: #f3f4f6;
+    color: #374151;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 20px;
+    min-width: 22px;
+    text-align: center;
+}
+
+.alerta-seccion-badge-dir {
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+.alerta-seccion-chevron {
+    font-size: 20px;
+    color: #9ca3af;
+    transition: transform .25s ease;
+}
+
+.alerta-seccion-body {
+    padding: 0 16px 16px;
+    overflow: hidden;
+    max-height: 9999px;
+    transition: max-height .3s ease, padding .3s ease;
+}
+
+.alerta-seccion-body-closed {
+    max-height: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+.pill-xs {
+    padding: 2px 8px;
+    font-size: 11px;
+}
 
 </style>
+
 {% endblock %}

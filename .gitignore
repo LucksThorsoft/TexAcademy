@@ -1,0 +1,36 @@
+# --- Entornos Virtuales ---
+venv/
+env/
+.env/
+.venv/
+
+# --- Archivos de Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+
+# --- Entorno de desarrollo (Variables de entorno) ---
+.env
+.local.env
+.secret.key
+
+# --- Archivos de sistema (OS) ---
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# --- IDEs y Editores ---
+.vscode/
+.idea/
+.project
+.pydevproject
+
+# --- Archivos de despliegue/logs ---
+*.log
+media/
+static/
+
+# --- Base de datos ---
+*.db
+*.sqlite3
+*.sqlite
