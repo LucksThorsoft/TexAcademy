@@ -20,6 +20,18 @@
         color: #666;
         font-size: 14px;
     }
+
+    /* Mensaje de cuatrimestre no activo */
+    .no-cuatrimestre-message {
+        background: white;
+        border-radius: 16px;
+        border: 2px solid #e4e4e4;
+        margin-bottom: 40px;
+    }
+
+    .no-cuatrimestre-message .mdi {
+        opacity: 0.5;
+    }
     
     /* ===== SWITCH DE VISTA PRINCIPAL ===== */
     .view-switch {
@@ -125,9 +137,13 @@
     
     .group-stats {
         display: grid;
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: 1fr; /* Una sola columna */
         gap: 15px;
         margin-bottom: 20px;
+    }
+
+    .stat-item {
+        text-align: center;
     }
     
     .stat-value {
@@ -136,7 +152,7 @@
         line-height: 1.2;
         font-weight: 600;
     }
-    
+
     .stat-label {
         font-size: 12px;
         color: #666;
@@ -147,15 +163,29 @@
         color: #DC2626;
     }
     
+    /* Botón de atención con contador de riesgo */
     .attention-btn {
         display: flex;
         align-items: center;
         background: #dc26261a;
         border-radius: 8px;
-        padding: 8px;
+        padding: 8px;  /* Padding original */
         color: #DC2626;
-        font-size: 12px;
-        gap: 8px;
+        font-size: 12px;  /* Tamaño de fuente original */
+        gap: 8px;  /* Gap original */
+        transition: all 0.2s;
+        border: 1px solid transparent;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .attention-btn .mdi {
+        font-size: 14px;  /* Tamaño de icono original */
+    }
+
+    /* Ajuste para el texto del botón */
+    .attention-btn span {
+        line-height: 1.2;
     }
     
     /* ===== MODAL ===== */
@@ -459,6 +489,42 @@
         font-size: 14px;
         text-align: center;
     }
+
+    /* Estados en la tabla de alumnos */
+    .estado-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 8px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .estado-riesgo {
+        background-color: #fee2e2;
+        color: #b91c1c;
+    }
+
+    .estado-atencion {
+        background-color: #fff3e0;
+        color: #b45309;
+    }
+
+    .estado-precaución {
+        background-color: #e0f2fe;
+        color: #0369a1;
+    }
+
+    .estado-estable {
+        background-color: #e8f5e9;
+        color: #2e7d32;
+    }
+
+    .estado-default {
+        background-color: #f5f5f5;
+        color: #666;
+    }
     
     .clickable-row {
         cursor: pointer;
@@ -758,11 +824,35 @@
         text-align: center;
     }
 
-    /* Estilos específicos para la primera fila de encabezado */
+    /* Estilos para el contenido de las celdas de unidad */
+    .unidad-header-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 4px 0;
+    }
+
+    .unidad-numero {
+        font-weight: 600;
+        font-size: 15px;
+        color: #495057;
+    }
+
+    .unidad-fechas {
+        font-size: 11px;
+        font-weight: 400;
+        color: #666;
+        padding: 2px 6px;
+        border-radius: 4px;
+        white-space: nowrap;
+        font-family: monospace;
+    }
+
+    /* Ajuste para que la primera fila tenga el mismo estilo */
     .calificaciones-table .calificaciones-header-row th {
         background: #e9ecef;
-        color: #495057;
-        font-size: 15px;
+        vertical-align: middle;
+        padding: 8px 12px;
     }
 
     /* Estilos específicos para la segunda fila de encabezado */
@@ -990,6 +1080,16 @@
             padding: 10px 12px;
             font-size: 13px;
         }
+
+        .unidad-fechas {
+            font-size: 10px;
+            white-space: normal;
+            line-height: 1.2;
+        }
+        
+        .calificaciones-table .calificaciones-header-row th {
+            padding: 6px 8px;
+        }
         
         .calificacion-input {
             width: 80px;
@@ -1166,63 +1266,81 @@
 
 <!-- Vista de Mis Grupos -->
 <div id="groupsView" class="view-content">
-    <div class="groups-grid">
-        {% for grupo in grupos %}
-        <div class="group-card" 
-            data-group-id="{{ grupo.grupo_id }}" 
-            data-materia="{{ grupo.materias.0.nombre }}" 
-            data-clave="{{ grupo.clave }}"
-            data-alumnos="{{ grupo.alumnos_json }}"
-            data-materias='{{ grupo.materias_json }}'>
-            <div class="group-header">
-                <div class="group-header-main">
-                    {% if grupo.materias %}
-                        <span class="materia-principal">{{ grupo.materias.0.nombre }}</span>
-                        <span class="group-separator">|</span>
-                        <span class="group-clave">{{ grupo.clave }}</span>
-                    {% else %}
-                        <span class="materia-principal">Sin materia</span>
-                        <span class="group-separator">|</span>
-                        <span class="group-clave">{{ grupo.clave }}</span>
-                    {% endif %}
-                </div>
-                
-                <div class="group-meta">
-                    <span class="mdi mdi-account-multiple"></span>
-                    <span>{{ grupo.num_alumnos }} alumnos</span>
-                </div>
-            </div>
-            
-            <div class="group-stats">
-                <div class="stat-item promedio">
-                    <div class="stat-label">Promedio Grupal</div>
-                    <div class="stat-value">--</div>
-                </div>
-                
-                <div class="stat-item riesgo">
-                    <div class="stat-label">En Riesgo</div>
-                    <div class="stat-value">--</div>
-                </div>
-            </div>
-            
-            <div class="attention-btn">
-                <span class="mdi mdi-alert"></span>
-                <span>-- alumnos requieren atención</span>
-            </div>
-        </div>
-        {% empty %}
-        <div class="no-groups">
-            <div style="text-align: center; padding: 40px;">
-                <p style="color: #666; font-size: 16px; margin-bottom: 10px;">
-                    No tienes grupos asignados
-                </p>
-                <p style="color: #999; font-size: 14px;">
-                    Contacta con el administrador para que te asigne grupos y materias
+    {% if sin_cuatrimestre %}
+        <div class="no-cuatrimestre-message">
+            <div style="text-align: center; padding: 60px;">
+                <span class="mdi mdi-calendar-remove" style="font-size: 64px; color: #94a3b8;"></span>
+                <h3 style="color: #333; margin-top: 20px;">No hay cuatrimestre activo</h3>
+                <p style="color: #666; margin-top: 10px; max-width: 400px; margin-left: auto; margin-right: auto;">
+                    {{ mensaje }}. Contacta al director para que active un cuatrimestre.
                 </p>
             </div>
         </div>
-        {% endfor %}
-    </div>
+    {% else %}
+        <div class="groups-grid">
+            {% for grupo in grupos %}
+            <div class="group-card" 
+                data-group-id="{{ grupo.grupo_id }}" 
+                data-materia="{{ grupo.materias.0.nombre }}" 
+                data-clave="{{ grupo.clave }}"
+                data-alumnos="{{ grupo.alumnos_json }}"
+                data-materias='{{ grupo.materias_json }}'>
+                <div class="group-header">
+                    <div class="group-header-main">
+                        {% if grupo.materias %}
+                            <span class="materia-principal">{{ grupo.materias.0.nombre }}</span>
+                            <span class="group-separator">|</span>
+                            <span class="group-clave">{{ grupo.clave }}</span>
+                        {% else %}
+                            <span class="materia-principal">Sin materia</span>
+                            <span class="group-separator">|</span>
+                            <span class="group-clave">{{ grupo.clave }}</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="group-meta">
+                        <span class="mdi mdi-account-multiple"></span>
+                        <span>{{ grupo.num_alumnos }} alumnos</span>
+                    </div>
+                </div>
+                
+                <div class="group-stats">
+                    <div class="stat-item promedio">
+                        <div class="stat-label">Promedio Grupal</div>
+                        <div class="stat-value">
+                            {% if grupo.promedio_grupal_valido %}
+                                {{ grupo.promedio_grupal|floatformat:1 }}
+                            {% else %}
+                                --
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                {% if grupo.alumnos_riesgo > 0 %}
+                    <div class="attention-btn">
+                        <span class="mdi mdi-alert"></span>
+                        <span>
+                            {{ grupo.alumnos_riesgo }} alumno{{ grupo.alumnos_riesgo|pluralize }} en riesgo
+                        </span>
+                    </div>
+                {% endif %}
+            </div>
+            {% empty %}
+            <div class="no-groups">
+                <div style="text-align: center; padding: 40px;">
+                    <span class="mdi mdi-book-open" style="font-size: 48px; color: #94a3b8;"></span>
+                    <p style="color: #666; font-size: 16px; margin-bottom: 10px; margin-top: 15px;">
+                        No tienes grupos asignados en el cuatrimestre actual
+                    </p>
+                    <p style="color: #999; font-size: 14px;">
+                        Contacta con el administrador para que te asigne grupos en este cuatrimestre
+                    </p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% endif %}
 </div>
 
 <!-- Vista de Todos los Alumnos -->
@@ -1401,13 +1519,38 @@
         let fechasOcupadas = [];
         let snackbarTimeout;
         
-        // Función para obtener HTML del estado
-        function getEstadoHTML(estado) {
-            const estadoStr = String(estado || '');
-            if (!estadoStr || estadoStr === 'null' || estadoStr === 'No asignado') {
-                return 'No asignado';
+        // Función para obtener HTML del estado (ahora con colores)
+        function getEstadoHTML(estado, estadoClase) {
+            if (!estado || estado === 'null' || estado === 'No asignado') {
+                return '<span class="estado-default">No asignado</span>';
             }
-            return estadoStr;
+            
+            let claseCSS = '';
+            let icono = '';
+            
+            switch(estado) {
+                case 'En Riesgo':
+                    claseCSS = 'estado-riesgo';
+                    icono = 'mdi-alert-circle';
+                    break;
+                case 'Requiere Atención':
+                    claseCSS = 'estado-atencion';
+                    icono = 'mdi-alert';
+                    break;
+                case 'Precaución':
+                    claseCSS = 'estado-precaución';
+                    icono = 'mdi-information';
+                    break;
+                case 'Estable':
+                    claseCSS = 'estado-estable';
+                    icono = 'mdi-check-circle';
+                    break;
+                default:
+                    claseCSS = 'estado-default';
+                    icono = 'mdi-circle';
+            }
+            
+            return `<span class="estado-badge ${claseCSS}"><span class="mdi ${icono}"></span> ${estado}</span>`;
         }
 
         // Función para mostrar snackbar
@@ -1468,10 +1611,13 @@
                     const row = document.createElement('tr');
                     row.className = 'clickable-row';
                     
+                    // Generar el HTML del estado con colores
+                    const estadoHTML = getEstadoHTML(alumno.estado, alumno.estado_clase);
+                    
                     row.innerHTML = `
                         <td>${alumno.nombre || 'No asignado'}</td>
                         <td>${alumno.matricula || 'No asignado'}</td>
-                        <td>${getEstadoHTML(alumno.estado)}</td>
+                        <td>${estadoHTML}</td>
                     `;
                     
                     // Evento para abrir perfil en nueva pestaña
@@ -2228,7 +2374,16 @@
             html += '<th></th>'; // Columna de alumnos
             
             parciales.forEach(parcial => {
-                html += `<th>Unidad ${parcial.numero}</th>`;
+                // Formatear fechas
+                const fechaInicio = parcial.fecha_inicio ? parcial.fecha_inicio : '--/--/----';
+                const fechaFin = parcial.fecha_fin ? parcial.fecha_fin : '--/--/----';
+                
+                html += `<th>
+                    <div class="unidad-header-content">
+                        <span class="unidad-numero">Unidad ${parcial.numero}</span>
+                        <span class="unidad-fechas">${fechaInicio} - ${fechaFin}</span>
+                    </div>
+                </th>`;
             });
             
             // Columna de Promedio
@@ -2265,7 +2420,6 @@
                 // Variables para calcular el promedio
                 let suma = 0;
                 let todasCompletas = true;
-                let celdasCalificaciones = [];
                 
                 // Columnas para cada parcial
                 parciales.forEach(parcial => {
@@ -2283,22 +2437,17 @@
                         }
                     }
                     
-                    celdasCalificaciones.push(`
-                        <td>
-                            <input type="text" class="calificacion-input" 
-                                value="${calificacionGuardada}"
-                                placeholder="0-${porcentajeMaximo}"
-                                data-alumno-id="${alumno.id}"
-                                data-parcial="${parcial.numero}"
-                                data-porcentaje-max="${porcentajeMaximo}"
-                                data-original-value="${calificacionGuardada}"
-                                oninput="window.validarInputCalificacion(this); window.actualizarPromedio(this);">
-                        </td>
-                    `);
+                    html += `<td>
+                        <input type="text" class="calificacion-input" 
+                            value="${calificacionGuardada}"
+                            placeholder="0-${porcentajeMaximo}"
+                            data-alumno-id="${alumno.id}"
+                            data-parcial="${parcial.numero}"
+                            data-porcentaje-max="${porcentajeMaximo}"
+                            data-original-value="${calificacionGuardada}"
+                            oninput="window.validarInputCalificacion(this); window.actualizarPromedio(this);">
+                    </td>`;
                 });
-                
-                // Agregar las celdas de calificaciones
-                html += celdasCalificaciones.join('');
                 
                 // Calcular promedio
                 let promedioTexto = '-';
@@ -2646,6 +2795,9 @@
                 // Restaurar botón
                 btnGuardar.innerHTML = textoOriginal;
                 btnGuardar.disabled = false;
+
+                // ACTUALIZAR EL PROMEDIO GRUPAL
+                actualizarPromedioGrupal();
             })
             .catch(error => {
                 console.error('Error:', error);
@@ -2654,6 +2806,46 @@
                 btnGuardar.disabled = false;
             });
         };
+
+        // Función para actualizar el promedio grupal y alumnos en riesgo
+        function actualizarPromedioGrupal() {
+            const grupoId = currentGrupoId;
+            
+            if (!grupoId) return;
+            
+            fetch(`/obtener-promedio-grupal/?grupo_id=${grupoId}`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Datos grupales actualizados:', data);
+                    
+                    // Actualizar todas las tarjetas que tengan este grupo
+                    document.querySelectorAll('.group-card').forEach(card => {
+                        if (card.getAttribute('data-group-id') == grupoId) {
+                            const promedioElement = card.querySelector('.stat-item.promedio .stat-value');
+                            const attentionBtn = card.querySelector('.attention-btn span:last-child');
+                            
+                            // Actualizar promedio
+                            if (data.valido) {
+                                promedioElement.textContent = data.promedio.toFixed(1);
+                            } else {
+                                promedioElement.textContent = '--';
+                            }
+                            
+                            // Actualizar alumnos en riesgo
+                            if (data.alumnos_riesgo > 0) {
+                                attentionBtn.textContent = `${data.alumnos_riesgo} alumno${data.alumnos_riesgo > 1 ? 's' : ''} en riesgo`;
+                                attentionBtn.parentElement.classList.remove('sin-riesgo');
+                            } else {
+                                attentionBtn.textContent = 'Sin alumnos en riesgo';
+                                attentionBtn.parentElement.classList.add('sin-riesgo');
+                            }
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error('Error al actualizar datos grupales:', error);
+                });
+        }
         
         // Abrir modal desde tarjeta de grupo
         document.querySelectorAll('.group-card').forEach(card => {

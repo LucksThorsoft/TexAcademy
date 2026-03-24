@@ -25,6 +25,7 @@ urlpatterns = [
     path('alumno/<int:alumno_id>/perfil/', views.perfil_alumno, name='perfil_alumno'),
     path('guardar-parciales/', views.guardar_parciales, name='guardar_parciales'),
     path('guardar-calificaciones/', views.guardar_calificaciones, name='guardar_calificaciones'),
+    path('obtener-promedio-grupal/', views.obtener_promedio_grupal, name='obtener_promedio_grupal'),
     path('obtener-calificaciones/', views.obtener_calificaciones, name='obtener_calificaciones'),
     path('cuatrimestre/nuevo/', views.new_cuatrimestre, name='new_cuatrimestre'),
     path('director/editar-docente/<int:docente_id>/', views.editar_docente, name='editar_docente'),
