@@ -169,12 +169,30 @@ class Comentario(models.Model):
 
 class Alerta(models.Model):
     alumno       = models.ForeignKey(Alumno, on_delete=models.CASCADE)
-    parcial      = models.ForeignKey('Parcial', on_delete=models.CASCADE, null=True, blank=True)  # NUEVO
+    parcial      = models.ForeignKey('Parcial', on_delete=models.CASCADE, null=True, blank=True)
     motivo       = models.TextField()
     nivel_riesgo = models.CharField(max_length=20)
     fecha        = models.DateField(auto_now_add=True)
     atendida     = models.BooleanField(default=False)
+    derivada     = models.BooleanField(default=False)      # NUEVO
+    derivada_a   = models.CharField(max_length=20, null=True, blank=True)  # NUEVO
 
+
+class SeguimientoAlerta(models.Model):
+    ACCIONES = [
+        ('cerrada',             'Cerrada'),
+        ('derivada_tutor',      'Derivada al Tutor'),
+        ('derivada_pedagogia',  'Derivada a Pedagogía'),
+        ('derivada_psicologia', 'Derivada a Psicología'),
+        ('derivada_direccion',  'Derivada a Dirección'),
+        ('comentario',          'Comentario'),
+    ]
+
+    alerta     = models.ForeignKey('Alerta', on_delete=models.CASCADE, related_name='seguimientos')
+    usuario    = models.ForeignKey('Usuario', on_delete=models.CASCADE)
+    accion     = models.CharField(max_length=30, choices=ACCIONES)  # ya tiene 30, suficiente
+    comentario = models.TextField()
+    fecha      = models.DateTimeField(auto_now_add=True)
 
 class Notificacion(models.Model):
     alerta = models.ForeignKey(Alerta, on_delete=models.CASCADE)
