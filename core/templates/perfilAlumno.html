@@ -917,131 +917,6 @@
             cursor: not-allowed;
         }
         
-        /* ===== ESTILOS PARA IMPRESIÓN/PDF ===== */
-        @media print {
-            body {
-                background: white;
-                padding: 0;
-                margin: 0.5in;
-                font-size: 12pt;
-            }
-            
-            .action-buttons {
-                display: none;
-            }
-            
-            .perfil-header {
-                box-shadow: none;
-                border: 1px solid #ccc;
-                padding: 20px;
-                margin-bottom: 20px;
-                break-inside: avoid;
-            }
-            
-            .perfil-avatar {
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-                width: 100px;
-                height: 100px;
-                font-size: 40px;
-            }
-            
-            .perfil-nombre {
-                font-size: 24pt;
-                margin-bottom: 5px;
-            }
-            
-            .stats-grid {
-                margin-bottom: 20px;
-                gap: 15px;
-            }
-            
-            .stat-card {
-                box-shadow: none;
-                border: 1px solid #ccc;
-                padding: 15px;
-                break-inside: avoid;
-            }
-            
-            .stat-value {
-                font-size: 28pt;
-            }
-            
-            .stat-value.small {
-                font-size: 18pt;
-            }
-            
-            .actividades-section,
-            .asistencia-section,
-            .comentarios-section {
-                box-shadow: none;
-                border: 1px solid #ccc;
-                margin-bottom: 20px;
-                break-inside: avoid;
-                page-break-inside: avoid;
-            }
-            
-            .actividad-card {
-                border: 1px solid #ccc;
-                box-shadow: none;
-                break-inside: avoid;
-                page-break-inside: avoid;
-            }
-            
-            .asistencia-stats-mini {
-                border: 1px solid #ccc;
-                break-inside: avoid;
-            }
-            
-            .asistencia-table th {
-                background: #f0f0f0;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-            }
-            
-            .estado-badge,
-            .status-badge,
-            .perfil-badge,
-            .materia-tag,
-            .comentario-tipo,
-            .calificacion-badge {
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-            }
-            
-            .comentario-card {
-                border: 1px solid #ccc;
-                break-inside: avoid;
-                page-break-inside: avoid;
-            }
-            
-            .section-title {
-                font-size: 16pt;
-                margin-bottom: 15px;
-            }
-            
-            h1, h2, h3, h4 {
-                page-break-after: avoid;
-            }
-            
-            table {
-                page-break-inside: auto;
-            }
-            
-            tr {
-                page-break-inside: avoid;
-                page-break-after: auto;
-            }
-            
-            thead {
-                display: table-header-group;
-            }
-            
-            tfoot {
-                display: table-footer-group;
-            }
-        }
-        
         /* ===== RESPONSIVE ===== */
         @media (max-width: 768px) {
             body {
@@ -1714,34 +1589,62 @@
                 });
             });
 
-            function descargarPDF() {
+            window.descargarPDF = function() {
                 const btn = event.target.closest('button');
                 const textoOriginal = btn.innerHTML;
                 btn.innerHTML = '<span class="mdi mdi-loading mdi-spin"></span> Generando PDF...';
                 btn.disabled = true;
                 
-                const opciones = {
-                    margin:        [0.5, 0.5, 0.5, 0.5],
-                    filename:      'perfil_{{ alumno.matricula }}.pdf',
-                    image:         { type: 'jpeg', quality: 0.98 },
-                    html2canvas:   { scale: 2, letterRendering: true, useCORS: true, logging: false },
-                    jsPDF:         { unit: 'in', format: 'a4', orientation: 'portrait' }
-                };
+                // Guardar el título original
+                const originalTitle = document.title;
+                document.title = 'Perfil_{{ alumno.matricula }}';
                 
-                const elemento = document.body;
+                // Forzar estilos de impresión
+                const style = document.createElement('style');
+                style.id = 'print-style';
+                style.textContent = `
+                    @media print {
+                        @page {
+                            size: A2 portrait;
+                            margin: 0;
+                        }
+                        
+                        body {
+                            background: #f5f7fb !important;
+                            margin: 0 !important;
+                            padding: 20px !important;
+                            -webkit-print-color-adjust: exact !important;
+                            print-color-adjust: exact !important;
+                        }
+                        
+                        .action-buttons {
+                            display: none !important;
+                        }
+                        
+                        .perfil-header, .stat-card, .actividades-section,
+                        .asistencia-section, .comentarios-section,
+                        .calificaciones-perfil-section, .alertas-perfil-section {
+                            break-inside: avoid !important;
+                            page-break-inside: avoid !important;
+                            box-shadow: none !important;
+                        }
+                    }
+                `;
+                document.head.appendChild(style);
                 
-                html2pdf().set(opciones).from(elemento).save()
-                    .then(() => {
+                // Pequeño retraso para que se apliquen los estilos
+                setTimeout(() => {
+                    window.print();
+                    
+                    // Restaurar después de la impresión
+                    setTimeout(() => {
+                        document.title = originalTitle;
+                        document.head.removeChild(style);
                         btn.innerHTML = textoOriginal;
                         btn.disabled = false;
-                    })
-                    .catch(error => {
-                        console.error('Error al generar PDF:', error);
-                        btn.innerHTML = textoOriginal;
-                        btn.disabled = false;
-                        alert('Error al generar el PDF. Por favor intenta de nuevo.');
-                    });
-            }
+                    }, 1000);
+                }, 100);
+            };
 
             // Actualizar estado inicial
             actualizarEstadoAlumno();

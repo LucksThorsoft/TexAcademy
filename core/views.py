@@ -37,9 +37,24 @@ def gruposAlumnos(request):
         # Obtener el usuario
         usuario = Usuario.objects.get(id=usuario_id)
         
+        # Obtener el cuatrimestre activo
+        cuatrimestre_activo = Cuatrimestre.objects.filter(activo=True).first()
+        
+        # Si no hay cuatrimestre activo, mostrar mensaje
+        if not cuatrimestre_activo:
+            context = {
+                'grupos': [],
+                'docente_nombre': usuario.nombre,
+                'sin_cuatrimestre': True,
+                'mensaje': 'No hay un cuatrimestre activo en el sistema'
+            }
+            return render(request, "gruposAlumnos.html", context)
+        
         # Obtener todas las materias que imparte este docente por grupo
+        # FILTRADAS por el cuatrimestre activo
         grupos_docente = GrupoDocenteMateria.objects.filter(
-            docente=usuario
+            docente=usuario,
+            grupo__cuatrimestre=cuatrimestre_activo  # Filtro por cuatrimestre activo
         ).select_related('grupo', 'materia').order_by('grupo__clave', 'materia__nombre')
         
         # Estructura para agrupar materias por grupo
@@ -63,7 +78,6 @@ def gruposAlumnos(request):
                 # Función para extraer el número de la matrícula
                 def extract_matricula_number(matricula):
                     try:
-                        # Extraer solo los dígitos de la matrícula
                         numbers = re.findall(r'\d+', matricula)
                         if numbers:
                             return int(numbers[0])
@@ -80,6 +94,9 @@ def gruposAlumnos(request):
                 # Crear lista de alumnos con sus datos
                 alumnos_data = []
                 for alumno in alumnos_list:
+                    # Obtener el estado del alumno usando la función unificada
+                    estado_texto, estado_clase, en_riesgo = determinar_estado_alumno(alumno, usuario)
+                    
                     # Obtener comentarios del alumno
                     comentarios_alumno = Comentario.objects.filter(
                         alumno=alumno
@@ -100,20 +117,23 @@ def gruposAlumnos(request):
                         'nombre': alumno.nombre,
                         'matricula': alumno.matricula,
                         'grupo': grupo.clave,
-                        'promedio': None,
-                        'asistencia': None,
-                        'estado': None,
+                        'estado': estado_texto,
+                        'estado_clase': estado_clase,
+                        'en_riesgo': en_riesgo,
                         'comentarios': comentarios_data,
                     })
                 
                 # Inicializar el grupo con una lista vacía de materias
                 grupos_dict[grupo.clave] = {
                     'clave': grupo.clave,
-                    'materias': [],  # Lista vacía que se llenará después
+                    'materias': [],
                     'num_alumnos': num_alumnos,
                     'grupo_id': grupo.id,
                     'alumnos': alumnos_data,
                     'alumnos_json': json.dumps(alumnos_data, ensure_ascii=False),
+                    'promedio_grupal': None,
+                    'promedio_grupal_valido': False,
+                    'alumnos_riesgo': 0,
                 }
             
             # Verificar si esta materia ya tiene parciales configurados
@@ -128,8 +148,8 @@ def gruposAlumnos(request):
                         'numero': parcial.numero_parcial,
                         'nombre': parcial.nombre,
                         'porcentaje': parcial.porcentaje,
-                        'fecha_inicio': parcial.fecha_inicio.strftime('%Y-%m-%d'),
-                        'fecha_fin': parcial.fecha_cierre.strftime('%Y-%m-%d'),
+                        'fecha_inicio': parcial.fecha_inicio.strftime('%d/%m/%Y'),
+                        'fecha_fin': parcial.fecha_cierre.strftime('%d/%m/%Y'),
                     })
             
             # Agregar la materia con su información de parciales
@@ -141,6 +161,72 @@ def gruposAlumnos(request):
                 'parciales': parciales_data,
             })
         
+        # Calcular promedios grupales y alumnos en riesgo para cada grupo
+        for clave, grupo_data in grupos_dict.items():
+            grupo_id = grupo_data['grupo_id']
+            alumnos_grupo = Alumno.objects.filter(grupo_id=grupo_id)
+            
+            if alumnos_grupo.exists():
+                suma_promedios = 0
+                alumnos_con_promedio = 0
+                alumnos_en_riesgo = 0
+                
+                for alumno in alumnos_grupo:
+                    # Obtener el estado actualizado del alumno
+                    estado_texto, estado_clase, en_riesgo = determinar_estado_alumno(alumno, usuario)
+                    
+                    # Actualizar los datos del alumno
+                    alumno_data = next((a for a in grupo_data['alumnos'] if a['id'] == alumno.id), None)
+                    if alumno_data:
+                        alumno_data['estado'] = estado_texto
+                        alumno_data['estado_clase'] = estado_clase
+                        alumno_data['en_riesgo'] = en_riesgo
+                    
+                    if en_riesgo:
+                        alumnos_en_riesgo += 1
+                    
+                    # Obtener calificaciones para el promedio grupal
+                    calificaciones = CalificacionParcial.objects.filter(
+                        alumno=alumno,
+                        parcial__grupo_docente_materia__docente=usuario,
+                        parcial__grupo_docente_materia__grupo_id=grupo_id
+                    )
+                    
+                    if calificaciones.exists():
+                        suma_califs = sum(c.calificacion for c in calificaciones if c.calificacion is not None)
+                        total_califs = calificaciones.count()
+                        
+                        parciales_totales = Parcial.objects.filter(
+                            grupo_docente_materia__docente=usuario,
+                            grupo_docente_materia__grupo_id=grupo_id
+                        ).count()
+                        
+                        if total_califs == parciales_totales and total_califs > 0:
+                            def redondear(valor):
+                                entero = int(valor)
+                                ultimo_digito = entero % 10
+                                if ultimo_digito == 0:
+                                    return entero
+                                elif ultimo_digito <= 4:
+                                    return entero - ultimo_digito
+                                else:
+                                    return entero + (10 - ultimo_digito)
+                            
+                            suma_redondeada = redondear(suma_califs)
+                            promedio_final = suma_redondeada / 10
+                            suma_promedios += promedio_final
+                            alumnos_con_promedio += 1
+                
+                # Calcular promedio grupal
+                if alumnos_con_promedio > 0 and alumnos_con_promedio == alumnos_grupo.count():
+                    grupo_data['promedio_grupal'] = round(suma_promedios / alumnos_con_promedio, 1)
+                    grupo_data['promedio_grupal_valido'] = True
+                
+                # Guardar alumnos en riesgo
+                grupo_data['alumnos_riesgo'] = alumnos_en_riesgo
+                # Actualizar el JSON de alumnos con los estados actualizados
+                grupo_data['alumnos_json'] = json.dumps(grupo_data['alumnos'], ensure_ascii=False)
+        
         # Convertir el diccionario a lista y agregar materias_json a cada grupo
         grupos_data = []
         for clave, grupo_data in grupos_dict.items():
@@ -149,7 +235,9 @@ def gruposAlumnos(request):
         
         context = {
             'grupos': grupos_data,
-            'docente_nombre': usuario.nombre
+            'docente_nombre': usuario.nombre,
+            'cuatrimestre_activo': cuatrimestre_activo.nombre if cuatrimestre_activo else None,
+            'sin_cuatrimestre': False,
         }
         
     except Usuario.DoesNotExist:
@@ -333,8 +421,135 @@ def guardar_calificaciones(request):
             return JsonResponse({'error': str(e)}, status=500)
  
     return JsonResponse({'error': 'Método no permitido'}, status=405)
- 
- 
+
+def obtener_promedio_grupal(request):
+    """Endpoint para obtener el promedio grupal y alumnos en riesgo"""
+    if request.method == 'GET':
+        grupo_id = request.GET.get('grupo_id')
+        docente_id = request.session.get('usuario_id')
+        
+        if not grupo_id or not docente_id:
+            return JsonResponse({'error': 'Faltan parámetros'}, status=400)
+        
+        try:
+            grupo = Grupo.objects.get(id=grupo_id)
+            docente = Usuario.objects.get(id=docente_id)
+            
+            alumnos = Alumno.objects.filter(grupo=grupo)
+            
+            if not alumnos.exists():
+                return JsonResponse({
+                    'promedio': None,
+                    'valido': False,
+                    'alumnos_riesgo': 0,
+                    'mensaje': 'No hay alumnos en el grupo'
+                })
+            
+            suma_promedios = 0
+            alumnos_con_promedio = 0
+            alumnos_en_riesgo = 0
+            
+            for alumno in alumnos:
+                # Usar la función auxiliar para determinar si está en riesgo
+                _, _, en_riesgo = determinar_estado_alumno(alumno, docente)
+                
+                if en_riesgo:
+                    alumnos_en_riesgo += 1
+                
+                # Calcular promedio para el promedio grupal (igual que antes)
+                calificaciones = CalificacionParcial.objects.filter(
+                    alumno=alumno,
+                    parcial__grupo_docente_materia__docente=docente,
+                    parcial__grupo_docente_materia__grupo=grupo
+                )
+                
+                if calificaciones.exists():
+                    suma_califs = sum(c.calificacion for c in calificaciones if c.calificacion is not None)
+                    total_califs = calificaciones.count()
+                    
+                    parciales_totales = Parcial.objects.filter(
+                        grupo_docente_materia__docente=docente,
+                        grupo_docente_materia__grupo=grupo
+                    ).count()
+                    
+                    if total_califs == parciales_totales and total_califs > 0:
+                        def redondear(valor):
+                            entero = int(valor)
+                            ultimo_digito = entero % 10
+                            if ultimo_digito == 0:
+                                return entero
+                            elif ultimo_digito <= 4:
+                                return entero - ultimo_digito
+                            else:
+                                return entero + (10 - ultimo_digito)
+                        
+                        suma_redondeada = redondear(suma_califs)
+                        promedio_final = suma_redondeada / 10
+                        suma_promedios += promedio_final
+                        alumnos_con_promedio += 1
+            
+            if alumnos_con_promedio > 0 and alumnos_con_promedio == alumnos.count():
+                promedio_grupal = round(suma_promedios / alumnos_con_promedio, 1)
+                return JsonResponse({
+                    'promedio': promedio_grupal,
+                    'valido': True,
+                    'alumnos_riesgo': alumnos_en_riesgo,
+                    'mensaje': 'Datos actualizados correctamente'
+                })
+            else:
+                return JsonResponse({
+                    'promedio': None,
+                    'valido': False,
+                    'alumnos_riesgo': alumnos_en_riesgo,
+                    'mensaje': 'Faltan calificaciones de algunos alumnos'
+                })
+                
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    
+    return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+def determinar_estado_alumno(alumno, docente):
+    """
+    Determina el estado de un alumno basado ÚNICAMENTE en sus alertas existentes
+    Retorna: (estado_texto, estado_clase, en_riesgo_boolean)
+    """
+    # Obtener las materias que este docente imparte en el grupo del alumno
+    materias_docente = GrupoDocenteMateria.objects.filter(
+        grupo=alumno.grupo,
+        docente=docente
+    )
+    
+    # Si el docente no tiene materias en este grupo, el alumno no tiene estado relevante
+    if not materias_docente.exists():
+        return ("Sin información", "status-info", False)
+    
+    # Obtener los parciales de las materias del docente
+    parciales_ids = Parcial.objects.filter(
+        grupo_docente_materia__in=materias_docente
+    ).values_list('id', flat=True)
+    
+    # Obtener alertas NO ATENDIDAS del alumno en estas materias
+    alertas = Alerta.objects.filter(
+        alumno=alumno,
+        atendida=False,
+        parcial__id__in=parciales_ids
+    )
+    
+    # Si no hay alertas, el alumno está estable
+    if not alertas.exists():
+        return ("Estable", "status-good", False)
+    
+    # Determinar el nivel MÁS ALTO de alerta
+    if alertas.filter(nivel_riesgo='Alto').exists():
+        return ("En Riesgo", "status-danger", True)
+    elif alertas.filter(nivel_riesgo='Medio').exists():
+        return ("Requiere Atención", "status-warning", False)
+    elif alertas.filter(nivel_riesgo='Bajo').exists():
+        return ("Precaución", "status-info", False)
+    
+    # Fallback (no debería ocurrir)
+    return ("Estable", "status-good", False)
 
 def obtener_calificaciones(request):
     """Endpoint para obtener las calificaciones de una materia"""
@@ -389,6 +604,9 @@ def perfil_alumno(request, alumno_id):
     # Obtener el docente actual
     docente_id = request.session.get('usuario_id')
     docente = get_object_or_404(Usuario, id=docente_id)
+
+    # USAR LA FUNCIÓN UNIFICADA PARA DETERMINAR EL ESTADO
+    estado_texto, estado_clase, en_riesgo = determinar_estado_alumno(alumno, docente)
     
     # Obtener las materias que este docente imparte en el grupo del alumno
     materias_docente = GrupoDocenteMateria.objects.filter(
@@ -594,24 +812,6 @@ def perfil_alumno(request, alumno_id):
         '-fecha'
     )
     
-    # Determinar el estado del alumno basado en las alertas
-    estado_alumno = "Estable"  # Por defecto
-    estado_clase = "status-good"  # Clase CSS por defecto
-    
-    if alertas.exists():
-        # Verificar si hay alertas de nivel Alto
-        if alertas.filter(nivel_riesgo='Alto').exists():
-            estado_alumno = "En Riesgo"
-            estado_clase = "status-danger"
-        # Verificar si hay alertas de nivel Medio
-        elif alertas.filter(nivel_riesgo='Medio').exists():
-            estado_alumno = "Requiere Atención"
-            estado_clase = "status-warning"
-        # Si solo hay alertas Bajas
-        elif alertas.filter(nivel_riesgo='Bajo').exists():
-            estado_alumno = "Precaución"
-            estado_clase = "status-info"  # Podríamos definir un color azul/informativo
-    
     # Procesar alertas para el template
     alertas_data = []
     for alerta in alertas:
@@ -674,7 +874,7 @@ def perfil_alumno(request, alumno_id):
         'alertas_alto': sum(1 for a in alertas_data if a['nivel_riesgo'] == 'Alto'),
         'alertas_medio': sum(1 for a in alertas_data if a['nivel_riesgo'] == 'Medio'),
         'alertas_bajo': sum(1 for a in alertas_data if a['nivel_riesgo'] == 'Bajo'),
-        'estado_alumno': estado_alumno,
+        'estado_alumno': estado_texto,
         'estado_clase': estado_clase,
         'cuatrimestre_valido': cuatrimestre_valido,
     }
@@ -1512,7 +1712,7 @@ def obtener_materias_por_grupo(request):
 
     return JsonResponse({'error': 'Método no permitido'}, status=405)
 
-def _generar_alertas_alumno(alumno, parcial, gdm, calificacion):
+def _generar_alertas_alumno(alumno, parcial, gdm, calificacion):    
     motivos    = []
     calif_baja = False
     asist_baja = False
