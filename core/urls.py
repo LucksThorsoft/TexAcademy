@@ -19,11 +19,26 @@ urlpatterns = [
     path('obtener-alumnos-por-grupo/', views.obtener_alumnos_por_grupo, name='obtener_alumnos_por_grupo'),
     path('guardar-asistencia/', views.guardar_asistencia, name='guardar_asistencia'),
     path('obtener-historial-asistencia/', views.obtener_historial_asistencia, name='obtener_historial_asistencia'),
-    path('detalle-actividad/<int:id>/', views.detalleActividad, name='detalle_actividad'),
-    path('guardar-entregas/', views.guardar_entregas, name='guardar_entregas'),
-    path('new-user/', views.new_user, name='new_user'),
-    
-    # 👇 AGREGAR ESTAS NUEVAS URLs 👇
-    path('new-group/', views.new_group, name='new_group'),  # Para crear grupo
-    path('new-materia/', views.new_materia, name='new_materia'),  # Para asignar materia a grupo
+    path('guardar-comentario/', views.guardar_comentario, name='guardar_comentario'),
+    path('alumno/<int:alumno_id>/perfil/', views.perfil_alumno, name='perfil_alumno'),
+    path('guardar-parciales/', views.guardar_parciales, name='guardar_parciales'),
+    path('guardar-calificaciones/', views.guardar_calificaciones, name='guardar_calificaciones'),
+    path('obtener-promedio-grupal/', views.obtener_promedio_grupal, name='obtener_promedio_grupal'),
+    path('obtener-calificaciones/', views.obtener_calificaciones, name='obtener_calificaciones'),
+    path('cuatrimestre/nuevo/', views.new_cuatrimestre, name='new_cuatrimestre'),
+    path('director/editar-docente/<int:docente_id>/', views.editar_docente, name='editar_docente'),
+    path('asistencia/', views.asistencia, name='asistencia'),
+    path('obtener-alertas-grupo/', views.obtener_alertas_grupo, name='obtener_alertas_grupo'),
+    path('marcar-alerta-atendida/', views.marcar_alerta_atendida, name='marcar_alerta_atendida'),
+    path('cerrar-alerta-tutor/', views.cerrar_alerta_tutor, name='cerrar_alerta_tutor'),
+    path('derivar-alerta/', views.derivar_alerta, name='derivar_alerta'),
+    path('cerrar-alerta-pedagogia/', views.cerrar_alerta_pedagogia, name='cerrar_alerta_pedagogia'),
+    path('derivar-alerta-pedagogia/', views.derivar_alerta_pedagogia, name='derivar_alerta_pedagogia'),
+    path('cerrar-alerta-psicologia/', views.cerrar_alerta_psicologia, name='cerrar_alerta_psicologia'),
+    path('derivar-alerta-psicologia/', views.derivar_alerta_psicologia, name='derivar_alerta_psicologia'),
+    path('psicologia', views.psicologia, name='psicologia'),
+    path('director/alertas/',            views.director_alertas_view,           name='director_alertas'),
+    path('director/alertas/direccion/',  views.director_alertas_direccion_view, name='director_alertas_direccion'),
+    path('cerrar-alerta-direccion/',     views.cerrar_alerta_direccion,         name='cerrar_alerta_direccion'),
+    path('derivar-alerta-direccion/',    views.derivar_alerta_direccion,        name='derivar_alerta_direccion'),
 ]
