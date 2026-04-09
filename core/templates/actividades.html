@@ -15,6 +15,8 @@
         justify-content: space-between;
         align-items: center;
         margin-bottom: 20px;
+        flex-wrap: wrap;
+        gap: 15px;
     }
 
     .header-text {
@@ -33,6 +35,11 @@
         color: #000000;
         line-height: 1.4;
         letter-spacing: -0.01em;
+    }
+
+    .actions-buttons {
+        display: flex;
+        gap: 12px;
     }
 
     .activities-container {
@@ -86,13 +93,13 @@
     }
 
     .activity-status.closed {
-        background: #6b7280;
+        background: #dadfea;
         color: #ffffff;
     }
 
     .activity-status.vencida {
-        background: #ef4444;
-        color: #ffffff;
+        background: #dadfea;
+        color: #1e293b;
     }
 
     .activity-description {
@@ -204,6 +211,11 @@
         overflow-y: auto;
     }
 
+    .modal-content.report-modal {
+        max-width: 1200px;
+        width: 95%;
+    }
+
     .modal-close-btn {
         position: absolute;
         top: 16px;
@@ -284,6 +296,8 @@
         border: 1px solid #e5e7eb;
         border-radius: 12px;
         overflow: hidden;
+        max-height: 300px;
+        overflow-y: auto;
     }
 
     .student-item {
@@ -473,6 +487,15 @@
         opacity: 0.7;
     }
 
+    .btn-report {
+        background-color: #059669;
+        color: white;
+    }
+
+    .btn-report:hover {
+        background-color: #047857;
+    }
+
     .add-activity-btn {
         display: flex;
         align-items: center;
@@ -486,7 +509,6 @@
         font-size: 15px;
         font-weight: 500;
         cursor: pointer;
-        margin-bottom: 20px;
         transition: background 0.2s;
     }
 
@@ -505,6 +527,152 @@
         display: flex;
         align-items: center;
         gap: 8px;
+    }
+
+    /* Estilos para el reporte - Versión optimizada */
+    .report-section {
+        margin-bottom: 30px;
+    }
+
+    .report-section h3 {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #e5e7eb;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+
+    .stat-card {
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+        border: 1px solid #e6e9f0;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .stat-number {
+        font-size: 32px;
+        font-weight: 700;
+        margin-bottom: 5px;
+        color: #1f2937;
+    }
+
+    .stat-label {
+        font-size: 13px;
+        color: #6b7280;
+        font-weight: 500;
+    }
+
+    /* Colores específicos para cada tarjeta */
+    .stat-card.total .stat-number { color: #1e40af; }
+    .stat-card.promedio .stat-number { color: #d97706; }
+    .stat-card.activas .stat-number { color: #0891b2; }
+    .stat-card.vencidas .stat-number { color: #dc2626; }
+
+    .charts-container {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 25px;
+        margin-bottom: 30px;
+    }
+
+    .chart-box {
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 20px;
+        border: 1px solid #e6e9f0;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+
+    .chart-box h4 {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 15px;
+        text-align: center;
+    }
+
+    .chart-box canvas {
+        max-height: 250px;
+    }
+
+    .activities-table {
+        overflow-x: auto;
+    }
+
+    .activities-table table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .activities-table th,
+    .activities-table td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .activities-table th {
+        background: #f8fafc;
+        font-weight: 600;
+        color: #1f2937;
+    }
+
+    .activities-table tr:hover {
+        background: #f8fafc;
+    }
+
+    .progress-bar-mini {
+        width: 100px;
+        height: 6px;
+        background: #e5e7eb;
+        border-radius: 3px;
+        overflow: hidden;
+        display: inline-block;
+        margin-left: 8px;
+    }
+
+    .progress-fill-mini {
+        height: 100%;
+        background: #1e40af;
+        border-radius: 3px;
+    }
+
+    .status-badge {
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .status-badge.active {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .status-badge.closed {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .status-badge.vencida {
+        background: #fee2e2;
+        color: #991b1b;
     }
 
     .toast-message {
@@ -532,6 +700,26 @@
             opacity: 1;
         }
     }
+
+    @media (max-width: 768px) {
+        .activities-container {
+            grid-template-columns: 1fr;
+        }
+        .charts-container {
+            grid-template-columns: 1fr;
+        }
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        .actions-buttons {
+            flex-direction: column;
+            width: 100%;
+        }
+        .add-activity-btn, .btn-report {
+            width: 100%;
+            justify-content: center;
+        }
+    }
 </style>
 
 <div class="header-actions">
@@ -540,14 +728,24 @@
         <p class="text-sm text-muted-foreground">Crea y administra actividades por materia</p>
     </div>
 
-    <button class="add-activity-btn" onclick="openActivityForm()" id="openFormBtn">
-        <svg class="plus-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none"
-            stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19" />
-            <line x1="5" y1="12" x2="19" y2="12" />
-        </svg>
-        Nueva Actividad
-    </button>
+    <div class="actions-buttons">
+        <button class="btn-report btn-primary-moderno" onclick="openReportModal()" style="background-color: #059669;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 12v3a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4v-3"></path>
+                <path d="M12 2v8"></path>
+                <path d="m9 7 3-3 3 3"></path>
+            </svg>
+            Ver Reporte de Estadísticas
+        </button>
+        <button class="add-activity-btn" onclick="openActivityForm()" id="openFormBtn">
+            <svg class="plus-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none"
+                stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            Nueva Actividad
+        </button>
+    </div>
 </div>
 
 <!-- Mensaje si no hay grupos con materias -->
@@ -568,17 +766,18 @@
         <div class="activity-header">
             <div class="activity-title">{{ actividad.titulo }}</div>
             <div class="activity-status 
-                {% if actividad.parcial.cerrado %}closed
-                {% elif actividad.fecha_entrega|date:'Y-m-d' < hoy %}vencida
-                {% endif %}">
-                {% if actividad.parcial.cerrado %}
-                Cerrado
-                {% elif actividad.fecha_entrega|date:'Y-m-d' < hoy %}
-                Vencida
-                {% else %}
-                {{ actividad.parcial.nombre }}
-                {% endif %}
-            </div>
+    {% if actividad.parcial.cerrado %}closed
+    {% elif actividad.fecha_entrega|date:'Y-m-d' < hoy %}vencida
+    {% else %}active
+    {% endif %}">
+    {% if actividad.parcial.cerrado %}
+    Cerrada
+    {% elif actividad.fecha_entrega|date:'Y-m-d' < hoy %}
+    Vencida
+    {% else %}
+    Activa  <!-- ✅ Ahora muestra "Activa" correctamente -->
+    {% endif %}
+</div>
         </div>
 
         <div class="activity-description">{{ actividad.descripcion|truncatechars:100 }}</div>
@@ -732,6 +931,43 @@
     </div>
 </div>
 
+<!-- Modal para reporte de estadísticas -->
+<div class="modal-overlay" id="reportModal">
+    <div class="modal-content report-modal">
+        <button type="button" class="modal-close-btn" onclick="closeReportModal()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 6 6 18"></path>
+                <path d="m6 6 12 12"></path>
+            </svg>
+        </button>
+
+        <h2 class="form-title">Reporte de Estadísticas</h2>
+        <p class="form-subtitle">Análisis general de actividades</p>
+
+        <div id="reportContent">
+            <div style="text-align: center; padding: 40px;">
+                <div class="loading-spinner"></div>
+                <p>Cargando estadísticas...</p>
+            </div>
+        </div>
+        
+        <div class="form-actions" style="margin-top:20px;">
+            <button type="button" class="btn btn-secondary" onclick="closeReportModal()">Cerrar</button>
+            <button type="button" class="btn-primary-moderno" onclick="exportReport()" style="background-color: #059669;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                Exportar Reporte
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
 {{ grupos_con_materias|json_script:"grupos-data" }}
 
 <script>
@@ -744,6 +980,7 @@ try {
 }
 
 var hoy = '{{ hoy }}';
+var charts = {}; // Para almacenar referencias a los gráficos
 
 function openActivityForm() {
     document.getElementById('activityModal').style.display = 'flex';
@@ -810,7 +1047,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             parcialNombre += ' (Cerrado)';
                         }
                     }
-                    option.textContent = materia.nombre + ' (' + parcialNombre + ')';
+                    option.textContent = materia.nombre;
                     materiaSelect.appendChild(option);
                 }
                 
@@ -930,9 +1167,333 @@ function saveEntregas() {
         });
 }
 
+// Función para abrir el reporte de estadísticas
+function openReportModal() {
+    document.getElementById('reportModal').style.display = 'flex';
+    loadStatistics();
+}
+
+function closeReportModal() {
+    document.getElementById('reportModal').style.display = 'none';
+    // Destruir gráficos al cerrar
+    for (var key in charts) {
+        if (charts[key]) {
+            charts[key].destroy();
+        }
+    }
+    charts = {};
+}
+
+// Cargar estadísticas desde el backend
+function loadStatistics() {
+    var reportContent = document.getElementById('reportContent');
+    reportContent.innerHTML = '<div style="text-align: center; padding: 40px;"><div class="loading-spinner"></div><p>Cargando estadísticas...</p></div>';
+    
+    fetch("/actividades/estadisticas/")
+        .then(function(response) {
+            if (!response.ok) {
+                throw new Error('Error al cargar estadísticas');
+            }
+            return response.json();
+        })
+        .then(function(data) {
+            renderReport(data);
+        })
+        .catch(function(error) {
+            reportContent.innerHTML = '<div class="alert-message" style="margin: 20px;">Error al cargar estadísticas: ' + error.message + '</div>';
+        });
+}
+
+// Renderizar el reporte completo (versión optimizada)
+function renderReport(data) {
+    var reportContent = document.getElementById('reportContent');
+    
+    var html = '';
+    
+    // Tarjetas de estadísticas generales (solo las esenciales)
+    html += '<div class="report-section">';
+    html += '<h3> Resumen General</h3>';
+    html += '<div class="stats-grid">';
+    html += '<div class="stat-card total"><div class="stat-number">' + data.total_actividades + '</div><div class="stat-label">Total Actividades</div></div>';
+    html += '<div class="stat-card promedio"><div class="stat-number">' + data.promedio_entregas + '%</div><div class="stat-label">Promedio de Entregas</div></div>';
+    html += '<div class="stat-card activas"><div class="stat-number">' + data.actividades_activas + '</div><div class="stat-label">Actividades Activas</div></div>';
+    html += '<div class="stat-card vencidas"><div class="stat-number">' + data.actividades_vencidas + '</div><div class="stat-label">Actividades Vencidas</div></div>';
+    html += '</div></div>';
+    
+    // Gráficas principales (solo 3: Estado, Rendimiento por Materia, Entregas a tiempo)
+    html += '<div class="charts-container">';
+    
+    // Gráfica de estado de actividades
+    html += '<div class="chart-box">';
+    html += '<h4>📊 Estado de Actividades</h4>';
+    html += '<canvas id="chartEstado"></canvas>';
+    html += '</div>';
+    
+    // Gráfica de rendimiento por materia
+    html += '<div class="chart-box">';
+    html += '<h4>📚 Rendimiento por Materia</h4>';
+    html += '<canvas id="chartMaterias"></canvas>';
+    html += '</div>';
+    
+    // Gráfica de entregas a tiempo vs tarde
+    html += '<div class="chart-box">';
+    html += '<h4>⏰ Entregas a Tiempo vs Tarde</h4>';
+    html += '<canvas id="chartTiempo"></canvas>';
+    html += '</div>';
+    
+    html += '</div>';
+    
+    // Tabla detallada de actividades (información individual)
+    html += '<div class="report-section">';
+    html += '<h3>📋 Detalle de Actividades</h3>';
+    html += '<div class="activities-table">';
+    html += '<table>';
+    html += '<thead><tr>';
+    html += '<th>Actividad</th>';
+    html += '<th>Materia</th>';
+    html += '<th>Grupo</th>';
+    html += '<th>Entregas</th>';
+    html += '<th>Progreso</th>';
+    html += '<th>Estado</th>';
+    html += '<th>Fecha Límite</th>';
+    html += '</tr></thead>';
+    html += '<tbody>';
+    
+    for (var i = 0; i < data.actividades_detalle.length; i++) {
+        var act = data.actividades_detalle[i];
+        var estadoClass = '';
+        var estadoText = '';
+        if (act.estado === 'activa') {
+            estadoClass = 'active';
+            estadoText = 'Activa';
+        } else if (act.estado === 'vencida') {
+            estadoClass = 'vencida';
+            estadoText = 'Vencida';
+        } else {
+            estadoClass = 'closed';
+            estadoText = 'Cerrada';
+        }
+        
+        html += '<tr>';
+        html += '<td>' + escapeHtml(act.titulo) + '</td>';
+        html += '<td>' + escapeHtml(act.materia) + '</td>';
+        html += '<td>' + escapeHtml(act.grupo) + '</td>';
+        html += '<td>' + act.entregadas + '/' + act.total_alumnos + '</td>';
+        html += '<td><div style="display: flex; align-items: center;"><span>' + act.porcentaje + '%</span><div class="progress-bar-mini"><div class="progress-fill-mini" style="width: ' + act.porcentaje + '%;"></div></div></div></td>';
+        html += '<td><span class="status-badge ' + estadoClass + '">' + estadoText + '</span></td>';
+        html += '<td>' + act.fecha_entrega + '</td>';
+        html += '</tr>';
+    }
+    
+    html += '</tbody></table>';
+    html += '</div></div>';
+    
+    reportContent.innerHTML = html;
+    
+    // Crear gráficos después de que el DOM esté actualizado
+    setTimeout(function() {
+        createCharts(data);
+    }, 100);
+}
+
+// Función para escapar HTML
+function escapeHtml(text) {
+    if (!text) return '';
+    var div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Crear gráficos optimizados (solo los necesarios)
+function createCharts(data) {
+    // Gráfica de estado de actividades (doughnut)
+    var ctxEstado = document.getElementById('chartEstado');
+    if (ctxEstado) {
+        if (charts.estado) charts.estado.destroy();
+        charts.estado = new Chart(ctxEstado, {
+            type: 'doughnut',
+            data: {
+                labels: ['Activas', 'Vencidas', 'Cerradas'],
+                datasets: [{
+                    data: [data.charts.estado_activas, data.charts.estado_vencidas, data.charts.estado_cerradas],
+                    backgroundColor: ['#10b981', '#f59e0b', '#6b7280'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: '#374151'
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    // Gráfica de rendimiento por materia (barra horizontal)
+    var ctxMaterias = document.getElementById('chartMaterias');
+    if (ctxMaterias && data.charts.materias_labels && data.charts.materias_labels.length > 0) {
+        if (charts.materias) charts.materias.destroy();
+        // Reemplazar la gráfica de materias con esta versión vertical
+// Versión de dona/multi-anillo para materias
+charts.materias = new Chart(ctxMaterias, {
+    type: 'doughnut',
+    data: {
+        labels: data.charts.materias_labels,
+        datasets: [{
+            data: data.charts.materias_data,
+            backgroundColor: [
+                '#059669', '#10b981', '#34d399', '#6ee7b7',
+                '#1e40af', '#3b82f6', '#60a5fa', '#93c5fd',
+                '#f59e0b', '#fbbf24', '#fcd34d', '#fde68a'
+            ],
+            borderWidth: 0,
+            cutout: '60%'
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+            legend: {
+                position: 'right',
+                labels: {
+                    boxWidth: 12,
+                    padding: 10,
+                    font: { size: 11 }
+                }
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        return context.label + ': ' + context.raw + '%';
+                    }
+                }
+            }
+        }
+    }
+});
+    } else if (ctxMaterias) {
+        var parentBox = document.getElementById('chartMaterias')?.parentElement;
+        if (parentBox) {
+            parentBox.innerHTML = '<div class="chart-box"><h4>📚 Rendimiento por Materia</h4><p style="text-align: center; color: #6b7280; padding: 20px;">No hay datos suficientes</p></div>';
+        }
+    }
+    
+    // Gráfica de entregas a tiempo vs tarde
+    var ctxTiempo = document.getElementById('chartTiempo');
+    if (ctxTiempo) {
+        if (charts.tiempo) charts.tiempo.destroy();
+        charts.tiempo = new Chart(ctxTiempo, {
+            type: 'pie',
+            data: {
+                labels: ['Entregas a Tiempo', 'Entregas Tarde', 'No Entregadas'],
+                datasets: [{
+                    data: [data.charts.tiempo_data.atiempo, data.charts.tiempo_data.tarde, data.charts.tiempo_data.no_entregadas],
+                    backgroundColor: ['#22c55e', '#f59e0b', '#ef4444'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: '#374151'
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                var total = data.charts.tiempo_data.atiempo + data.charts.tiempo_data.tarde + data.charts.tiempo_data.no_entregadas;
+                                var percentage = ((context.raw / total) * 100).toFixed(1);
+                                return context.label + ': ' + context.raw + ' (' + percentage + '%)';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+}
+
+// Exportar reporte como HTML
+function exportReport() {
+    var reportContent = document.getElementById('reportContent').cloneNode(true);
+    
+    // Crear un documento HTML para exportar
+    var exportHtml = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Reporte de Actividades - ${new Date().toLocaleDateString()}</title>
+        <style>
+            * { font-family: system-ui, -apple-system, sans-serif; }
+            body { padding: 40px; max-width: 1200px; margin: 0 auto; }
+            h1 { color: #1f2937; }
+            .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin: 20px 0; }
+            .stat-card { background: #ffffff; border-radius: 12px; padding: 20px; text-align: center; border: 1px solid #e6e9f0; }
+            .stat-number { font-size: 32px; font-weight: 700; }
+            .stat-card.total .stat-number { color: #1e40af; }
+            .stat-card.promedio .stat-number { color: #d97706; }
+            .stat-card.activas .stat-number { color: #0891b2; }
+            .stat-card.vencidas .stat-number { color: #dc2626; }
+            .charts-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; margin: 20px 0; }
+            .chart-box { background: #ffffff; border-radius: 12px; padding: 20px; border: 1px solid #e6e9f0; }
+            table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+            th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+            th { background: #f8fafc; }
+            .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; }
+            .status-badge.active { background: #dcfce7; color: #166534; }
+            .status-badge.vencida { background: #fee2e2; color: #991b1b; }
+            .status-badge.closed { background: #fef3c7; color: #92400e; }
+            .progress-bar-mini { width: 100px; height: 6px; background: #e5e7eb; border-radius: 3px; display: inline-block; margin-left: 8px; }
+            .progress-fill-mini { height: 100%; background: #1e40af; border-radius: 3px; }
+            .report-section { margin-bottom: 30px; }
+            .report-section h3 { border-bottom: 2px solid #e5e7eb; padding-bottom: 10px; }
+            @media print {
+                body { padding: 20px; }
+            }
+        </style>
+    </head>
+    <body>
+        <div style="text-align: center; margin-bottom: 30px;">
+            <h1>Reporte de Actividades</h1>
+            <p>Fecha de generación: ${new Date().toLocaleString()}</p>
+            <hr>
+        </div>
+        ${reportContent.innerHTML}
+        <div style="margin-top: 40px; text-align: center; font-size: 12px; color: #6b7280;">
+            Reporte generado automáticamente - Sistema de Gestión de Actividades
+        </div>
+    </body>
+    </html>
+    `;
+    
+    // Crear blob y descargar
+    var blob = new Blob([exportHtml], { type: 'text/html' });
+    var link = document.createElement('a');
+    var url = URL.createObjectURL(blob);
+    link.href = url;
+    link.download = `reporte_actividades_${new Date().toISOString().split('T')[0]}.html`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     var modalCreate = document.getElementById('activityModal');
     var modalDetail = document.getElementById('activityDetailModal');
+    var modalReport = document.getElementById('reportModal');
     var form = document.getElementById("activityForm");
 
     if (modalCreate) {
@@ -944,6 +1505,12 @@ document.addEventListener('DOMContentLoaded', function() {
     if (modalDetail) {
         modalDetail.addEventListener('click', function(event) {
             if (event.target === modalDetail) closeActivityDetail();
+        });
+    }
+
+    if (modalReport) {
+        modalReport.addEventListener('click', function(event) {
+            if (event.target === modalReport) closeReportModal();
         });
     }
 

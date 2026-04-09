@@ -6,16 +6,18 @@ urlpatterns = [
     path('logout/', views.logout_view, name='logout'),
     path('dashboard', views.dashboard),
     path('grupos-alumnos', views.gruposAlumnos),
-    path('actividades', views.actividades),
-    path('asistencia', views.asistencia, name='asistencia'),
+    path('actividades/', views.actividades),
+    path('actividades/<int:id>/detalle/', views.detalleActividad, name='detalle_actividad'),
+    path('guardar-entregas/', views.guardar_entregas),
     path('estadisticas', views.estadisticas),
     path('alertas', views.alertas),
     path('sidebar', views.sidebar),
-    path('director', views.director),
+    path('director', views.director, name='director'),
     path('tutor', views.tutor),
-    path('pedagogia', views.pedagogia),
-    
-    # API endpoints para AJAX
+    path('pedagogia', views.pedagogia, name='pedagogia'),
+    path('director/new_user', views.new_user, name='new_user'),
+    path("grupo/nuevo/", views.new_group, name="new_group"),
+    path('materia/nueva/', views.new_materia, name='new_materia'),
     path('obtener-alumnos-por-grupo/', views.obtener_alumnos_por_grupo, name='obtener_alumnos_por_grupo'),
     path('guardar-asistencia/', views.guardar_asistencia, name='guardar_asistencia'),
     path('obtener-historial-asistencia/', views.obtener_historial_asistencia, name='obtener_historial_asistencia'),
@@ -41,4 +43,22 @@ urlpatterns = [
     path('director/alertas/direccion/',  views.director_alertas_direccion_view, name='director_alertas_direccion'),
     path('cerrar-alerta-direccion/',     views.cerrar_alerta_direccion,         name='cerrar_alerta_direccion'),
     path('derivar-alerta-direccion/',    views.derivar_alerta_direccion,        name='derivar_alerta_direccion'),
+    path('actividades/estadisticas/', views.estadisticas_actividades, name='estadisticas_actividades'),
+    
+    path('guardar-asistencia/', views.guardar_asistencia, name='guardar_asistencia'),
+    path('obtener-historial-asistencia/', views.obtener_historial_asistencia, name='obtener_historial_asistencia'),
+    path('asistencia/', views.asistencia, name='asistencia'),
+
+    # ========== RUTAS DE QR ==========
+    path('api/login/', views.api_login, name='api_login'),
+    path('generar-qr/', views.generar_qr, name='generar_qr'),
+    path('ver_asistencias/', views.ver_asistencias, name='ver_asistencias'),
+    path('api/materias-por-grupo/<int:grupo_id>/', views.api_materias_por_grupo, name='api_materias_por_grupo'),
+    path('api/generar-qr/', views.api_generar_qr, name='api_generar_qr'),
+    path('api/validar-qr/', views.api_validar_qr, name='api_validar_qr'),
+    path('api/validar-qr-alumno/', views.api_validar_qr_alumno, name='api_validar_qr_alumno'),
+    path('api/registrar-asistencia-qr/', views.api_registrar_asistencia_qr, name='api_registrar_asistencia_qr'),
+    path('obtener-asistencias-por-grupo/', views.obtener_asistencias_por_grupo, name='obtener_asistencias_por_grupo'),
+    path('api/filtrar-asistencias/', views.api_filtrar_asistencias, name='api_filtrar_asistencias'),
+
 ]

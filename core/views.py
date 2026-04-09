@@ -17,6 +17,9 @@ from .models import *
 
 # Create your views here.
 
+def home(request):
+    return render(request, "home.html")
+
 def dashboard(request):
     return render(request, "dashboard.html")
 
@@ -238,113 +241,6 @@ def gruposAlumnos(request):
         return redirect('login')
     
     return render(request, "gruposAlumnos.html", context)
-
-def guardar_comentario(request):
-    """Endpoint AJAX para guardar comentarios de alumnos"""
-    if request.method == 'POST':
-        try:
-            data = json.loads(request.body)
-            alumno_id = data.get('alumno_id')
-            texto = data.get('texto')
-            docente_id = request.session.get('usuario_id')
-            
-            print(f"Guardando comentario - Alumno ID: {alumno_id}")
-            
-            # Validar datos requeridos
-            if not all([alumno_id, texto, docente_id]):
-                return JsonResponse({'error': 'Faltan datos requeridos'}, status=400)
-            
-            # Verificar que el alumno existe
-            try:
-                alumno = Alumno.objects.get(id=alumno_id)
-            except Alumno.DoesNotExist:
-                return JsonResponse({'error': 'Alumno no encontrado'}, status=404)
-            
-            # Verificar que el docente existe
-            try:
-                docente = Usuario.objects.get(id=docente_id)
-            except Usuario.DoesNotExist:
-                return JsonResponse({'error': 'Docente no encontrado'}, status=404)
-            
-            # Crear el comentario (tipo por defecto "General")
-            comentario = Comentario.objects.create(
-                alumno=alumno,
-                docente=docente,
-                tipo="General",  # Valor por defecto ya que no lo usas
-                texto=texto
-            )
-            
-            print(f"Comentario guardado con ID: {comentario.id}")
-            
-            return JsonResponse({
-                'success': True,
-                'message': 'Comentario guardado correctamente'
-            })
-            
-        except json.JSONDecodeError:
-            return JsonResponse({'error': 'Datos JSON inválidos'}, status=400)
-        except Exception as e:
-            print(f"Error inesperado: {str(e)}")
-            return JsonResponse({'error': str(e)}, status=500)
-    
-    return JsonResponse({'error': 'Método no permitido'}, status=405)
-
-def new_cuatrimestre(request):
-    if request.method == "POST":
-        fecha_inicio = request.POST.get("fecha_inicio")
-        fecha_fin = request.POST.get("fecha_fin")
-
-        # Generar nombre automático según el mes actual
-        hoy = date.today()
-        mes = hoy.month
-        anio = hoy.year
-
-        if 1 <= mes <= 4:
-            nombre = f"Enero-Abril {anio}"
-        elif 5 <= mes <= 8:
-            nombre = f"Mayo-Agosto {anio}"
-        else:
-            nombre = f"Septiembre-Diciembre {anio}"
-
-        # Desactivar cualquier cuatrimestre activo previo
-        Cuatrimestre.objects.filter(activo=True).update(activo=False)
-
-        Cuatrimestre.objects.create(
-            nombre=nombre,
-            fecha_inicio=fecha_inicio,
-            fecha_fin=fecha_fin,
-            activo=True
-        )
-        messages.success(request, f"Cuatrimestre '{nombre}' creado correctamente")
-
-    return redirect("director")
-
-def editar_docente(request, docente_id):
-    if not request.session.get('usuario_id'):
-        return redirect('login')
-
-    roles = request.session.get('usuario_roles', [])
-    if 'Director' not in roles:
-        return redirect('dashboard')
-
-    if request.method == 'POST':
-        try:
-            docente = Usuario.objects.get(id=docente_id)
-            docente.nombre = request.POST.get('nombre')
-            docente.correo = request.POST.get('correo')
-
-            nueva_password = request.POST.get('password')
-            if nueva_password:
-                docente.password = make_password(nueva_password)  # ← antes era texto plano
-
-            docente.save()
-            messages.success(request, 'Docente actualizado correctamente')
-        except Usuario.DoesNotExist:
-            messages.error(request, 'Docente no encontrado')
-
-    return redirect('director')
-
-
 
 @csrf_exempt
 def guardar_parciales(request):
@@ -1085,13 +981,6 @@ def actividades(request):
         
         grupos_con_materias = list(grupos_dict.values())
         
-        # DEBUG: Imprimir para verificar
-        print("="*50)
-        print("Datos enviados a la plantilla:")
-        import json
-        print(json.dumps(grupos_con_materias, indent=2, default=str))
-        print("="*50)
-        
         # Obtener actividades del docente con sus entregas
         actividades = Actividad.objects.filter(
             parcial__grupo_docente_materia__docente=usuario
@@ -1158,7 +1047,6 @@ def api_materias_por_grupo(request, grupo_id):
     except Exception as e:
         print(f"🔴 Error: {str(e)}")
         return JsonResponse({'error': str(e)}, status=500)
-
 
 @require_POST
 def api_generar_qr(request):
@@ -1237,7 +1125,6 @@ def api_generar_qr(request):
         print(f"🔴 Error: {str(e)}")
         return JsonResponse({'error': str(e)}, status=500)
 
-
 def generar_qr(request):
     """Vista principal para generar códigos QR"""
     print("🔵 Entrando a función generar_qr")
@@ -1276,7 +1163,6 @@ def generar_qr(request):
     except Exception as e:
         print(f"🔴 Error: {str(e)}")
         return redirect('dashboard')
-
 
 @require_POST
 def api_validar_qr(request):
@@ -1388,7 +1274,6 @@ def api_validar_qr(request):
         print(f"🔥 Error validando QR: {str(e)}")
         return JsonResponse({'error': str(e)}, status=500)
 
-
 @require_POST
 def api_registrar_asistencia_qr(request):
     """API para registrar la asistencia después de validar QR"""
@@ -1423,7 +1308,6 @@ def api_registrar_asistencia_qr(request):
         
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
-
 
 @csrf_exempt
 def api_login(request):
@@ -1471,7 +1355,6 @@ def api_login(request):
             return JsonResponse({'error': str(e)}, status=500)
     
     return JsonResponse({'error': 'Método no permitido'}, status=405)
-
 
 @csrf_exempt
 def api_registro_alumno(request):
@@ -1547,7 +1430,6 @@ def api_obtener_grupos(request):
             return JsonResponse({'error': str(e)}, status=500)
     
     return JsonResponse({'error': 'Método no permitido'}, status=405)
-
 
 @csrf_exempt
 def api_verificar_sesion(request):
@@ -1703,61 +1585,6 @@ def obtener_asistencias_por_grupo(request):
     
     return JsonResponse({'error': 'Método no permitido'}, status=405)
 
-
-def detalleActividad(request, id):
-    try:
-        actividad = Actividad.objects.select_related(
-            'parcial',
-            'parcial__grupo_docente_materia',
-            'parcial__grupo_docente_materia__grupo',
-            'parcial__grupo_docente_materia__materia'  # <-- IMPORTANTE: agregar materia
-        ).get(id=id)
-
-        grupo = actividad.parcial.grupo_docente_materia.grupo
-        materia = actividad.parcial.grupo_docente_materia.materia  # <-- Obtener materia
-        parcial = actividad.parcial  # <-- Obtener parcial
-        
-        alumnos = grupo.alumno_set.all().order_by('nombre')
-
-        lista_alumnos = []
-        entregadas = 0
-
-        for alumno in alumnos:
-            entrega, created = Entrega.objects.get_or_create(
-                actividad=actividad,
-                alumno=alumno,
-                defaults={'entregado': False}
-            )
-
-            if entrega.entregado:
-                entregadas += 1
-
-            lista_alumnos.append({
-                "id": entrega.id,
-                "nombre": alumno.nombre,
-                "matricula": alumno.matricula,
-                "entregado": entrega.entregado
-            })
-
-        data = {
-            "titulo": actividad.titulo,
-            "descripcion": actividad.descripcion,
-            "grupo": grupo.clave,
-            "materia": materia.nombre,  # <-- AGREGADO
-            "parcial": parcial.nombre,   # <-- AGREGADO
-            "fecha": actividad.fecha_entrega,
-            "entregadas": entregadas,
-            "total": alumnos.count(),
-            "alumnos": lista_alumnos
-        }
-
-        return JsonResponse(data)
-    
-    except Actividad.DoesNotExist:
-        return JsonResponse({"error": "Actividad no encontrada"}, status=404)
-    except Exception as e:
-        return JsonResponse({"error": str(e)}, status=500)
-
 @csrf_exempt
 def api_actividades_alumno(request):
     """API para obtener actividades pendientes de un alumno"""
@@ -1839,7 +1666,6 @@ def api_actividades_alumno(request):
     
     return JsonResponse({'error': 'Método no permitido'}, status=405)
 
-
 def ver_asistencias(request):
     """Vista para ver las asistencias registradas por QR"""
     # Verificar autenticación
@@ -1909,7 +1735,6 @@ def ver_asistencias(request):
         print(f"Error en ver_asistencias: {e}")
         return redirect('dashboard')
 
-
 @require_GET
 def api_filtrar_asistencias(request):
     """API para filtrar asistencias por grupo y fecha"""
@@ -1958,6 +1783,233 @@ def api_filtrar_asistencias(request):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
+# AQUI SE TERMINAN LAS VISTAS RELACIONADAS CON QR Y SE REGRESA A LAS VISTAS PRINCIPALES #
+
+def detalleActividad(request, id):
+    try:
+        # Verificar autenticación con sesión manual
+        if not request.session.get('usuario_id'):
+            return JsonResponse({"error": "No autorizado"}, status=401)
+        
+        actividad = Actividad.objects.select_related(
+            'parcial',
+            'parcial__grupo_docente_materia',
+            'parcial__grupo_docente_materia__grupo',
+            'parcial__grupo_docente_materia__materia'
+        ).get(id=id)
+        
+        # Verificar que la actividad pertenezca al docente de la sesión
+        if actividad.parcial.grupo_docente_materia.docente_id != request.session.get('usuario_id'):
+            return JsonResponse({"error": "No tienes permiso"}, status=403)
+
+        grupo = actividad.parcial.grupo_docente_materia.grupo
+        materia = actividad.parcial.grupo_docente_materia.materia
+        parcial = actividad.parcial
+        
+        alumnos = grupo.alumno_set.all().order_by('nombre')
+
+        lista_alumnos = []
+        entregadas = 0
+
+        for alumno in alumnos:
+            entrega, created = Entrega.objects.get_or_create(
+                actividad=actividad,
+                alumno=alumno,
+                defaults={'entregado': False}
+            )
+
+            if entrega.entregado:
+                entregadas += 1
+
+            lista_alumnos.append({
+                "id": entrega.id,
+                "nombre": alumno.nombre,
+                "matricula": alumno.matricula,
+                "entregado": entrega.entregado
+            })
+
+        data = {
+            "titulo": actividad.titulo,
+            "descripcion": actividad.descripcion,
+            "grupo": grupo.clave,
+            "materia": materia.nombre,
+            "parcial": parcial.nombre,
+            "fecha_entrega": actividad.fecha_entrega.strftime('%d/%m/%Y'),
+            "entregadas": entregadas,
+            "total": alumnos.count(),
+            "alumnos": lista_alumnos
+        }
+
+        return JsonResponse(data)
+    
+    except Actividad.DoesNotExist:
+        return JsonResponse({"error": "Actividad no encontrada"}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+def estadisticas_actividades(request):
+    """API para obtener estadísticas de actividades usando sesión manual"""
+    
+    # Verificar autenticación con sesión manual
+    if not request.session.get('usuario_id'):
+        return JsonResponse({'error': 'No autenticado'}, status=401)
+    
+    usuario_id = request.session.get('usuario_id')
+    
+    # Obtener el usuario
+    try:
+        usuario = Usuario.objects.get(id=usuario_id)
+    except Usuario.DoesNotExist:
+        return JsonResponse({'error': 'Usuario no encontrado'}, status=404)
+    
+    # Verificar si el usuario tiene rol de docente
+    tiene_rol_docente = UsuarioRol.objects.filter(usuario=usuario, rol__nombre='Docente').exists()
+    if not tiene_rol_docente:
+        return JsonResponse({'error': 'No tienes permisos de docente'}, status=403)
+    
+    hoy = timezone.now().date()
+    
+    # Obtener actividades del docente usando el ID de sesión
+    actividades = Actividad.objects.filter(
+        parcial__grupo_docente_materia__docente_id=usuario_id
+    ).select_related(
+        'parcial', 
+        'parcial__grupo_docente_materia', 
+        'parcial__grupo_docente_materia__materia', 
+        'parcial__grupo_docente_materia__grupo'
+    ).distinct()
+    
+    total_actividades = actividades.count()
+    
+    if total_actividades == 0:
+        return JsonResponse({
+            'total_actividades': 0,
+            'total_entregas': 0,
+            'promedio_entregas': 0,
+            'actividades_activas': 0,
+            'actividades_vencidas': 0,
+            'actividades_cerradas': 0,
+            'actividades_detalle': [],
+            'charts': {
+                'entregas_labels': [],
+                'entregas_data': [],
+                'estado_activas': 0,
+                'estado_vencidas': 0,
+                'estado_cerradas': 0,
+                'materias_labels': [],
+                'materias_data': [],
+                'tiempo_data': {'atiempo': 0, 'tarde': 0, 'no_entregadas': 0}
+            }
+        })
+    
+    # Procesar estadísticas
+    actividades_detalle = []
+    entregas_labels = []
+    entregas_data = []
+    
+    actividades_activas = 0
+    actividades_vencidas = 0
+    actividades_cerradas = 0
+    
+    total_entregas = 0
+    total_alumnos_sum = 0
+    
+    materias_stats = {}
+    entregas_completadas_total = 0
+    entregas_pendientes_total = 0
+    
+    for act in actividades:
+        # Obtener total de alumnos en el grupo
+        grupo = act.parcial.grupo_docente_materia.grupo
+        total_alumnos = Alumno.objects.filter(grupo=grupo).count()
+        
+        # Contar entregas completadas
+        entregas_count = Entrega.objects.filter(actividad=act, entregado=True).count()
+        
+        # Calcular porcentaje
+        porcentaje = (entregas_count / total_alumnos * 100) if total_alumnos > 0 else 0
+        
+        # Determinar estado de la actividad
+        if act.parcial.cerrado:
+            estado = 'cerrada'
+            actividades_cerradas += 1
+        elif act.fecha_entrega < hoy:
+            estado = 'vencida'
+            actividades_vencidas += 1
+        else:
+            estado = 'activa'
+            actividades_activas += 1
+        
+        entregas_completadas_total += entregas_count
+        entregas_pendientes_total += (total_alumnos - entregas_count)
+        
+        actividades_detalle.append({
+            'id': act.id,
+            'titulo': act.titulo,
+            'descripcion': act.descripcion,
+            'materia': act.parcial.grupo_docente_materia.materia.nombre,
+            'grupo': grupo.clave,
+            'entregadas': entregas_count,
+            'total_alumnos': total_alumnos,
+            'porcentaje': round(porcentaje, 1),
+            'estado': estado,
+            'fecha_entrega': act.fecha_entrega.strftime('%d/%m/%Y')
+        })
+        
+        titulo_corto = act.titulo[:25] + ('...' if len(act.titulo) > 25 else '')
+        entregas_labels.append(titulo_corto)
+        entregas_data.append(round(porcentaje, 1))
+        
+        total_entregas += entregas_count
+        total_alumnos_sum += total_alumnos
+        
+        materia_nombre = act.parcial.grupo_docente_materia.materia.nombre
+        if materia_nombre not in materias_stats:
+            materias_stats[materia_nombre] = {'total_porcentaje': 0, 'count': 0}
+        materias_stats[materia_nombre]['total_porcentaje'] += porcentaje
+        materias_stats[materia_nombre]['count'] += 1
+    
+    promedio_entregas = (total_entregas / total_alumnos_sum * 100) if total_alumnos_sum > 0 else 0
+    
+    materias_labels = list(materias_stats.keys())
+    materias_data = [round(stat['total_porcentaje'] / stat['count'], 1) for stat in materias_stats.values()]
+    
+    if len(materias_labels) > 10:
+        combined = list(zip(materias_labels, materias_data))
+        combined.sort(key=lambda x: x[1], reverse=True)
+        materias_labels = [x[0] for x in combined[:10]]
+        materias_data = [x[1] for x in combined[:10]]
+    
+    if len(entregas_labels) > 15:
+        combined = list(zip(entregas_labels, entregas_data))
+        combined.sort(key=lambda x: x[1], reverse=True)
+        entregas_labels = [x[0] for x in combined[:15]]
+        entregas_data = [x[1] for x in combined[:15]]
+    
+    return JsonResponse({
+        'total_actividades': total_actividades,
+        'total_entregas': total_entregas,
+        'promedio_entregas': round(promedio_entregas, 1),
+        'actividades_activas': actividades_activas,
+        'actividades_vencidas': actividades_vencidas,
+        'actividades_cerradas': actividades_cerradas,
+        'actividades_detalle': actividades_detalle,
+        'charts': {
+            'entregas_labels': entregas_labels,
+            'entregas_data': entregas_data,
+            'estado_activas': actividades_activas,
+            'estado_vencidas': actividades_vencidas,
+            'estado_cerradas': actividades_cerradas,
+            'materias_labels': materias_labels,
+            'materias_data': materias_data,
+            'tiempo_data': {
+                'atiempo': entregas_completadas_total,
+                'tarde': 0,
+                'no_entregadas': entregas_pendientes_total
+            }
+        }
+    })
+
 def guardar_entregas(request):
     if request.method == "POST":
         data = json.loads(request.body)
@@ -1971,144 +2023,6 @@ def guardar_entregas(request):
         return JsonResponse({"success": True})
 
     return JsonResponse({"error": "Método no permitido"}, status=405)
-
-def estadisticas(request):
-    return render(request, "estadisticas.html")
-
-def alertas(request):
-    return render(request, "alertas.html")
-
-def sidebar(request):
-    return render(request, "sidebar.html")
-
-def director(request):
-    if not request.session.get('usuario_id'):
-        return redirect('login')
-
-    roles = request.session.get('usuario_roles', [])
-    if 'Director' not in roles:
-        return redirect('dashboard')
-
-    form = DocenteForm()
-    grupo_form = GrupoForm()
-    materia_form = GrupoDocenteMateriaForm()
-
-    relaciones = GrupoDocenteMateria.objects.select_related(
-        'grupo', 'materia', 'docente'
-    ).order_by('grupo__clave', 'materia__nombre')
-
-    grupos_data = []
-
-    for rel in relaciones:
-        grupo = rel.grupo
-        num_alumnos = Alumno.objects.filter(grupo=grupo).count()
-
-        grupos_data.append({
-            'clave': grupo.clave,
-            'materia': rel.materia.nombre,
-            'docente': rel.docente.nombre,
-            'num_alumnos': num_alumnos,
-            'tutor': grupo.tutor.nombre if grupo.tutor else 'Sin tutor',
-        })
-
-    return render(request, "director.html", {
-        "form": form,
-        "grupo_form": grupo_form,
-        "materia_form": materia_form,
-        "grupos": grupos_data
-    })
-
-@require_POST
-def new_user(request):
-    if not request.session.get('usuario_id'):
-        return redirect('login')
-
-    roles = request.session.get('usuario_roles', [])
-    if 'Director' not in roles:
-        return redirect('dashboard')
-
-    form = DocenteForm(request.POST)
-
-    if form.is_valid():
-        usuario = form.save()
-
-        rol_docente, _ = Rol.objects.get_or_create(nombre="Docente")
-        UsuarioRol.objects.create(
-            usuario=usuario,
-            rol=rol_docente
-        )
-
-    return redirect('director')
-
-def tutor(request):
-    return render(request, "tutor.html")
-
-def pedagogia(request):
-    return render(request, "pedagogia.html")
-
-def login_view(request):
-    # --- PARTE 1: Redirección si ya está logueado ---
-    if request.session.get('usuario_id'):
-        # Obtenemos la lista de roles (si no existe, devolvemos lista vacía)
-        roles = request.session.get('usuario_roles', [])
-        
-        # Jerarquía de redirección (Prioridad)
-        if 'Director' in roles:
-            return redirect('/director')
-        elif 'Docente' in roles:
-            return redirect('/grupos-alumnos')
-        elif 'Tutor' in roles:
-            return redirect('/actividades')
-        elif 'Pedagogia' in roles:
-            return redirect('/pedagogia')
-        elif 'Psicologia' in roles:
-            return redirect('/psicologia')
-        else:
-            return redirect('/dashboard')
-
-    # --- PARTE 2: Login (POST) ---
-    if request.method == 'POST':
-        correo = request.POST.get('correo')
-        password = request.POST.get('password')
-
-        try:
-            usuario = Usuario.objects.get(correo=correo)
-            if check_password(password, usuario.password):
-                request.session['usuario_id'] = usuario.id
-                request.session['usuario_nombre'] = usuario.nombre
-
-                # --- CAMBIO IMPORTANTE: Obtener TODOS los roles ---
-                # Buscamos todas las coincidencias en la tabla intermedia
-                relaciones = UsuarioRol.objects.filter(usuario=usuario)
-                
-                # Creamos una lista de python con los nombres: ['Docente', 'Administrador']
-                lista_roles = [r.rol.nombre for r in relaciones]
-                
-                # Guardamos la lista en la sesión
-                request.session['usuario_roles'] = lista_roles
-
-                # --- Redirección basada en jerarquía ---
-                # Aunque tenga 3 roles, decidimos a dónde mandarlo por prioridad
-                if 'Director' in lista_roles:
-                    return redirect('/director')
-                elif 'Docente' in lista_roles:
-                    return redirect('/grupos-alumnos')
-                elif 'Tutor' in lista_roles:
-                    return redirect('/tutor')
-                elif 'Pedagogia' in lista_roles:
-                    return redirect('/pedagogia')
-                else:
-                    return redirect('/dashboard')
-            else:
-                 messages.error(request, 'Contraseña incorrecta.')
-        except Usuario.DoesNotExist:
-             messages.error(request, 'El correo no está registrado.')
-
-    return render(request, "login.html")
-
-def logout_view(request):
-    request.session.flush()
-    return redirect('login')
 
 def obtener_alumnos_por_grupo(request):
     """Endpoint AJAX para obtener los alumnos de un grupo específico"""
@@ -2242,6 +2156,540 @@ def obtener_historial_asistencia(request):
 
     return JsonResponse({'error': 'Método no permitido'}, status=405)
 
+def asistencia(request):
+    # Verificar si el usuario está autenticado
+    if not request.session.get('usuario_id'):
+        return redirect('login')
+    
+    # Obtener el usuario actual desde la sesión
+    usuario_id = request.session.get('usuario_id')
+    
+    try:
+        # Obtener el usuario
+        usuario = Usuario.objects.get(id=usuario_id)
+        
+        # Obtener todos los grupos donde este docente imparte alguna materia
+        grupos_docente = GrupoDocenteMateria.objects.filter(
+            docente=usuario
+        ).select_related('grupo', 'materia').values('grupo').distinct()
+        
+        # Obtener los IDs de los grupos
+        grupo_ids = [g['grupo'] for g in grupos_docente]
+        
+        # Obtener los grupos completos
+        grupos = Grupo.objects.filter(id__in=grupo_ids)
+        
+        # Preparar datos de grupos para el template
+        grupos_data = []
+        for grupo in grupos:
+            # Obtener los alumnos de este grupo
+            alumnos = Alumno.objects.filter(grupo=grupo).order_by('nombre')
+            
+            # Obtener materias que el docente imparte en este grupo
+            materias = GrupoDocenteMateria.objects.filter(
+                docente=usuario,
+                grupo=grupo
+            ).select_related('materia')
+            
+            materias_list = [{'id': m.materia.id, 'nombre': m.materia.nombre} for m in materias]
+            
+            grupos_data.append({
+                'id': grupo.id,
+                'clave': grupo.clave,
+                'alumnos': [{'id': a.id, 'nombre': a.nombre, 'matricula': a.matricula} for a in alumnos],
+                'materias': materias_list,
+                'total_alumnos': alumnos.count()
+            })
+        
+        # También obtener estados de asistencia disponibles
+        estados_asistencia = EstadoAsistencia.objects.all()
+        estados_data = [{'id': e.id, 'nombre': e.nombre} for e in estados_asistencia]
+        
+        context = {
+            'docente': usuario,
+            'grupos': grupos_data,
+            'estados_asistencia': estados_data
+        }
+        
+    except Usuario.DoesNotExist:
+        return redirect('login')
+    
+    return render(request, "asistencia.html", context)
+
+def estadisticas(request):
+    return render(request, "estadisticas.html")
+
+def alertas(request):
+    return render(request, "alertas.html")
+
+def sidebar(request):
+    return render(request, "sidebar.html")
+
+def director(request):
+    if not request.session.get('usuario_id'):
+        return redirect('login')
+
+    roles = request.session.get('usuario_roles', [])
+    if 'Director' not in roles:
+        return redirect('dashboard')
+
+    form = DocenteForm()
+    grupo_form = GrupoForm()
+    materia_form = GrupoDocenteMateriaForm()
+
+    cuatrimestre_activo = Cuatrimestre.objects.filter(activo=True).first()
+
+    # Cuatrimestres para el histórico
+    cuatrimestres_data = []
+    for c in Cuatrimestre.objects.order_by('-fecha_inicio'):
+        grupos_c = Grupo.objects.filter(cuatrimestre=c)
+        cuatrimestres_data.append({
+            'id': c.id,
+            'nombre': c.nombre,
+            'activo': c.activo,
+            'fecha_inicio': c.fecha_inicio,
+            'fecha_fin': c.fecha_fin,
+            'total_grupos': grupos_c.count(),
+            'total_alumnos': Alumno.objects.filter(grupo__in=grupos_c).count(),
+        })
+
+    # Solo grupos del cuatrimestre activo 👇
+    grupos_data = []
+    if cuatrimestre_activo:
+        relaciones = GrupoDocenteMateria.objects.filter(
+            grupo__cuatrimestre=cuatrimestre_activo
+        ).select_related('grupo', 'materia', 'docente').order_by('grupo__clave', 'materia__nombre')
+
+        for rel in relaciones:
+            grupo = rel.grupo
+            grupos_data.append({
+                'clave': grupo.clave,
+                'materia': rel.materia.nombre,
+                'docente': rel.docente.nombre,
+                'num_alumnos': Alumno.objects.filter(grupo=grupo).count(),
+                'tutor': grupo.tutor.nombre if grupo.tutor else 'Sin tutor',
+            })
+
+    # Docentes
+    rol_docente = Rol.objects.filter(nombre="Docente").first()
+    docentes_data = []
+    if rol_docente:
+        relaciones_docentes = UsuarioRol.objects.filter(rol=rol_docente).select_related('usuario')
+        for rel in relaciones_docentes:
+            u = rel.usuario
+            gdms = GrupoDocenteMateria.objects.filter(
+                docente=u
+            ).select_related('grupo', 'materia')
+            materias_grupos = [f"{g.materia.nombre} / {g.grupo.clave}" for g in gdms]
+            docentes_data.append({
+                'id': u.id,
+                'nombre': u.nombre,
+                'correo': u.correo,
+                'materias_grupos': materias_grupos,
+                'total_grupos': gdms.count(),
+            })
+
+    return render(request, "director.html", {
+        "form": form,
+        "grupo_form": grupo_form,
+        "materia_form": materia_form,
+        "grupos": grupos_data,
+        "sin_cuatrimestre": cuatrimestre_activo is None,
+        "cuatrimestres_data": cuatrimestres_data,
+        "docentes_data": docentes_data,
+    })
+
+@require_POST
+def new_user(request):
+    if not request.session.get('usuario_id'):
+        return redirect('login')
+
+    roles = request.session.get('usuario_roles', [])
+    if 'Director' not in roles:
+        return redirect('dashboard')
+
+    form = DocenteForm(request.POST)
+
+    if form.is_valid():
+        usuario = form.save()
+
+        rol_docente, _ = Rol.objects.get_or_create(nombre="Docente")
+        UsuarioRol.objects.create(
+            usuario=usuario,
+            rol=rol_docente
+        )
+
+    return redirect('director')
+
+def tutor(request):
+    if not request.session.get('usuario_id'):
+        return redirect('login')
+ 
+    usuario_id = request.session.get('usuario_id')
+    try:
+        usuario = Usuario.objects.get(id=usuario_id)
+    except Usuario.DoesNotExist:
+        return redirect('login')
+ 
+    grupo = Grupo.objects.filter(tutor=usuario).first()
+ 
+    alertas_data = []
+    grupo_info   = None
+    stats        = {'total': 0, 'alto': 0, 'medio': 0, 'bajo': 0, 'derivadas': 0}
+ 
+    if grupo:
+        grupo_info = {'clave': grupo.clave, 'id': grupo.id}
+        alumnos    = Alumno.objects.filter(grupo=grupo)
+ 
+        alertas = Alerta.objects.filter(
+            alumno__in=alumnos,
+            atendida=False
+        ).select_related('alumno', 'parcial').order_by('-fecha', '-id')
+ 
+        for alerta in alertas:
+            alertas_data.append({
+                'id':               alerta.id,
+                'alumno_nombre':    alerta.alumno.nombre,
+                'alumno_matricula': alerta.alumno.matricula,
+                'alumno_id':        alerta.alumno.id,
+                'motivo':           alerta.motivo,
+                'motivos_lista':    [m.strip() for m in alerta.motivo.split(' | ') if m.strip()],  # NUEVO
+                'nivel_riesgo':     alerta.nivel_riesgo,
+                'fecha':            alerta.fecha.strftime('%d/%m/%Y'),
+                'derivada':         alerta.derivada,
+                'derivada_a':       alerta.derivada_a or '',
+            })
+ 
+        stats['total']     = len(alertas_data)
+        stats['alto']      = sum(1 for a in alertas_data if a['nivel_riesgo'] == 'Alto')
+        stats['medio']     = sum(1 for a in alertas_data if a['nivel_riesgo'] == 'Medio')
+        stats['bajo']      = sum(1 for a in alertas_data if a['nivel_riesgo'] == 'Bajo')
+        stats['derivadas'] = sum(1 for a in alertas_data if a['derivada'])
+ 
+    return render(request, 'tutor.html', {
+        'usuario':      usuario,
+        'grupo':        grupo_info,
+        'alertas':      alertas_data,
+        'alertas_json': json.dumps(alertas_data, ensure_ascii=False),
+        'stats':        stats,
+    })
+
+def pedagogia(request):
+    if not request.session.get('usuario_id'):
+        return redirect('login')
+ 
+    usuario_id = request.session.get('usuario_id')
+    try:
+        usuario = Usuario.objects.get(id=usuario_id)
+    except Usuario.DoesNotExist:
+        return redirect('login')
+ 
+    # Alertas derivadas a Pedagogía que no están cerradas
+    alertas_qs = Alerta.objects.filter(
+        derivada_a='Pedagogia',
+        atendida=False
+    ).select_related('alumno', 'alumno__grupo', 'parcial').order_by('-fecha', '-id')
+ 
+    alertas_data = []
+    for alerta in alertas_qs:
+        # Historial de seguimiento (comentarios previos)
+        seguimientos = SeguimientoAlerta.objects.filter(
+            alerta=alerta
+        ).select_related('usuario').order_by('fecha')
+ 
+        seguimientos_data = []
+        for s in seguimientos:
+            seguimientos_data.append({
+                'usuario':    s.usuario.nombre,
+                'accion':     s.accion,
+                'comentario': s.comentario,
+                'fecha':      s.fecha.strftime('%d/%m/%Y %H:%M'),
+            })
+ 
+        alertas_data.append({
+            'id':               alerta.id,
+            'alumno_nombre':    alerta.alumno.nombre,
+            'alumno_matricula': alerta.alumno.matricula,
+            'alumno_id':        alerta.alumno.id,
+            'grupo':            alerta.alumno.grupo.clave,
+            'motivo':           alerta.motivo,
+            'motivos_lista':    [m.strip() for m in alerta.motivo.split(' | ') if m.strip()],
+            'nivel_riesgo':     alerta.nivel_riesgo,
+            'fecha':            alerta.fecha.strftime('%d/%m/%Y'),
+            'derivada_a':       alerta.derivada_a or '',
+            'seguimientos':     seguimientos_data,
+        })
+ 
+    stats = {
+        'total':  len(alertas_data),
+        'alto':   sum(1 for a in alertas_data if a['nivel_riesgo'] == 'Alto'),
+        'medio':  sum(1 for a in alertas_data if a['nivel_riesgo'] == 'Medio'),
+        'bajo':   sum(1 for a in alertas_data if a['nivel_riesgo'] == 'Bajo'),
+    }
+ 
+    return render(request, 'pedagogia.html', {
+        'usuario':      usuario,
+        'alertas':      alertas_data,
+        'alertas_json': json.dumps(alertas_data, ensure_ascii=False),
+        'stats':        stats,
+    })
+
+def login_view(request):
+    # --- PARTE 1: Redirección si ya está logueado ---
+    if request.session.get('usuario_id'):
+        # Obtenemos la lista de roles (si no existe, devolvemos lista vacía)
+        roles = request.session.get('usuario_roles', [])
+        
+        # Jerarquía de redirección (Prioridad)
+        if 'Director' in roles:
+            return redirect('/director')
+        elif 'Docente' in roles:
+            return redirect('/grupos-alumnos')
+        elif 'Tutor' in roles:
+            return redirect('/actividades')
+        elif 'Pedagogia' in roles:
+            return redirect('/pedagogia')
+        elif 'Psicologia' in roles:
+            return redirect('/psicologia')
+        else:
+            return redirect('/dashboard')
+
+    # --- PARTE 2: Login (POST) ---
+    if request.method == 'POST':
+        correo = request.POST.get('correo')
+        password = request.POST.get('password')
+
+        try:
+            usuario = Usuario.objects.get(correo=correo)
+            if check_password(password, usuario.password):
+                request.session['usuario_id'] = usuario.id
+                request.session['usuario_nombre'] = usuario.nombre
+
+                # --- CAMBIO IMPORTANTE: Obtener TODOS los roles ---
+                # Buscamos todas las coincidencias en la tabla intermedia
+                relaciones = UsuarioRol.objects.filter(usuario=usuario)
+                
+                # Creamos una lista de python con los nombres: ['Docente', 'Administrador']
+                lista_roles = [r.rol.nombre for r in relaciones]
+                
+                # Guardamos la lista en la sesión
+                request.session['usuario_roles'] = lista_roles
+
+                # --- Redirección basada en jerarquía ---
+                # Aunque tenga 3 roles, decidimos a dónde mandarlo por prioridad
+                if 'Director' in lista_roles:
+                    return redirect('/director')
+                elif 'Docente' in lista_roles:
+                    return redirect('/grupos-alumnos')
+                elif 'Tutor' in lista_roles:
+                    return redirect('/tutor')
+                elif 'Pedagogia' in lista_roles:
+                    return redirect('/pedagogia')
+                else:
+                    return redirect('/dashboard')
+            else:
+                 messages.error(request, 'Contraseña incorrecta.')
+        except Usuario.DoesNotExist:
+             messages.error(request, 'El correo no está registrado.')
+
+    return render(request, "login.html")
+
+def logout_view(request):
+    request.session.flush()
+    return redirect('login')
+
+def new_group(request):
+    if request.method == "POST":
+        form = GrupoForm(request.POST, request.FILES)
+
+        if form.is_valid():
+            grupo = form.save(commit=False)
+
+            cuatrimestre_activo = Cuatrimestre.objects.filter(activo=True).first()
+            if not cuatrimestre_activo:
+                messages.error(request, "No hay cuatrimestre activo")
+                return redirect("director")
+
+            grupo.cuatrimestre = cuatrimestre_activo
+            grupo.save()
+
+            archivo = request.FILES.get("archivo_alumnos")
+
+            if archivo:
+                archivo_texto = TextIOWrapper(archivo, encoding="utf-8-sig")
+                reader = csv.DictReader(archivo_texto)
+
+                for fila in reader:
+                    nombre = fila.get("nombre")
+                    matricula = fila.get("matricula")
+
+                    if not nombre or not matricula:
+                        continue
+
+                    Alumno.objects.get_or_create(
+                        matricula=matricula.strip(),
+                        defaults={
+                            "nombre": nombre.strip(),
+                            "grupo": grupo
+                        }
+                    )
+
+            messages.success(request, "Grupo y alumnos creados correctamente")
+
+    return redirect("director")
+
+def new_materia(request):
+    if request.method == "POST":
+        form = GrupoDocenteMateriaForm(request.POST)
+
+        if form.is_valid():
+            nombre = form.cleaned_data['nombre_materia']
+            grupo = form.cleaned_data['grupo']
+            docente = form.cleaned_data['docente']
+
+            # Crear o reutilizar materia
+            materia, created = Materia.objects.get_or_create(
+                nombre=nombre
+            )
+
+            # Crear relación grupo-materia-docente
+            GrupoDocenteMateria.objects.create(
+                grupo=grupo,
+                materia=materia,
+                docente=docente
+            )
+
+    return redirect('director')
+
+def guardar_comentario(request):
+    """Endpoint AJAX para guardar comentarios de alumnos"""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            alumno_id = data.get('alumno_id')
+            texto = data.get('texto')
+            docente_id = request.session.get('usuario_id')
+            
+            print(f"Guardando comentario - Alumno ID: {alumno_id}")
+            
+            # Validar datos requeridos
+            if not all([alumno_id, texto, docente_id]):
+                return JsonResponse({'error': 'Faltan datos requeridos'}, status=400)
+            
+            # Verificar que el alumno existe
+            try:
+                alumno = Alumno.objects.get(id=alumno_id)
+            except Alumno.DoesNotExist:
+                return JsonResponse({'error': 'Alumno no encontrado'}, status=404)
+            
+            # Verificar que el docente existe
+            try:
+                docente = Usuario.objects.get(id=docente_id)
+            except Usuario.DoesNotExist:
+                return JsonResponse({'error': 'Docente no encontrado'}, status=404)
+            
+            # Crear el comentario (tipo por defecto "General")
+            comentario = Comentario.objects.create(
+                alumno=alumno,
+                docente=docente,
+                tipo="General",  # Valor por defecto ya que no lo usas
+                texto=texto
+            )
+            
+            print(f"Comentario guardado con ID: {comentario.id}")
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Comentario guardado correctamente'
+            })
+            
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Datos JSON inválidos'}, status=400)
+        except Exception as e:
+            print(f"Error inesperado: {str(e)}")
+            return JsonResponse({'error': str(e)}, status=500)
+    
+    return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+def new_cuatrimestre(request):
+    if request.method == "POST":
+        fecha_inicio = request.POST.get("fecha_inicio")
+        fecha_fin = request.POST.get("fecha_fin")
+
+        # Generar nombre automático según el mes actual
+        hoy = date.today()
+        mes = hoy.month
+        anio = hoy.year
+
+        if 1 <= mes <= 4:
+            nombre = f"Enero-Abril {anio}"
+        elif 5 <= mes <= 8:
+            nombre = f"Mayo-Agosto {anio}"
+        else:
+            nombre = f"Septiembre-Diciembre {anio}"
+
+        # Desactivar cualquier cuatrimestre activo previo
+        Cuatrimestre.objects.filter(activo=True).update(activo=False)
+
+        Cuatrimestre.objects.create(
+            nombre=nombre,
+            fecha_inicio=fecha_inicio,
+            fecha_fin=fecha_fin,
+            activo=True
+        )
+        messages.success(request, f"Cuatrimestre '{nombre}' creado correctamente")
+
+    return redirect("director")
+
+def editar_docente(request, docente_id):
+    if not request.session.get('usuario_id'):
+        return redirect('login')
+
+    roles = request.session.get('usuario_roles', [])
+    if 'Director' not in roles:
+        return redirect('dashboard')
+
+    if request.method == 'POST':
+        try:
+            docente = Usuario.objects.get(id=docente_id)
+            docente.nombre = request.POST.get('nombre')
+            docente.correo = request.POST.get('correo')
+
+            nueva_password = request.POST.get('password')
+            if nueva_password:
+                docente.password = make_password(nueva_password)  # ← antes era texto plano
+
+            docente.save()
+            messages.success(request, 'Docente actualizado correctamente')
+        except Usuario.DoesNotExist:
+            messages.error(request, 'Docente no encontrado')
+
+    return redirect('director')
+
+def obtener_materias_por_grupo(request):
+    """Retorna las materias que el docente imparte en un grupo específico"""
+    if request.method == 'GET':
+        grupo_id = request.GET.get('grupo_id')
+        docente_id = request.session.get('usuario_id')
+
+        if not grupo_id:
+            return JsonResponse({'error': 'ID de grupo no proporcionado'}, status=400)
+
+        try:
+            gdms = GrupoDocenteMateria.objects.filter(
+                grupo_id=grupo_id,
+                docente_id=docente_id
+            ).select_related('materia')
+
+            materias = [{'id': gdm.id, 'nombre': gdm.materia.nombre} for gdm in gdms]
+
+            return JsonResponse({'success': True, 'materias': materias})
+
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+    return JsonResponse({'error': 'Método no permitido'}, status=405)
+
 def _generar_alertas_alumno(alumno, parcial, gdm, calificacion):    
     motivos    = []
     calif_baja = False
@@ -2317,7 +2765,6 @@ def _generar_alertas_alumno(alumno, parcial, gdm, calificacion):
             nivel_riesgo=nivel_riesgo
         )
         print(f"[ALERTA CREADA] {alumno.nombre} — {nivel_riesgo}: {motivo_completo}")
- 
  
 def obtener_alertas_grupo(request):
     """Retorna las alertas no atendidas de todos los alumnos de un grupo/materia"""
@@ -2434,7 +2881,6 @@ def cerrar_alerta_tutor(request):
  
     return JsonResponse({'error': 'Método no permitido'}, status=405)
  
- 
 @csrf_exempt
 def derivar_alerta(request):
     if request.method == 'POST':
@@ -2478,7 +2924,6 @@ def derivar_alerta(request):
  
     return JsonResponse({'error': 'Método no permitido'}, status=405)
 
-
 @csrf_exempt
 def cerrar_alerta_pedagogia(request):
     """Pedagogía cierra una alerta con comentario"""
@@ -2514,9 +2959,7 @@ def cerrar_alerta_pedagogia(request):
             return JsonResponse({'error': str(e)}, status=500)
  
     return JsonResponse({'error': 'Método no permitido'}, status=405)
- 
- 
-@csrf_exempt
+
 @csrf_exempt
 def derivar_alerta_pedagogia(request):
     """Pedagogía deriva una alerta a otro departamento"""
@@ -2616,7 +3059,6 @@ def psicologia(request):
         'stats':        stats,
     })
  
- 
 @csrf_exempt
 def cerrar_alerta_psicologia(request):
     if request.method == 'POST':
@@ -2651,7 +3093,6 @@ def cerrar_alerta_psicologia(request):
             return JsonResponse({'error': str(e)}, status=500)
  
     return JsonResponse({'error': 'Método no permitido'}, status=405)
- 
  
 @csrf_exempt
 def derivar_alerta_psicologia(request):
@@ -2717,7 +3158,6 @@ def director_alertas_view(request):
     }
     return JsonResponse({'alertas': alertas_data, 'stats': stats})
 
-
 def director_alertas_direccion_view(request):
     """Solo las alertas derivadas a Dirección"""
     if not request.session.get('usuario_id'):
@@ -2741,7 +3181,6 @@ def director_alertas_direccion_view(request):
         'bajo':   sum(1 for a in alertas_data if a['nivel_riesgo'] == 'Bajo'),
     }
     return JsonResponse({'alertas': alertas_data, 'stats': stats})
-
 
 def _build_alertas_data(alertas_qs):
     """Helper compartido: convierte queryset de alertas a lista de dicts"""
@@ -2771,7 +3210,6 @@ def _build_alertas_data(alertas_qs):
             } for s in seguimientos],
         })
     return result
-
 
 @csrf_exempt
 def cerrar_alerta_direccion(request):
@@ -2803,7 +3241,6 @@ def cerrar_alerta_direccion(request):
         return JsonResponse({'error': 'Alerta no encontrada'}, status=404)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
-
 
 @csrf_exempt
 def derivar_alerta_direccion(request):
@@ -2840,108 +3277,3 @@ def derivar_alerta_direccion(request):
         return JsonResponse({'error': 'Alerta no encontrada'}, status=404)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
-
-def asistencia(request):
-    # Verificar si el usuario está autenticado
-    if not request.session.get('usuario_id'):
-        return redirect('login')
-    
-    # Obtener el usuario actual desde la sesión
-    usuario_id = request.session.get('usuario_id')
-    
-    try:
-        # Obtener el usuario
-        usuario = Usuario.objects.get(id=usuario_id)
-        
-        # Obtener todos los grupos donde este docente imparte alguna materia
-        grupos_docente = GrupoDocenteMateria.objects.filter(
-            docente=usuario
-        ).select_related('grupo', 'materia').values('grupo').distinct()
-        
-        # Obtener los IDs de los grupos
-        grupo_ids = [g['grupo'] for g in grupos_docente]
-        
-        # Obtener los grupos completos
-        grupos = Grupo.objects.filter(id__in=grupo_ids)
-        
-        # Preparar datos de grupos para el template
-        grupos_data = []
-        for grupo in grupos:
-            # Obtener los alumnos de este grupo
-            alumnos = Alumno.objects.filter(grupo=grupo).order_by('nombre')
-            
-            # Obtener materias que el docente imparte en este grupo
-            materias = GrupoDocenteMateria.objects.filter(
-                docente=usuario,
-                grupo=grupo
-            ).select_related('materia')
-            
-            materias_list = [{'id': m.materia.id, 'nombre': m.materia.nombre} for m in materias]
-            
-            grupos_data.append({
-                'id': grupo.id,
-                'clave': grupo.clave,
-                'alumnos': [{'id': a.id, 'nombre': a.nombre, 'matricula': a.matricula} for a in alumnos],
-                'materias': materias_list,
-                'total_alumnos': alumnos.count()
-            })
-        
-        # También obtener estados de asistencia disponibles
-        estados_asistencia = EstadoAsistencia.objects.all()
-        estados_data = [{'id': e.id, 'nombre': e.nombre} for e in estados_asistencia]
-        
-        context = {
-            'docente': usuario,
-            'grupos': grupos_data,
-            'estados_asistencia': estados_data
-        }
-        
-    except Usuario.DoesNotExist:
-        return redirect('login')
-    
-    return render(request, "asistencia.html", context)
-
-# Agrega esto en tu views.py
-
-@require_POST
-def new_group(request):
-    """Vista para crear un nuevo grupo"""
-    if not request.session.get('usuario_id'):
-        return redirect('login')
-    
-    roles = request.session.get('usuario_roles', [])
-    if 'Director' not in roles:
-        return redirect('dashboard')
-    
-    # Aquí procesas la creación del grupo
-    # Asumiendo que tienes un formulario para grupos
-    form = GrupoForm(request.POST)
-    
-    if form.is_valid():
-        grupo = form.save()
-        messages.success(request, f'Grupo {grupo.clave} creado correctamente')
-    else:
-        messages.error(request, 'Error al crear el grupo')
-    
-    return redirect('director')
-
-@require_POST
-def new_materia(request):
-    """Vista para asignar materia a un grupo con docente"""
-    if not request.session.get('usuario_id'):
-        return redirect('login')
-    
-    roles = request.session.get('usuario_roles', [])
-    if 'Director' not in roles:
-        return redirect('dashboard')
-    
-    # Procesar la asignación de materia
-    form = GrupoDocenteMateriaForm(request.POST)
-    
-    if form.is_valid():
-        form.save()
-        messages.success(request, 'Materia asignada correctamente')
-    else:
-        messages.error(request, 'Error al asignar la materia')
-    
-    return redirect('director')
