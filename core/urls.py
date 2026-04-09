@@ -7,7 +7,7 @@ urlpatterns = [
     path('dashboard', views.dashboard),
     path('grupos-alumnos', views.gruposAlumnos),
     path('actividades/', views.actividades),
-    path('actividades/<int:id>/detalle/', views.detalleActividad, name='detalle_actividad'),
+    path('actividades/<int:id>/detalle', views.detalleActividad),
     path('guardar-entregas/', views.guardar_entregas),
     path('estadisticas', views.estadisticas),
     path('alertas', views.alertas),
@@ -25,7 +25,6 @@ urlpatterns = [
     path('alumno/<int:alumno_id>/perfil/', views.perfil_alumno, name='perfil_alumno'),
     path('guardar-parciales/', views.guardar_parciales, name='guardar_parciales'),
     path('guardar-calificaciones/', views.guardar_calificaciones, name='guardar_calificaciones'),
-    path('obtener-promedio-grupal/', views.obtener_promedio_grupal, name='obtener_promedio_grupal'),
     path('obtener-calificaciones/', views.obtener_calificaciones, name='obtener_calificaciones'),
     path('cuatrimestre/nuevo/', views.new_cuatrimestre, name='new_cuatrimestre'),
     path('director/editar-docente/<int:docente_id>/', views.editar_docente, name='editar_docente'),
@@ -43,13 +42,14 @@ urlpatterns = [
     path('director/alertas/direccion/',  views.director_alertas_direccion_view, name='director_alertas_direccion'),
     path('cerrar-alerta-direccion/',     views.cerrar_alerta_direccion,         name='cerrar_alerta_direccion'),
     path('derivar-alerta-direccion/',    views.derivar_alerta_direccion,        name='derivar_alerta_direccion'),
-    path('actividades/estadisticas/', views.estadisticas_actividades, name='estadisticas_actividades'),
-    
-    path('guardar-asistencia/', views.guardar_asistencia, name='guardar_asistencia'),
-    path('obtener-historial-asistencia/', views.obtener_historial_asistencia, name='obtener_historial_asistencia'),
-    path('asistencia/', views.asistencia, name='asistencia'),
 
-    # ========== RUTAS DE QR ==========
+
+    path('actividades/', views.actividades),
+    path('actividades/<int:id>/detalle/', views.detalleActividad, name='detalle_actividad'),
+    path('guardar-entregas/', views.guardar_entregas),
+    path('actividades/estadisticas/', views.estadisticas_actividades, name='estadisticas_actividades'),
+
+# ========== RUTAS DE QR ==========
     path('api/login/', views.api_login, name='api_login'),
     path('generar-qr/', views.generar_qr, name='generar_qr'),
     path('ver_asistencias/', views.ver_asistencias, name='ver_asistencias'),
@@ -60,5 +60,4 @@ urlpatterns = [
     path('api/registrar-asistencia-qr/', views.api_registrar_asistencia_qr, name='api_registrar_asistencia_qr'),
     path('obtener-asistencias-por-grupo/', views.obtener_asistencias_por_grupo, name='obtener_asistencias_por_grupo'),
     path('api/filtrar-asistencias/', views.api_filtrar_asistencias, name='api_filtrar_asistencias'),
-
 ]
