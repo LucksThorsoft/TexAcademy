@@ -233,7 +233,10 @@
 
         <div class="groups-grid">
             {% for grupo in grupos %}
-            <div class="group-card">
+            <div class="group-card" 
+                data-grupo-id="{{ grupo.grupo_id }}"
+                data-clave="{{ grupo.clave }}"
+                onclick="abrirModalAlumnos(this)">
                 <div class="group-header">
                     <div class="group-header-main">
                         <span class="materia-principal">{{ grupo.materia }}</span>
@@ -510,6 +513,77 @@
         </div>
     </div>
 
+</div>
+
+<!-- ===== MODAL ALUMNOS (Director) ===== -->
+<div class="modal" id="modalAlumnosDir">
+    <div class="modal-content" style="width:1200px;max-height:80vh;display:flex;flex-direction:column;">
+
+        <div class="modal-header" style="padding:20px 20px;">
+            <h3 id="modalAlumnosDirTitle">Alumnos del grupo</h3>
+            <span class="modal-close" onclick="cerrarModalAlumnosDir()">&times;</span>
+        </div>
+
+        <!-- Buscador -->
+        <div style="padding:16px 20px;border-bottom:1px solid #eee;">
+            <div style="position:relative;">
+                <span class="mdi mdi-magnify"
+                      style="position:absolute;left:10px;top:50%;transform:translateY(-50%);
+                             font-size:18px;color:#9ca3af;pointer-events:none;"></span>
+                <input type="text" id="buscarAlumnoDir"
+                       placeholder="Buscar alumno o matrícula..."
+                       oninput="filtrarAlumnosDir(this.value)"
+                       style="width:100%;height:38px;padding:8px 12px 8px 36px;
+                              border-radius:10px;border:1px solid #e5e7eb;font-size:14px;
+                              outline:none;box-sizing:border-box;">
+            </div>
+        </div>
+
+        <!-- Tabla de alumnos -->
+        <div style="flex:1;overflow-y:auto;padding:0 20px;">
+            <!-- Estado: cargando -->
+            <div id="alumnosDirLoading"
+                 style="text-align:center;padding:50px;color:#9ca3af;display:none;">
+                <span class="mdi mdi-loading mdi-spin"
+                      style="font-size:36px;display:block;margin-bottom:10px;color:#667eea;"></span>
+                Cargando alumnos...
+            </div>
+
+            <!-- Estado: sin alumnos -->
+            <div id="alumnosDirEmpty"
+                 style="text-align:center;padding:50px;color:#9ca3af;display:none;">
+                <span class="mdi mdi-account-off"
+                      style="font-size:40px;display:block;margin-bottom:10px;"></span>
+                <p style="margin:0;font-size:14px;">No hay alumnos en este grupo</p>
+            </div>
+
+            <!-- Tabla -->
+            <table id="alumnosDirTable"
+                   style="width:100%;border-collapse:collapse;display:none;">
+                <thead>
+                    <tr style="border-bottom:2px solid #f0f0f0;">
+                        <th style="padding:12px 8px;text-align:left;font-size:13px;
+                                   color:#9ca3af;font-weight:600;text-transform:uppercase;
+                                   letter-spacing:.05em;">Nombre</th>
+                        <th style="padding:12px 8px;text-align:left;font-size:13px;
+                                   color:#9ca3af;font-weight:600;text-transform:uppercase;
+                                   letter-spacing:.05em;">Matrícula</th>
+                    </tr>
+                </thead>
+                <tbody id="alumnosDirBody"></tbody>
+            </table>
+        </div>
+
+        <div class="modal-footer" style="border-top:1px solid #eee;padding:16px 20px;">
+            <span id="alumnosDirCount"
+                  style="font-size:13px;color:#9ca3af;margin-right:auto;"></span>
+            <button class="btn-secondary" onclick="cerrarModalAlumnosDir()"
+                    style="height:36px;padding:6px 18px;font-size:13px;border-radius:10px;">
+                Cerrar
+            </button>
+        </div>
+
+    </div>
 </div>
 
 
@@ -1071,6 +1145,118 @@
         const m = document.cookie.match(/csrftoken=([^;]+)/);
         return m ? m[1] : '';
     }
+
+    // ── Modal Alumnos Director ───────────────────────────────────────────────────
+let _alumnosDirData = [];   // caché de la lista completa
+
+function abrirModalAlumnos(card) {
+    const grupoId = card.dataset.grupoId;
+    const clave   = card.dataset.clave;
+
+    // Resetear UI
+    _alumnosDirData = [];
+    document.getElementById('modalAlumnosDirTitle').textContent = `Alumnos — Grupo ${clave}`;
+    document.getElementById('buscarAlumnoDir').value            = '';
+    document.getElementById('alumnosDirCount').textContent      = '';
+    document.getElementById('alumnosDirBody').innerHTML         = '';
+    document.getElementById('alumnosDirLoading').style.display  = 'block';
+    document.getElementById('alumnosDirEmpty').style.display    = 'none';
+    document.getElementById('alumnosDirTable').style.display    = 'none';
+
+    // Abrir modal
+    document.getElementById('modalAlumnosDir').style.display = 'flex';
+
+    // Fetch
+    fetch(`/obtener-alumnos-por-grupo/?grupo_id=${grupoId}`)
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById('alumnosDirLoading').style.display = 'none';
+
+            if (!data.success || !data.alumnos || data.alumnos.length === 0) {
+                document.getElementById('alumnosDirEmpty').style.display = 'block';
+                return;
+            }
+
+            _alumnosDirData = data.alumnos;
+            _renderAlumnosDir(_alumnosDirData);
+        })
+        .catch(() => {
+            document.getElementById('alumnosDirLoading').style.display = 'none';
+            document.getElementById('alumnosDirEmpty').style.display   = 'block';
+        });
+}
+
+function _renderAlumnosDir(alumnos) {
+    const tbody = document.getElementById('alumnosDirBody');
+    const table = document.getElementById('alumnosDirTable');
+    const count = document.getElementById('alumnosDirCount');
+
+    tbody.innerHTML = '';
+
+    if (alumnos.length === 0) {
+        table.style.display = 'none';
+        document.getElementById('alumnosDirEmpty').style.display = 'block';
+        count.textContent = '';
+        return;
+    }
+
+    document.getElementById('alumnosDirEmpty').style.display = 'none';
+    table.style.display = 'table';
+    count.textContent   = `${alumnos.length} alumno${alumnos.length !== 1 ? 's' : ''}`;
+
+    alumnos.forEach(alumno => {
+        const tr = document.createElement('tr');
+        tr.style.cssText = 'border-bottom:1px solid #f3f4f6;cursor:pointer;transition:background .15s;';
+        tr.onmouseenter  = () => tr.style.background = '#f0f7ff';
+        tr.onmouseleave  = () => tr.style.background = '';
+        tr.title         = 'Ver perfil del alumno';
+
+        tr.innerHTML = `
+            <td style="padding:12px 8px;">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <div style="width:34px;height:34px;border-radius:50%;
+                                background:#e8eeff;color:#2563eb;
+                                display:flex;align-items:center;justify-content:center;
+                                font-weight:700;font-size:13px;flex-shrink:0;text-transform:uppercase;">
+                        ${alumno.nombre.charAt(0)}
+                    </div>
+                    <span style="font-weight:500;font-size:14px;color:#111827;">
+                        ${alumno.nombre}
+                    </span>
+                </div>
+            </td>
+            <td style="padding:12px 8px;font-size:13px;color:#6b7280;">
+                ${alumno.matricula}
+            </td>
+        `;
+
+        tr.addEventListener('click', () => {
+            window.open(`/director/alumno/${alumno.id}/perfil/`, '_blank');
+        });
+
+        tbody.appendChild(tr);
+    });
+}
+
+function filtrarAlumnosDir(texto) {
+    const filtro   = texto.toLowerCase().trim();
+    const filtrados = filtro
+        ? _alumnosDirData.filter(a =>
+            a.nombre.toLowerCase().includes(filtro) ||
+            a.matricula.toLowerCase().includes(filtro))
+        : _alumnosDirData;
+
+    _renderAlumnosDir(filtrados);
+}
+
+function cerrarModalAlumnosDir() {
+    document.getElementById('modalAlumnosDir').style.display = 'none';
+}
+
+// Cerrar al hacer clic en el fondo
+document.getElementById('modalAlumnosDir').addEventListener('click', function(e) {
+    if (e.target === this) cerrarModalAlumnosDir();
+});
     </script>
 
     {% endblock %}
