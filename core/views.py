@@ -1340,19 +1340,35 @@ def new_group(request):
                 reader = csv.DictReader(archivo_texto)
 
                 for fila in reader:
-                    nombre = fila.get("nombre")
-                    matricula = fila.get("matricula")
+                    nombre    = fila.get("nombre", "").strip()
+                    matricula = fila.get("matricula", "").strip()
+                    correo    = fila.get("correo", "").strip() or None
+                    telefono  = fila.get("telefono", "").strip() or None
 
                     if not nombre or not matricula:
                         continue
 
-                    Alumno.objects.get_or_create(
-                        matricula=matricula.strip(),
+                    alumno, created = Alumno.objects.get_or_create(
+                        matricula=matricula,
                         defaults={
-                            "nombre": nombre.strip(),
-                            "grupo": grupo
+                            "nombre":   nombre,
+                            "grupo":    grupo,
+                            "correo":   correo,
+                            "telefono": telefono,
                         }
                     )
+
+                    # Si el alumno ya existía, actualizar contacto si ahora viene en el CSV
+                    if not created:
+                        actualizar = False
+                        if correo and not alumno.correo:
+                            alumno.correo = correo
+                            actualizar = True
+                        if telefono and not alumno.telefono:
+                            alumno.telefono = telefono
+                            actualizar = True
+                        if actualizar:
+                            alumno.save()
 
             messages.success(request, "Grupo y alumnos creados correctamente")
 
@@ -1469,6 +1485,7 @@ def editar_docente(request, docente_id):
         return redirect('login')
 
     roles = request.session.get('usuario_roles', [])
+    docente.telefono = request.POST.get('telefono', '').strip() or None
     if 'Director' not in roles:
         return redirect('dashboard')
 
