@@ -226,9 +226,35 @@
     <!-- Vista: Grupos del cuatrimestre activo -->
     <div id="groupsView" class="view-content">
 
-        <div class="groups-search">
-            <span class="mdi mdi-magnify search-icon"></span>
-            <input type="text" id="searchGroups" placeholder="Buscar grupo, materia o docente...">
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px;">
+            <div class="groups-search" style="margin-bottom:0;">
+                <span class="mdi mdi-magnify search-icon"></span>
+                <input type="text" id="searchGroups" placeholder="Buscar grupo, materia o docente...">
+            </div>
+        </div>
+
+        <!-- Filtros por clave de grupo -->
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+            <button id="btnToggleFiltros" onclick="toggleFiltrosGrupo()"
+                    style="display:inline-flex;align-items:center;gap:6px;
+                        padding:6px 14px;border-radius:10px;border:1px solid #e5e7eb;
+                        background:white;color:#374151;font-size:13px;font-weight:500;
+                        cursor:pointer;transition:all .2s ease;font-family:inherit;">
+                <span class="mdi mdi-filter-outline"></span>
+                Filtrar por grupo
+                <span class="mdi mdi-chevron-down" id="iconFiltroChevron"
+                    style="transition:transform .25s ease;"></span>
+            </button>
+            <span id="filtroActivoLabel" style="font-size:12px;color:#6b7280;display:none;">
+                Mostrando: <strong id="filtroActivoTexto"></strong>
+            </span>
+        </div>
+
+        <div id="filtroGruposContainer"
+            style="display:none;flex-wrap:wrap;gap:8px;margin-bottom:16px;
+                    background:#f8f9fb;border:1px solid #e5e7eb;border-radius:12px;
+                    padding:12px;animation:fadeInDown .2s ease;">
+            <button class="filtro-grupo-btn active" data-grupo="todos">Todos</button>
         </div>
 
         <div class="groups-grid">
@@ -681,16 +707,7 @@
             });
         });
 
-        // ===== BUSCADOR GRUPOS =====
-        const searchInput = document.getElementById("searchGroups");
-        const groupCards = document.querySelectorAll("#groupsView .group-card");
-
-        searchInput.addEventListener("keyup", function() {
-            const filter = this.value.toLowerCase();
-            groupCards.forEach(card => {
-                card.style.display = card.textContent.toLowerCase().includes(filter) ? "block" : "none";
-            });
-        });
+        
 
         // ===== BUSCADOR HISTÓRICO =====
         const searchHistorico = document.getElementById("searchHistorico");
@@ -756,7 +773,73 @@
                 fechaFin.value = "";
             }
         });
-    });
+
+        // ===== FILTRO Y BUSCADOR DE GRUPOS =====
+        const searchInput     = document.getElementById("searchGroups");
+        const groupCards      = document.querySelectorAll("#groupsView .group-card");
+        const filtroContainer = document.getElementById("filtroGruposContainer");
+
+        // Generar botones únicos por clave de grupo
+        const clavesVistas = new Set();
+        groupCards.forEach(card => {
+            const clave = card.dataset.clave;
+            if (clave && !clavesVistas.has(clave)) {
+                clavesVistas.add(clave);
+                const btn = document.createElement('button');
+                btn.className     = 'filtro-grupo-btn';
+                btn.dataset.grupo = clave;
+                btn.textContent   = clave;
+                filtroContainer.appendChild(btn);
+            }
+        });
+
+        // Si no hay grupos, ocultar el botón de filtrar
+        if (clavesVistas.size === 0) {
+            document.getElementById('btnToggleFiltros').style.display = 'none';
+        }
+
+        let filtroActivo  = 'todos';
+        let textoBusqueda = '';
+        let filtrosAbiertos = false;
+
+        function aplicarFiltros() {
+            groupCards.forEach(card => {
+                const claveCard    = card.dataset.clave || '';
+                const textoCard    = card.textContent.toLowerCase();
+                const pasaGrupo    = filtroActivo === 'todos' || claveCard === filtroActivo;
+                const pasaBusqueda = textoCard.includes(textoBusqueda);
+                card.style.display = (pasaGrupo && pasaBusqueda) ? 'block' : 'none';
+            });
+
+            // Actualizar etiqueta de filtro activo
+            const label = document.getElementById('filtroActivoLabel');
+            const texto = document.getElementById('filtroActivoTexto');
+            if (filtroActivo !== 'todos') {
+                texto.textContent = filtroActivo;
+                label.style.display = 'inline-flex';
+            } else {
+                label.style.display = 'none';
+            }
+        }
+
+        // Click en botones de filtro
+        filtroContainer.addEventListener('click', function(e) {
+            const btn = e.target.closest('.filtro-grupo-btn');
+            if (!btn) return;
+            filtroContainer.querySelectorAll('.filtro-grupo-btn')
+                        .forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            filtroActivo = btn.dataset.grupo;
+            aplicarFiltros();
+        });
+
+        // Buscador de texto
+        searchInput.addEventListener("keyup", function() {
+            textoBusqueda = this.value.toLowerCase();
+            aplicarFiltros();
+        });
+
+    }); // ← cierre del DOMContentLoaded
 
     // ===== MODAL MATERIA =====
     const btnNuevaMateria = document.getElementById("btnNuevaMateria");
@@ -1257,6 +1340,20 @@ function cerrarModalAlumnosDir() {
 document.getElementById('modalAlumnosDir').addEventListener('click', function(e) {
     if (e.target === this) cerrarModalAlumnosDir();
 });
+
+
+function toggleFiltrosGrupo() {
+    const container = document.getElementById('filtroGruposContainer');
+    const chevron   = document.getElementById('iconFiltroChevron');
+    const btn       = document.getElementById('btnToggleFiltros');
+    const abierto   = container.style.display === 'flex';
+
+    container.style.display = abierto ? 'none' : 'flex';
+    chevron.style.transform = abierto ? 'rotate(0deg)' : 'rotate(180deg)';
+    btn.style.borderColor   = abierto ? '#e5e7eb' : '#2563eb';
+    btn.style.color         = abierto ? '#374151' : '#2563eb';
+    btn.style.background    = abierto ? 'white'   : '#eff6ff';
+}
     </script>
 
     {% endblock %}
@@ -1966,6 +2063,34 @@ document.getElementById('modalAlumnosDir').addEventListener('click', function(e)
 .pill-xs {
     padding: 2px 8px;
     font-size: 11px;
+}
+
+.filtro-grupo-btn {
+    padding: 5px 16px;
+    border-radius: 20px;
+    border: 1px solid #e5e7eb;
+    background: white;
+    color: #374151;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all .2s ease;
+    font-family: inherit;
+}
+.filtro-grupo-btn:hover {
+    border-color: #2563eb;
+    color: #2563eb;
+    background: #eff6ff;
+}
+.filtro-grupo-btn.active {
+    background: #2563eb;
+    color: white;
+    border-color: #2563eb;
+}
+
+@keyframes fadeInDown {
+    from { opacity:0; transform:translateY(-6px); }
+    to   { opacity:1; transform:translateY(0); }
 }
 
 </style>
