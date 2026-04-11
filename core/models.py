@@ -10,6 +10,7 @@ class Usuario(models.Model):
     nombre = models.CharField(max_length=100)
     correo = models.EmailField(unique=True)
     password = models.CharField(max_length=255)  # hacer hash para la contraseña
+    telefono = models.CharField(max_length=20, null=True, blank=True)
 
     def __str__(self):
         return self.nombre
@@ -57,6 +58,8 @@ class Alumno(models.Model):
     nombre = models.CharField(max_length=100)
     matricula = models.CharField(max_length=20, unique=True)
     grupo = models.ForeignKey(Grupo, on_delete=models.CASCADE)
+    correo = models.EmailField(null=True, blank=True)         # correo del alumno
+    telefono = models.CharField(max_length=20, null=True, blank=True)  # SMS alumno/tutor
 
     def __str__(self):
         return self.nombre
@@ -195,7 +198,17 @@ class SeguimientoAlerta(models.Model):
     fecha      = models.DateTimeField(auto_now_add=True)
 
 class Notificacion(models.Model):
-    alerta = models.ForeignKey(Alerta, on_delete=models.CASCADE)
-    medio = models.CharField(max_length=30)  # correo / telegram
-    enviado = models.BooleanField(default=False)
-    fecha_envio = models.DateField(null=True, blank=True)
+    MEDIOS = [
+        ('correo', 'Correo electrónico'),
+        ('sms',    'SMS'),
+    ]
+
+    alerta               = models.ForeignKey(Alerta, on_delete=models.CASCADE)
+    destinatario_usuario = models.ForeignKey(Usuario, on_delete=models.SET_NULL, null=True, blank=True)
+    destinatario_alumno  = models.ForeignKey(Alumno, on_delete=models.SET_NULL, null=True, blank=True)
+    medio                = models.CharField(max_length=20, choices=MEDIOS)
+    asunto               = models.CharField(max_length=200, null=True, blank=True)  # solo para correo
+    mensaje              = models.TextField(null=True, blank=True)
+    enviado              = models.BooleanField(default=False)
+    fecha_envio          = models.DateTimeField(null=True, blank=True)  # DateTimeField, no DateField
+    error                = models.TextField(null=True, blank=True)  # si falla, guardar por qué
