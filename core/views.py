@@ -1531,6 +1531,8 @@ def obtener_materias_por_grupo(request):
     return JsonResponse({'error': 'Método no permitido'}, status=405)
 
 def _generar_alertas_alumno(alumno, parcial, gdm, calificacion):
+    from .services import notificar_tutor_alerta   # ← agrega este import
+
     motivos    = []
     calif_baja = False
     asist_baja = False
@@ -1547,7 +1549,7 @@ def _generar_alertas_alumno(alumno, parcial, gdm, calificacion):
             f"(mínimo esperado: {umbral_calif:.1f})"
         )
 
-    # 2. ASISTENCIA BAJA (solo dentro del rango de fechas del parcial)
+    # 2. ASISTENCIA BAJA
     asistencias_parcial = Asistencia.objects.filter(
         alumno=alumno,
         grupo_docente_materia=gdm,
@@ -1575,14 +1577,13 @@ def _generar_alertas_alumno(alumno, parcial, gdm, calificacion):
     elif calif_baja:                nivel_riesgo = 'Medio'
     else:                           nivel_riesgo = 'Bajo'
 
-    # 4. BUSCAR ALERTA EXISTENTE para este alumno + parcial
+    # 4. BUSCAR ALERTA EXISTENTE
     alerta_existente = Alerta.objects.filter(
         alumno=alumno,
         parcial=parcial
     ).first()
 
     if not motivos:
-        # Sin problemas → eliminar alerta si existía
         if alerta_existente:
             alerta_existente.delete()
             print(f"[ALERTA ELIMINADA] {alumno.nombre} — {parcial.nombre} ya no tiene problemas")
@@ -1591,20 +1592,29 @@ def _generar_alertas_alumno(alumno, parcial, gdm, calificacion):
     motivo_completo = ' | '.join(motivos)
 
     if alerta_existente:
-        # Actualizar — y reactivar si ya estaba atendida
+        # Solo notificar si cambió el nivel o el motivo
+        cambio_relevante = (
+            alerta_existente.motivo       != motivo_completo or
+            alerta_existente.nivel_riesgo != nivel_riesgo
+        )
         alerta_existente.motivo       = motivo_completo
         alerta_existente.nivel_riesgo = nivel_riesgo
         alerta_existente.atendida     = False
         alerta_existente.save()
         print(f"[ALERTA ACTUALIZADA] {alumno.nombre} — {nivel_riesgo}: {motivo_completo}")
+
+        if cambio_relevante:                                    # ← notificar solo si cambió algo
+            notificar_tutor_alerta(alerta_existente, es_nueva=False)
+
     else:
-        Alerta.objects.create(
+        nueva_alerta = Alerta.objects.create(
             alumno=alumno,
             parcial=parcial,
             motivo=motivo_completo,
             nivel_riesgo=nivel_riesgo
         )
         print(f"[ALERTA CREADA] {alumno.nombre} — {nivel_riesgo}: {motivo_completo}")
+        notificar_tutor_alerta(nueva_alerta, es_nueva=True)    # ← notificar siempre en alertas nuevas
  
  
 def obtener_alertas_grupo(request):
