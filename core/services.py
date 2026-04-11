@@ -178,3 +178,132 @@ def notificar_tutor_alerta(alerta, es_nueva: bool = True):
         print(f"[NOTIFICACION SMS]   Tutor {tutor.nombre} → {estado}")
     else:
         print(f"[NOTIFICACION] Tutor {tutor.nombre} no tiene teléfono registrado.")
+
+def notificar_alumno_cita(cita):
+    """
+    Notifica al alumno por correo y/o SMS cuando se agenda una cita.
+    Adapta el mensaje según el rol de quien la crea.
+    """
+    from .models import Notificacion
+
+    alumno      = cita.alumno
+    creador     = cita.creado_por
+    rol         = cita.rol_creador
+    fecha_str   = cita.fecha.strftime('%d/%m/%Y')
+    hora_str    = cita.hora.strftime('%H:%M')
+
+    # ── Textos según el rol ─────────────────────────────────────
+    rol_display = {
+        'Tutor':      'tu Tutor',
+        'Pedagogia':  'el área de Pedagogía',
+        'Psicologia': 'el área de Psicología',
+        'Director':   'Dirección',
+    }.get(rol, rol)
+
+    colores_rol = {
+        'Tutor':      '#2563eb',
+        'Pedagogia':  '#7c3aed',
+        'Psicologia': '#9d174d',
+        'Director':   '#c2410c',
+    }
+    color = colores_rol.get(rol, '#2563eb')
+
+    iconos_rol = {
+        'Tutor':      '👨‍🏫',
+        'Pedagogia':  '🎓',
+        'Psicologia': '🧠',
+        'Director':   '🏫',
+    }
+    icono = iconos_rol.get(rol, '📅')
+
+    asunto = f"📅 Cita agendada con {rol_display} – {fecha_str} a las {hora_str}"
+
+    texto_plano = (
+        f"Hola {alumno.nombre},\n\n"
+        f"{creador.nombre} de {rol_display} ha agendado una cita contigo.\n\n"
+        f"📅 Fecha: {fecha_str}\n"
+        f"🕐 Hora:  {hora_str}\n\n"
+        f"Por favor preséntate puntualmente.\n"
+        f"Si tienes dudas, contacta directamente a {rol_display}."
+    )
+
+    html_body = f"""
+    <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
+      <div style="background:{color};padding:16px 24px;border-radius:8px 8px 0 0">
+        <h2 style="color:#fff;margin:0">{icono} Cita Agendada</h2>
+      </div>
+      <div style="border:1px solid #e5e7eb;border-top:none;padding:24px;border-radius:0 0 8px 8px">
+        <p style="margin:0 0 16px;font-size:15px;">
+          Hola <strong>{alumno.nombre}</strong>,
+        </p>
+        <p style="margin:0 0 20px;color:#374151;">
+          <strong>{creador.nombre}</strong> de <strong>{rol_display}</strong>
+          ha agendado una cita contigo.
+        </p>
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;
+                    padding:16px;margin-bottom:20px;">
+          <p style="margin:0 0 8px;font-size:15px;">
+            <span style="font-size:18px;">📅</span>
+            <strong>Fecha:</strong> {fecha_str}
+          </p>
+          <p style="margin:0;font-size:15px;">
+            <span style="font-size:18px;">🕐</span>
+            <strong>Hora:</strong> {hora_str}
+          </p>
+        </div>
+        <p style="color:#6b7280;font-size:13px;margin:0;">
+          Por favor preséntate puntualmente.<br>
+          Si tienes dudas, contacta directamente a {rol_display}.
+        </p>
+      </div>
+    </div>
+    """
+
+    sms_body = (
+        f"[{rol_display}] {creador.nombre} agendó una cita contigo "
+        f"el {fecha_str} a las {hora_str}. Preséntate puntualmente."
+    )
+
+    # ── Correo al alumno ────────────────────────────────────────
+    if alumno.correo:
+        resultado = send_email_html(
+            subject=asunto,
+            text_body=texto_plano,
+            html_body=html_body,
+            to=[alumno.correo],
+        )
+        Notificacion.objects.create(
+            alerta=cita.alerta,
+            destinatario_alumno=alumno,
+            medio='correo',
+            asunto=asunto,
+            mensaje=texto_plano,
+            enviado=resultado['success'],
+            fecha_envio=timezone.now() if resultado['success'] else None,
+            error=resultado.get('error') if not resultado['success'] else None,
+        )
+        estado = "✅ enviado" if resultado['success'] else f"❌ {resultado.get('error')}"
+        print(f"[CITA EMAIL] {rol} → Alumno {alumno.nombre} → {estado}")
+    else:
+        print(f"[CITA] Alumno {alumno.nombre} no tiene correo registrado.")
+
+    # ── SMS al alumno ───────────────────────────────────────────
+    if alumno.telefono:
+        telefono = alumno.telefono.strip().replace(" ", "").replace("-", "")
+        if not telefono.startswith("+"):
+            telefono = "+52" + telefono
+
+        resultado = send_sms(to=telefono, body=sms_body)
+        Notificacion.objects.create(
+            alerta=cita.alerta,
+            destinatario_alumno=alumno,
+            medio='sms',
+            mensaje=sms_body,
+            enviado=resultado['success'],
+            fecha_envio=timezone.now() if resultado['success'] else None,
+            error=resultado.get('error') if not resultado['success'] else None,
+        )
+        estado = "✅ enviado" if resultado['success'] else f"❌ {resultado.get('error')}"
+        print(f"[CITA SMS]   {rol} → Alumno {alumno.nombre} → {estado}")
+    else:
+        print(f"[CITA] Alumno {alumno.nombre} no tiene teléfono registrado.")

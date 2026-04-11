@@ -15,7 +15,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from datetime import datetime
 from django.contrib.auth.hashers import make_password, check_password
-from .services import notificar_tutor_alerta   # ← agrega este import
+from .services import *   # ← agrega este import
 
 
 
@@ -1345,48 +1345,67 @@ def new_user(request):
 def tutor(request):
     if not request.session.get('usuario_id'):
         return redirect('login')
- 
+
     usuario_id = request.session.get('usuario_id')
     try:
         usuario = Usuario.objects.get(id=usuario_id)
     except Usuario.DoesNotExist:
         return redirect('login')
- 
+
     grupo = Grupo.objects.filter(tutor=usuario).first()
- 
+
     alertas_data = []
     grupo_info   = None
     stats        = {'total': 0, 'alto': 0, 'medio': 0, 'bajo': 0, 'derivadas': 0}
- 
+
     if grupo:
         grupo_info = {'clave': grupo.clave, 'id': grupo.id}
         alumnos    = Alumno.objects.filter(grupo=grupo)
- 
+
         alertas = Alerta.objects.filter(
             alumno__in=alumnos,
             atendida=False
         ).select_related('alumno', 'parcial').order_by('-fecha', '-id')
- 
+
         for alerta in alertas:
+            # ── Obtener citas de esta alerta ──────────────────
+            citas = Cita.objects.filter(
+                alerta=alerta
+            ).order_by('-fecha_creacion')
+
+            citas_data = []
+            for cita in citas:
+                citas_data.append({
+                    'id':          cita.id,
+                    'fecha':       cita.fecha.strftime('%d/%m/%Y'),
+                    'hora':        cita.hora.strftime('%H:%M'),
+                    'comentario':  cita.comentario,
+                    'estado':      cita.estado,
+                    'rol_creador': cita.rol_creador,
+                    'creado_por':  cita.creado_por.nombre,
+                })
+
             alertas_data.append({
                 'id':               alerta.id,
                 'alumno_nombre':    alerta.alumno.nombre,
                 'alumno_matricula': alerta.alumno.matricula,
                 'alumno_id':        alerta.alumno.id,
                 'motivo':           alerta.motivo,
-                'motivos_lista':    [m.strip() for m in alerta.motivo.split(' | ') if m.strip()],  # NUEVO
+                'motivos_lista':    [m.strip() for m in alerta.motivo.split(' | ') if m.strip()],
                 'nivel_riesgo':     alerta.nivel_riesgo,
                 'fecha':            alerta.fecha.strftime('%d/%m/%Y'),
                 'derivada':         alerta.derivada,
                 'derivada_a':       alerta.derivada_a or '',
+                'citas':            citas_data,          # ← nuevo
+                'tiene_citas':      len(citas_data) > 0, # ← nuevo
             })
- 
+
         stats['total']     = len(alertas_data)
         stats['alto']      = sum(1 for a in alertas_data if a['nivel_riesgo'] == 'Alto')
         stats['medio']     = sum(1 for a in alertas_data if a['nivel_riesgo'] == 'Medio')
         stats['bajo']      = sum(1 for a in alertas_data if a['nivel_riesgo'] == 'Bajo')
         stats['derivadas'] = sum(1 for a in alertas_data if a['derivada'])
- 
+
     return render(request, 'tutor.html', {
         'usuario':      usuario,
         'grupo':        grupo_info,
@@ -2556,3 +2575,93 @@ def perfil_alumno_director(request, alumno_id):
     }
 
     return render(request, 'perfilAlumnoDirector.html', context)
+
+
+@csrf_exempt
+def agendar_cita(request):
+    """Endpoint genérico para agendar citas — funciona para Tutor, Pedagogia, Psicologia y Director"""
+    if request.method == 'POST':
+        try:
+            data       = json.loads(request.body)
+            alerta_id  = data.get('alerta_id')
+            fecha      = data.get('fecha')
+            hora       = data.get('hora')
+            comentario = data.get('comentario', '').strip()
+
+            if not alerta_id:
+                return JsonResponse({'error': 'ID de alerta no proporcionado'}, status=400)
+            if not fecha or not hora:
+                return JsonResponse({'error': 'Fecha y hora son obligatorias'}, status=400)
+            if not comentario:
+                return JsonResponse({'error': 'El comentario es obligatorio'}, status=400)
+
+            usuario_id = request.session.get('usuario_id')
+            if not usuario_id:
+                return JsonResponse({'error': 'No autenticado'}, status=401)
+
+            # Detectar el rol del usuario en sesión
+            roles_sesion = request.session.get('usuario_roles', [])
+            ROLES_PERMITIDOS = ('Tutor', 'Pedagogia', 'Psicologia', 'Director')
+            rol_activo = next((r for r in ROLES_PERMITIDOS if r in roles_sesion), None)
+
+            if not rol_activo:
+                return JsonResponse({'error': 'Sin permiso para agendar citas'}, status=403)
+
+            alerta  = Alerta.objects.select_related('alumno__grupo').get(id=alerta_id)
+            usuario = Usuario.objects.get(id=usuario_id)
+
+            # Verificar que el usuario tiene relación con esta alerta según su rol
+            if rol_activo == 'Tutor':
+                if alerta.alumno.grupo.tutor_id != usuario_id:
+                    return JsonResponse({'error': 'Esta alerta no pertenece a tu grupo'}, status=403)
+            elif rol_activo in ('Pedagogia', 'Psicologia'):
+                if alerta.derivada_a != rol_activo:
+                    return JsonResponse({'error': f'Esta alerta no está derivada a {rol_activo}'}, status=403)
+            # Director puede agendar cita en cualquier alerta
+
+            # ── Convertir strings a objetos date/time ──
+            try:
+                fecha_obj = datetime.strptime(fecha, '%Y-%m-%d').date()
+                hora_obj  = datetime.strptime(hora,  '%H:%M').time()
+            except ValueError:
+                return JsonResponse({'error': 'Formato de fecha u hora inválido'}, status=400)
+
+            # Crear la cita
+            cita = Cita.objects.create(
+                alerta=alerta,
+                alumno=alerta.alumno,
+                creado_por=usuario,
+                rol_creador=rol_activo,
+                fecha=fecha_obj,    # ← objeto date, no string
+                hora=hora_obj,      # ← objeto time, no string
+                comentario=comentario,
+            )
+
+            # Registrar en el historial de la alerta
+            SeguimientoAlerta.objects.create(
+                alerta=alerta,
+                usuario=usuario,
+                accion='comentario',
+                comentario=(
+                    f"[{rol_activo}] Cita agendada para el "
+                    f"{cita.fecha.strftime('%d/%m/%Y')} a las "
+                    f"{cita.hora.strftime('%H:%M')}. {comentario}"
+                )
+            )
+
+            # Notificar al alumno
+            notificar_alumno_cita(cita)
+
+            return JsonResponse({
+                'success':    True,
+                'fecha':      cita.fecha.strftime('%d/%m/%Y'),
+                'hora':       cita.hora.strftime('%H:%M'),
+                'rol_creador': rol_activo,
+            })
+
+        except Alerta.DoesNotExist:
+            return JsonResponse({'error': 'Alerta no encontrada'}, status=404)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+    return JsonResponse({'error': 'Método no permitido'}, status=405)

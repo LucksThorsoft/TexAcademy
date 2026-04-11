@@ -44,4 +44,5 @@ urlpatterns = [
     path('cerrar-alerta-direccion/',     views.cerrar_alerta_direccion,         name='cerrar_alerta_direccion'),
     path('derivar-alerta-direccion/',    views.derivar_alerta_direccion,        name='derivar_alerta_direccion'),
     path('director/alumno/<int:alumno_id>/perfil/', views.perfil_alumno_director, name='perfil_alumno_director'),
+    path('agendar-cita/', views.agendar_cita, name='agendar_cita'),
 ]
