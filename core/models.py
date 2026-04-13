@@ -239,3 +239,16 @@ class Cita(models.Model):
 
     def __str__(self):
         return f"Cita {self.alumno} – {self.fecha} {self.hora} ({self.rol_creador})"
+    
+class Ponderacion(models.Model):
+    parcial = models.ForeignKey(Parcial, on_delete=models.CASCADE, related_name='ponderaciones')
+    nombre = models.CharField(max_length=100)
+    porcentaje = models.IntegerField()
+    orden = models.IntegerField(default=0)
+
+    class Meta:
+        ordering = ['orden', 'id']
+        unique_together = ('parcial', 'nombre')
+
+    def str(self):
+        return f"{self.nombre} ({self.porcentaje}%)"
