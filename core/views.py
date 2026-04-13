@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.contrib.auth.hashers import check_password
 from django.views.decorators.http import require_POST, require_GET
 from django.http import JsonResponse
+from django.core.cache import cache
 import csv
 import re
 from io import TextIOWrapper
@@ -730,52 +731,426 @@ def actividades(request):
     })
 
 
-def detalleActividad(request, id):
-    actividad = Actividad.objects.select_related(
-        'parcial',
-        'parcial__grupo_docente_materia',
-        'parcial__grupo_docente_materia__grupo'
-    ).get(id=id)
+#Nuevos endpoints para estadisticas individuales del alumno y editar activisdades
 
-    grupo = actividad.parcial.grupo_docente_materia.grupo
-    alumnos = grupo.alumno_set.all()
-
-    lista_alumnos = []
-    entregadas = 0
-
-    for alumno in alumnos:
-        entrega = Entrega.objects.filter(
-            actividad=actividad,
-            alumno=alumno
-        ).first()
-
-        if not entrega:
-            entrega = Entrega.objects.create(
-                actividad=actividad,
-                alumno=alumno,
-                entregado=False
-            )
-
-        if entrega.entregado:
-            entregadas += 1
-
-        lista_alumnos.append({
-            "id": entrega.id,
-            "nombre": alumno.nombre,
-            "matricula": alumno.matricula,
-            "entregado": entrega.entregado
+def editar_actividad(request, id):
+    """Vista para editar una actividad existente"""
+    if request.method != 'POST':
+        return JsonResponse({"error": "Método no permitido"}, status=405)
+    
+    if not request.session.get('usuario_id'):
+        return JsonResponse({"error": "No autorizado"}, status=401)
+    
+    try:
+        data = json.loads(request.body)
+        actividad = Actividad.objects.select_related(
+            'parcial__grupo_docente_materia'
+        ).get(id=id)
+        
+        # Verificar permiso
+        if actividad.parcial.grupo_docente_materia.docente_id != request.session.get('usuario_id'):
+            return JsonResponse({"error": "No tienes permiso"}, status=403)
+        
+        # Actualizar campos
+        actividad.titulo = data.get('titulo', actividad.titulo)
+        actividad.descripcion = data.get('descripcion', actividad.descripcion)
+        
+        # Manejar la fecha correctamente
+        fecha_entrega = data.get('fecha_entrega')
+        if fecha_entrega:
+            # Si es string, convertir a date
+            if isinstance(fecha_entrega, str):
+                actividad.fecha_entrega = datetime.strptime(fecha_entrega, '%Y-%m-%d').date()
+            else:
+                actividad.fecha_entrega = fecha_entrega
+        
+        actividad.save()
+        
+        return JsonResponse({
+            "success": True,
+            "message": "Actividad actualizada correctamente",
+            "actividad": {
+                "id": actividad.id,
+                "titulo": actividad.titulo,
+                "descripcion": actividad.descripcion,
+                "fecha_entrega": actividad.fecha_entrega.strftime('%Y-%m-%d')
+            }
         })
+        
+    except Actividad.DoesNotExist:
+        return JsonResponse({"error": "Actividad no encontrada"}, status=404)
+    except Exception as e:
+        print(f"Error en editar_actividad: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return JsonResponse({"error": str(e)}, status=500)
 
-    data = {
-        "titulo": actividad.titulo,
-        "grupo": grupo.clave,
-        "fecha_entrega": actividad.fecha_entrega.strftime("%d/%m/%Y"),
-        "entregadas": entregadas,
-        "total": alumnos.count(),
-        "alumnos": lista_alumnos
-    }
 
-    return JsonResponse(data)
+def obtener_actividad_para_editar(request, id):
+    """Obtener datos de una actividad para editar"""
+    if request.method != 'GET':
+        return JsonResponse({"error": "Método no permitido"}, status=405)
+    
+    if not request.session.get('usuario_id'):
+        return JsonResponse({"error": "No autorizado"}, status=401)
+    
+    try:
+        actividad = Actividad.objects.select_related(
+            'parcial',
+            'parcial__grupo_docente_materia',
+            'parcial__grupo_docente_materia__grupo',
+            'parcial__grupo_docente_materia__materia'
+        ).get(id=id)
+        
+        # Verificar permiso
+        if actividad.parcial.grupo_docente_materia.docente_id != request.session.get('usuario_id'):
+            return JsonResponse({"error": "No tienes permiso"}, status=403)
+        
+        return JsonResponse({
+            "success": True,
+            "actividad": {
+                "id": actividad.id,
+                "titulo": actividad.titulo,
+                "descripcion": actividad.descripcion,
+                "fecha_entrega": actividad.fecha_entrega.strftime('%Y-%m-%d'),  # Asegurar formato string
+                "grupo_id": actividad.parcial.grupo_docente_materia.grupo.id,
+                "materia_id": actividad.parcial.grupo_docente_materia.id,
+                "grupo_clave": actividad.parcial.grupo_docente_materia.grupo.clave,
+                "materia_nombre": actividad.parcial.grupo_docente_materia.materia.nombre,
+                "parcial_nombre": actividad.parcial.nombre
+            }
+        })
+        
+    except Actividad.DoesNotExist:
+        return JsonResponse({"error": "Actividad no encontrada"}, status=404)
+    except Exception as e:
+        print(f"Error en obtener_actividad_para_editar: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+def estadisticas_actividad_individual(request, id):
+    """API para obtener estadísticas detalladas de una actividad específica"""
+    if not request.session.get('usuario_id'):
+        return JsonResponse({"error": "No autorizado"}, status=401)
+    
+    try:
+        actividad = Actividad.objects.select_related(
+            'parcial',
+            'parcial__grupo_docente_materia',
+            'parcial__grupo_docente_materia__grupo',
+            'parcial__grupo_docente_materia__materia'
+        ).get(id=id)
+        
+        # Verificar permiso
+        if actividad.parcial.grupo_docente_materia.docente_id != request.session.get('usuario_id'):
+            return JsonResponse({"error": "No tienes permiso"}, status=403)
+        
+        grupo = actividad.parcial.grupo_docente_materia.grupo
+        alumnos = Alumno.objects.filter(grupo=grupo).order_by('nombre')
+        
+        # Estadísticas de entregas
+        entregas = Entrega.objects.filter(actividad=actividad)
+        entregas_completadas = entregas.filter(entregado=True).count()
+        total_alumnos = alumnos.count()
+        porcentaje_entregas = (entregas_completadas / total_alumnos * 100) if total_alumnos > 0 else 0
+        
+        # Calificaciones (el campo existe en tu modelo)
+        calificaciones = [e.calificacion for e in entregas if e.entregado and e.calificacion is not None]
+        promedio_calificacion = sum(calificaciones) / len(calificaciones) if calificaciones else None
+        calificacion_max = max(calificaciones) if calificaciones else None
+        calificacion_min = min(calificaciones) if calificaciones else None
+        
+        # Distribución de calificaciones
+        rangos = {
+            'excelente': 0,   # 90-100
+            'bueno': 0,       # 80-89
+            'regular': 0,     # 70-79
+            'insuficiente': 0, # 60-69
+            'reprobado': 0     # 0-59
+        }
+        
+        for e in entregas:
+            if e.entregado and e.calificacion is not None:
+                if e.calificacion >= 90:
+                    rangos['excelente'] += 1
+                elif e.calificacion >= 80:
+                    rangos['bueno'] += 1
+                elif e.calificacion >= 70:
+                    rangos['regular'] += 1
+                elif e.calificacion >= 60:
+                    rangos['insuficiente'] += 1
+                else:
+                    rangos['reprobado'] += 1
+        
+        # Datos por alumno para tabla detallada (SIN fecha_entrega porque no existe)
+        alumnos_data = []
+        for alumno in alumnos:
+            entrega = entregas.filter(alumno=alumno).first()
+            alumnos_data.append({
+                'alumno_id': alumno.id,
+                'nombre': alumno.nombre,
+                'matricula': alumno.matricula,
+                'entregado': entrega.entregado if entrega else False,
+                'calificacion': entrega.calificacion if entrega and entrega.entregado and entrega.calificacion is not None else None,
+                # 'fecha_entrega' NO existe en tu modelo, así que lo omitimos
+            })
+        
+        # Determinar estado actual
+        hoy = timezone.now().date()
+        if actividad.parcial.cerrado:
+            estado = 'cerrada'
+            estado_color = '#6b7280'
+        elif actividad.fecha_entrega < hoy:
+            estado = 'vencida'
+            estado_color = '#dc2626'
+        else:
+            estado = 'activa'
+            estado_color = '#10b981'
+        
+        return JsonResponse({
+            'success': True,
+            'actividad': {
+                'id': actividad.id,
+                'titulo': actividad.titulo,
+                'descripcion': actividad.descripcion,
+                'materia': actividad.parcial.grupo_docente_materia.materia.nombre,
+                'grupo': grupo.clave,
+                'parcial': actividad.parcial.nombre,
+                'fecha_entrega': actividad.fecha_entrega.strftime('%d/%m/%Y'),
+                'estado': estado,
+                'estado_color': estado_color
+            },
+            'estadisticas': {
+                'total_alumnos': total_alumnos,
+                'entregas_completadas': entregas_completadas,
+                'entregas_pendientes': total_alumnos - entregas_completadas,
+                'porcentaje_entregas': round(porcentaje_entregas, 1),
+                'promedio_calificacion': round(promedio_calificacion, 1) if promedio_calificacion else None,
+                'calificacion_max': calificacion_max,
+                'calificacion_min': calificacion_min,
+                'rangos_calificaciones': rangos
+            },
+            'alumnos': alumnos_data
+        })
+        
+    except Actividad.DoesNotExist:
+        return JsonResponse({"error": "Actividad no encontrada"}, status=404)
+    except Exception as e:
+        print(f"Error en estadisticas_actividad_individual: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return JsonResponse({"error": str(e)}, status=500)
+
+def actualizar_calificacion_entrega(request):
+    """Actualizar calificación de una entrega individual"""
+    if request.method != 'POST':
+        return JsonResponse({"error": "Método no permitido"}, status=405)
+    
+    if not request.session.get('usuario_id'):
+        return JsonResponse({"error": "No autorizado"}, status=401)
+    
+    try:
+        data = json.loads(request.body)
+        entrega_id = data.get('entrega_id')
+        calificacion = data.get('calificacion')
+        
+        entrega = Entrega.objects.select_related(
+            'actividad__parcial__grupo_docente_materia'
+        ).get(id=entrega_id)
+        
+        # Verificar permiso
+        if entrega.actividad.parcial.grupo_docente_materia.docente_id != request.session.get('usuario_id'):
+            return JsonResponse({"error": "No tienes permiso"}, status=403)
+        
+        # Validar calificación
+        if calificacion is not None:
+            try:
+                calif_float = float(calificacion)
+                if calif_float < 0 or calif_float > 100:
+                    return JsonResponse({"error": "La calificación debe estar entre 0 y 100"}, status=400)
+                entrega.calificacion = calif_float
+            except ValueError:
+                return JsonResponse({"error": "Calificación inválida"}, status=400)
+        else:
+            entrega.calificacion = None
+        
+        entrega.save()
+        
+        return JsonResponse({
+            "success": True,
+            "message": "Calificación actualizada correctamente",
+            "calificacion": entrega.calificacion
+        })
+        
+    except Entrega.DoesNotExist:
+        return JsonResponse({"error": "Entrega no encontrada"}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+def estadisticas_alumno_individual(request, alumno_id):
+    """API para obtener estadísticas detalladas de un alumno específico"""
+    if not request.session.get('usuario_id'):
+        return JsonResponse({"error": "No autorizado"}, status=401)
+    
+    try:
+        alumno = Alumno.objects.select_related('grupo').get(id=alumno_id)
+        
+        # Verificar que el docente tiene acceso a este alumno
+        docente_id = request.session.get('usuario_id')
+        tiene_acceso = GrupoDocenteMateria.objects.filter(
+            grupo=alumno.grupo,
+            docente_id=docente_id
+        ).exists()
+        
+        if not tiene_acceso:
+            return JsonResponse({"error": "No tienes permiso para ver este alumno"}, status=403)
+        
+        # Obtener todas las actividades del grupo del alumno
+        actividades = Actividad.objects.filter(
+            parcial__grupo_docente_materia__grupo=alumno.grupo
+        ).select_related(
+            'parcial',
+            'parcial__grupo_docente_materia__materia'
+        ).order_by('-fecha_entrega')
+        
+        # Estadísticas de actividades
+        total_actividades = actividades.count()
+        actividades_completadas = 0
+        actividades_pendientes = 0
+        suma_calificaciones = 0
+        calificaciones_count = 0
+        
+        actividades_detalle = []
+        
+        for actividad in actividades:
+            entrega = Entrega.objects.filter(
+                actividad=actividad,
+                alumno=alumno
+            ).first()
+            
+            entregado = entrega.entregado if entrega else False
+            calificacion = entrega.calificacion if entregado and entrega.calificacion else None
+            
+            if entregado:
+                actividades_completadas += 1
+                if calificacion is not None:
+                    suma_calificaciones += calificacion
+                    calificaciones_count += 1
+            else:
+                actividades_pendientes += 1
+            
+            # Determinar estado de la actividad
+            hoy = timezone.now().date()
+            if actividad.parcial.cerrado:
+                estado = 'cerrada'
+            elif actividad.fecha_entrega < hoy:
+                estado = 'vencida'
+            else:
+                estado = 'activa'
+            
+            actividades_detalle.append({
+                'id': actividad.id,
+                'titulo': actividad.titulo,
+                'materia': actividad.parcial.grupo_docente_materia.materia.nombre,
+                'parcial': actividad.parcial.nombre,
+                'fecha_entrega': actividad.fecha_entrega.strftime('%d/%m/%Y'),
+                'entregado': entregado,
+                'calificacion': calificacion,
+                'estado': estado
+            })
+        
+        # Calcular promedios
+        promedio_calificaciones = round(suma_calificaciones / calificaciones_count, 1) if calificaciones_count > 0 else None
+        porcentaje_completado = round((actividades_completadas / total_actividades * 100), 1) if total_actividades > 0 else 0
+        
+        # Estadísticas por materia
+        materias_stats = {}
+        for act in actividades_detalle:
+            materia = act['materia']
+            if materia not in materias_stats:
+                materias_stats[materia] = {
+                    'total': 0,
+                    'completadas': 0,
+                    'suma_calif': 0,
+                    'calif_count': 0
+                }
+            materias_stats[materia]['total'] += 1
+            if act['entregado']:
+                materias_stats[materia]['completadas'] += 1
+                if act['calificacion']:
+                    materias_stats[materia]['suma_calif'] += act['calificacion']
+                    materias_stats[materia]['calif_count'] += 1
+        
+        materias_resumen = []
+        for materia, stats in materias_stats.items():
+            promedio = round(stats['suma_calif'] / stats['calif_count'], 1) if stats['calif_count'] > 0 else None
+            materias_resumen.append({
+                'nombre': materia,
+                'total_actividades': stats['total'],
+                'completadas': stats['completadas'],
+                'pendientes': stats['total'] - stats['completadas'],
+                'porcentaje': round((stats['completadas'] / stats['total'] * 100), 1),
+                'promedio': promedio
+            })
+        
+        # Ordenar por porcentaje descendente
+        materias_resumen.sort(key=lambda x: x['porcentaje'], reverse=True)
+        
+        # Alertas del alumno
+        alertas = Alerta.objects.filter(
+            alumno=alumno,
+            atendida=False
+        ).select_related('parcial__grupo_docente_materia__materia').order_by('-fecha')
+        
+        alertas_data = []
+        for alerta in alertas:
+            alertas_data.append({
+                'id': alerta.id,
+                'motivo': alerta.motivo,
+                'nivel_riesgo': alerta.nivel_riesgo,
+                'fecha': alerta.fecha.strftime('%d/%m/%Y'),
+                'materia': alerta.parcial.grupo_docente_materia.materia.nombre if alerta.parcial else 'General',
+                'parcial': alerta.parcial.nombre if alerta.parcial else None
+            })
+        
+        return JsonResponse({
+            'success': True,
+            'alumno': {
+                'id': alumno.id,
+                'nombre': alumno.nombre,
+                'matricula': alumno.matricula,
+                'grupo': alumno.grupo.clave
+            },
+            'estadisticas': {
+                'total_actividades': total_actividades,
+                'actividades_completadas': actividades_completadas,
+                'actividades_pendientes': actividades_pendientes,
+                'porcentaje_completado': porcentaje_completado,
+                'promedio_calificaciones': promedio_calificaciones,
+                'mejor_calificacion': max([a['calificacion'] for a in actividades_detalle if a['calificacion']]) if actividades_completadas > 0 else None,
+                'peor_calificacion': min([a['calificacion'] for a in actividades_detalle if a['calificacion']]) if actividades_completadas > 0 else None
+            },
+            'actividades': actividades_detalle,
+            'materias': materias_resumen,
+            'alertas': alertas_data,
+            'total_alertas': len(alertas_data),
+            'alertas_alto': sum(1 for a in alertas_data if a['nivel_riesgo'] == 'Alto'),
+            'alertas_medio': sum(1 for a in alertas_data if a['nivel_riesgo'] == 'Medio'),
+            'alertas_bajo': sum(1 for a in alertas_data if a['nivel_riesgo'] == 'Bajo')
+        })
+        
+    except Alumno.DoesNotExist:
+        return JsonResponse({"error": "Alumno no encontrado"}, status=404)
+    except Exception as e:
+        print(f"Error en estadisticas_alumno_individual: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return JsonResponse({"error": str(e)}, status=500)
+    
+
+#Aqui terminan ---------------------------
 
 
 def guardar_entregas(request):
@@ -2986,6 +3361,7 @@ def detalleActividad(request, id):
 
             lista_alumnos.append({
                 "id": entrega.id,
+                "alumno_id": alumno.id,
                 "nombre": alumno.nombre,
                 "matricula": alumno.matricula,
                 "entregado": entrega.entregado
