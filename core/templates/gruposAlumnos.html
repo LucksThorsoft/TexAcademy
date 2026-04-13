@@ -1843,7 +1843,26 @@
         let fechasOcupadas = [];
         let snackbarTimeout;
         
-        // Función para obtener HTML del estado (ahora con colores)
+        //DOMContentLoaded en gruposAlumnos.html.
+      const urlParams = new URLSearchParams(window.location.search);
+      const grupoIdParam = urlParams.get('grupo');
+    
+      if (grupoIdParam) {
+     
+      const targetCard = document.querySelector(`.group-card[data-group-id="${grupoIdParam}"]`);
+        
+        if (targetCard) {
+            
+            setTimeout(() => {
+                targetCard.click();
+                const newUrl = window.location.pathname;
+                window.history.replaceState({}, document.title, newUrl);
+            }, 100);
+        }
+      }
+
+
+        // Función para obtener HTML del estado.
         function getEstadoHTML(estado, estadoClase) {
             if (!estado || estado === 'null' || estado === 'No asignado') {
                 return '<span class="estado-default">No asignado</span>';

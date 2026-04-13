@@ -1,0 +1,930 @@
+{% extends 'sidebar.html' %}
+
+{% block header_title %}Generar QR por Alumno{% endblock %}
+
+{% block content %}
+
+<style>
+    * {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+            Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    }
+
+    .header-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .header-text {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .text-sm {
+        font-size: 14px;
+    }
+
+    .title-figma {
+        font-size: 18px;
+        font-weight: 400;
+        color: #000000;
+        line-height: 1.4;
+        letter-spacing: -0.01em;
+    }
+
+    .config-panel {
+        background: #ffffff;
+        border-radius: 14px;
+        padding: 24px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e6e9f0;
+        margin-bottom: 25px;
+    }
+
+    .config-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 15px;
+        align-items: end;
+    }
+
+    .form-group {
+        margin-bottom: 0;
+    }
+
+    .form-label {
+        display: block;
+        font-size: 14px;
+        font-weight: 500;
+        color: #374151;
+        margin-bottom: 8px;
+    }
+
+    .form-input, .form-select {
+        width: 100%;
+        height: 40px;
+        padding: 8px 12px;
+        border-radius: 8px;
+        border: 1px solid #d1d5db;
+        background-color: #f9fafb;
+        font-size: 14px;
+    }
+
+    .btn-primary {
+        background-color: #1e40af;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        border: none;
+        height: 40px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .btn-primary:hover {
+        background-color: #1e3a8a;
+    }
+
+    .btn-success {
+        background-color: #059669;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        border: none;
+        height: 40px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .btn-success:hover {
+        background-color: #047857;
+    }
+
+    .btn-success:disabled {
+        background-color: #9ca3af;
+        cursor: not-allowed;
+    }
+
+    /* Grid de QR */
+    .qr-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+    }
+
+    .qr-card-alumno {
+        background: white;
+        border-radius: 12px;
+        padding: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e5e7eb;
+        transition: all 0.2s;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .qr-card-alumno:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    }
+
+    .qr-card-alumno.expired {
+        opacity: 0.6;
+        background: #f3f4f6;
+    }
+
+    .qr-card-alumno.usado {
+        opacity: 0.6;
+        background: #f0f9ff;
+        border-color: #93c5fd;
+    }
+
+    .qr-header-alumno {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+
+    .alumno-nombre {
+        font-weight: 600;
+        color: #1f2937;
+        font-size: 13px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100px;
+    }
+
+    .alumno-matricula {
+        font-size: 10px;
+        color: #6b7280;
+        background: #f3f4f6;
+        padding: 2px 4px;
+        border-radius: 4px;
+    }
+
+    .qr-image-small {
+        width: 120px;
+        height: 120px;
+        margin: 0 auto 8px;
+        background: white;
+        padding: 5px;
+        border-radius: 8px;
+        border: 1px solid #e5e7eb;
+    }
+
+    .qr-image-small svg {
+        width: 100%;
+        height: 100%;
+    }
+
+    .qr-footer {
+        margin-top: auto;
+        text-align: center;
+    }
+
+    .tiempo-restante {
+        font-size: 11px;
+        padding: 3px 6px;
+        border-radius: 10px;
+        background: #f3f4f6;
+        display: inline-block;
+        margin-bottom: 6px;
+        font-weight: 500;
+    }
+
+    .tiempo-restante.activo {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .tiempo-restante.expirado {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .tiempo-restante.usado {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    .btn-generar {
+        width: 100%;
+        padding: 6px;
+        background: #1e40af;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 500;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+    }
+
+    .btn-generar:hover {
+        background: #1e3a8a;
+    }
+
+    .btn-generar:disabled {
+        background: #9ca3af;
+        cursor: not-allowed;
+    }
+
+    .btn-generar.reenviar {
+        background: #d97706;
+    }
+
+    .btn-generar.reenviar:hover {
+        background: #b45309;
+    }
+
+    .loading-spinner {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid #ffffff;
+        border-top-color: transparent;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    .stats-bar {
+        display: flex;
+        gap: 10px;
+        margin: 15px 0;
+        padding: 12px;
+        background: #f8fafc;
+        border-radius: 10px;
+        flex-wrap: wrap;
+    }
+
+    .stat-item {
+        flex: 1;
+        min-width: 80px;
+        text-align: center;
+        padding: 5px;
+    }
+
+    .stat-value {
+        font-size: 22px;
+        font-weight: 700;
+        color: #1e40af;
+        line-height: 1.2;
+    }
+
+    .stat-label {
+        font-size: 11px;
+        color: #64748b;
+    }
+
+    .acciones-superiores {
+        display: flex;
+        gap: 10px;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        flex-wrap: wrap;
+    }
+
+    .badge-info {
+        background: #dbeafe;
+        color: #1e40af;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .no-alumnos {
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 50px;
+        color: #94a3b8;
+        background: #f8fafc;
+        border-radius: 10px;
+        font-size: 14px;
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+
+<div class="header-actions">
+    <div class="header-text">
+        <h3 class="mb-1 title-figma">Generar QR por Alumno</h3>
+        <p class="text-sm text-muted-foreground">Configura la clase y genera QR individuales para cada alumno</p>
+    </div>
+</div>
+
+<!-- Panel de configuración -->
+<div class="config-panel">
+    <form id="configForm" class="config-grid">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label class="form-label" for="grupo">Grupo</label>
+            <select id="grupo" name="grupo" class="form-select" required>
+                <option value="">Selecciona un grupo</option>
+                {% for grupo in grupos %}
+                <option value="{{ grupo.id }}">{{ grupo.clave }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="materia">Materia</label>
+            <select id="materia" name="materia" class="form-select" required disabled>
+                <option value="">Primero selecciona un grupo</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="fecha">Fecha</label>
+            <input type="date" id="fecha" name="fecha" class="form-input" required 
+                   value="{{ today|date:'Y-m-d' }}">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="hora">Hora</label>
+            <input type="time" id="hora" name="hora" class="form-input" required 
+                   value="{{ now|time:'H:i' }}">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="duracion">Duración</label>
+            <select id="duracion" name="duracion" class="form-select">
+                <option value="2">2 minutos</option>
+                <option value="3">3 minutos</option>
+                <option value="5">5 minutos</option>
+                <option value="10" selected>10 minutos</option>
+                <option value="15">15 minutos</option>
+                <option value="20">20 minutos</option>
+                <option value="30">30 minutos</option>
+                <option value="45">45 minutos</option>
+                <option value="60">60 minutos</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <button type="button" class="btn-primary" id="cargarAlumnosBtn" onclick="cargarAlumnos()" style="width: 100%;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                Cargar Alumnos
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Barra de estadísticas y acciones -->
+<div id="panelControl" style="display: none;">
+    <div class="stats-bar">
+        <div class="stat-item">
+            <div class="stat-value" id="totalAlumnos">0</div>
+            <div class="stat-label">Total</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value" id="conQR">0</div>
+            <div class="stat-label">Generados</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value" id="activos">0</div>
+            <div class="stat-label">Activos</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value" id="expirados">0</div>
+            <div class="stat-label">Expirados</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value" id="usados">0</div>
+            <div class="stat-label">Usados</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value" id="pendientes">0</div>
+            <div class="stat-label">Pendientes</div>
+        </div>
+    </div>
+
+    <div class="acciones-superiores">
+        <div class="badge-info">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            Los QR expiran en <span id="duracionActual">10</span> minutos
+        </div>
+        
+        <div class="btn-acciones">
+            <button class="btn-success" onclick="generarTodosQR()" id="btnGenerarTodos">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="12" y1="8" x2="12" y2="16"></line>
+                    <line x1="8" y1="12" x2="16" y2="12"></line>
+                </svg>
+                Generar QR para TODOS
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Grid de QR por alumno -->
+<div id="qrGridContainer" class="qr-grid"></div>
+
+<script>
+    let alumnosData = [];
+    let qrGenerados = [];
+    let intervalIds = [];
+    let grupoSeleccionado = null;
+    let materiaSeleccionada = null;
+    let fechaSeleccionada = '';
+    let horaSeleccionada = '';
+    let duracionSeleccionada = 10;
+
+    // Cargar materias al seleccionar grupo
+    document.getElementById('grupo').addEventListener('change', function() {
+        const grupoId = this.value;
+        const materiaSelect = document.getElementById('materia');
+        
+        if (!grupoId) {
+            materiaSelect.disabled = true;
+            materiaSelect.innerHTML = '<option value="">Primero selecciona un grupo</option>';
+            return;
+        }
+
+        materiaSelect.disabled = true;
+        materiaSelect.innerHTML = '<option value="">Cargando materias...</option>';
+
+        fetch(`/api/materias-por-grupo/${grupoId}/`, {
+            method: 'GET',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.materias && data.materias.length > 0) {
+                materiaSelect.innerHTML = '<option value="">Selecciona una materia</option>';
+                data.materias.forEach(materia => {
+                    materiaSelect.innerHTML += `<option value="${materia.id}">${materia.nombre}</option>`;
+                });
+                materiaSelect.disabled = false;
+            } else {
+                materiaSelect.innerHTML = '<option value="">No hay materias disponibles</option>';
+                materiaSelect.disabled = true;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            materiaSelect.innerHTML = '<option value="">Error al cargar materias</option>';
+            materiaSelect.disabled = true;
+        });
+    });
+
+    // Cargar alumnos
+    function cargarAlumnos() {
+        const grupo = document.getElementById('grupo').value;
+        const materia = document.getElementById('materia').value;
+        const fecha = document.getElementById('fecha').value;
+        const hora = document.getElementById('hora').value;
+        const duracion = document.getElementById('duracion').value;
+
+        if (!grupo || !materia || !fecha || !hora) {
+            alert('Por favor completa todos los campos');
+            return;
+        }
+
+        grupoSeleccionado = grupo;
+        materiaSeleccionada = materia;
+        fechaSeleccionada = fecha;
+        horaSeleccionada = hora;
+        duracionSeleccionada = parseInt(duracion);
+
+        document.getElementById('duracionActual').textContent = duracionSeleccionada;
+
+        const btn = document.getElementById('cargarAlumnosBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="loading-spinner"></span> Cargando...';
+
+        fetch(`/obtener-alumnos-por-grupo/?grupo_id=${grupo}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alumnosData = data.alumnos;
+                    // Limpiar QR anteriores
+                    qrGenerados = [];
+                    intervalIds.forEach(id => clearInterval(id));
+                    intervalIds = [];
+                    
+                    // Cargar QR guardados
+                    cargarQRsDeLocalStorage();
+                    
+                    mostrarGridAlumnos();
+                    document.getElementById('panelControl').style.display = 'block';
+                    
+                    // Verificar asistencias después de mostrar
+                    setTimeout(() => {
+                        verificarAsistenciasRegistradas();
+                    }, 500);
+                    
+                    actualizarEstadisticas();
+                } else {
+                    alert('Error al cargar alumnos');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error de conexión');
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    Cargar Alumnos
+                `;
+            });
+    }
+
+    function mostrarGridAlumnos() {
+        const container = document.getElementById('qrGridContainer');
+        
+        if (alumnosData.length === 0) {
+            container.innerHTML = '<div class="no-alumnos">No hay alumnos en este grupo</div>';
+            return;
+        }
+
+        container.innerHTML = alumnosData.map(alumno => {
+            const qrExistente = qrGenerados.find(q => q.alumnoId === alumno.id);
+            
+            let cardClass = 'qr-card-alumno';
+            let timerClass = '';
+            let timerText = '---';
+            let btnText = 'Generar QR';
+            let btnDisabled = false;
+            let btnExtraClass = '';
+            
+            if (qrExistente) {
+                if (qrExistente.usado) {
+                    cardClass += ' usado';
+                    timerClass = 'usado';
+                    timerText = '✓ Asistió';
+                    btnText = 'Ya registró';
+                    btnDisabled = true;
+                } else if (qrExistente.activo && qrExistente.expiraEn > Date.now()) {
+                    timerClass = 'activo';
+                    timerText = formatTiempoRestante(qrExistente.expiraEn - Date.now());
+                    btnText = '✓ QR Listo';
+                    btnDisabled = true;
+                } else {
+                    cardClass += ' expired';
+                    timerClass = 'expirado';
+                    timerText = 'Expirado';
+                    btnText = 'Regenerar QR';
+                    btnExtraClass = 'reenviar';
+                    btnDisabled = false;
+                }
+            }
+            
+            return `
+                <div class="${cardClass}" id="alumno-${alumno.id}">
+                    <div class="qr-header-alumno">
+                        <span class="alumno-nombre" title="${alumno.nombre}">${alumno.nombre}</span>
+                        <span class="alumno-matricula">${alumno.matricula}</span>
+                    </div>
+                    
+                    <div class="qr-image-small" id="qr-${alumno.id}"></div>
+                    
+                    <div class="qr-footer">
+                        <div class="tiempo-restante ${timerClass}" id="timer-${alumno.id}">
+                            ${timerText}
+                        </div>
+                        
+                        <button class="btn-generar ${btnExtraClass}" 
+                                onclick="generarQRIndividual(${alumno.id})"
+                                ${btnDisabled ? 'disabled' : ''}
+                                id="btn-${alumno.id}">
+                            ${btnText}
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+        // Generar QR para los que ya existen
+        setTimeout(() => {
+            qrGenerados.forEach(qr => {
+                const container = document.getElementById(`qr-${qr.alumnoId}`);
+                if (container && container.children.length === 0) {
+                    generarQRCanvas(qr.alumnoId, qr.token);
+                }
+                
+                if (qr.activo && !qr.usado && qr.expiraEn > Date.now()) {
+                    iniciarTemporizador(qr.alumnoId, qr.expiraEn);
+                }
+            });
+        }, 100);
+    }
+
+    function generarQRCanvas(alumnoId, token) {
+        const container = document.getElementById(`qr-${alumnoId}`);
+        if (!container) return;
+        
+        container.innerHTML = '';
+        const canvas = document.createElement('canvas');
+        
+        QRCode.toCanvas(
+            canvas,
+            token,
+            { 
+                width: 120, 
+                margin: 1, 
+                color: { 
+                    dark: '#1e40af',
+                    light: '#ffffff'
+                }
+            },
+            function(error) {
+                if (error) {
+                    console.error('Error generando QR:', error);
+                    container.innerHTML = '<p>Error</p>';
+                } else {
+                    container.appendChild(canvas);
+                    canvas.style.width = '100%';
+                    canvas.style.height = '100%';
+                }
+            }
+        );
+    }
+
+    function generarQRIndividual(alumnoId) {
+        const alumno = alumnosData.find(a => a.id === alumnoId);
+        if (!alumno) return;
+
+        const btn = document.getElementById(`btn-${alumnoId}`);
+        btn.disabled = true;
+        btn.innerHTML = '<span class="loading-spinner"></span> Generando...';
+
+        const timestamp = Date.now();
+        const token = `${alumno.matricula}_${timestamp}`;
+        const expiraEn = Date.now() + (duracionSeleccionada * 60 * 1000);
+
+        const qrInfo = {
+            alumnoId: alumno.id,
+            token: token,
+            expiraEn: expiraEn,
+            activo: true,
+            usado: false
+        };
+
+        // Actualizar o agregar
+        const index = qrGenerados.findIndex(q => q.alumnoId === alumnoId);
+        if (index !== -1) {
+            qrGenerados[index] = qrInfo;
+        } else {
+            qrGenerados.push(qrInfo);
+        }
+
+        // Guardar en localStorage
+        guardarQRsEnLocalStorage();
+        
+        // Actualizar UI
+        mostrarGridAlumnos();
+        actualizarEstadisticas();
+        mostrarAlerta(`QR generado para ${alumno.nombre}`, 'success');
+    }
+
+    function generarTodosQR() {
+        const pendientes = alumnosData.filter(alumno => {
+            const qr = qrGenerados.find(q => q.alumnoId === alumno.id);
+            return !qr || (!qr.activo && !qr.usado);
+        });
+        
+        if (pendientes.length === 0) {
+            mostrarAlerta('Todos los alumnos ya tienen QR activos', 'info');
+            return;
+        }
+
+        const btn = document.getElementById('btnGenerarTodos');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="loading-spinner"></span> Generando...';
+
+        let index = 0;
+        function generarSiguiente() {
+            if (index < pendientes.length) {
+                generarQRIndividual(pendientes[index].id);
+                index++;
+                setTimeout(generarSiguiente, 300);
+            } else {
+                btn.disabled = false;
+                btn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="12" y1="8" x2="12" y2="16"></line>
+                        <line x1="8" y1="12" x2="16" y2="12"></line>
+                    </svg>
+                    Generar QR para TODOS
+                `;
+                mostrarAlerta(`Se generaron ${pendientes.length} QR`, 'success');
+            }
+        }
+        generarSiguiente();
+    }
+
+    function iniciarTemporizador(alumnoId, expiraEn) {
+        const intervalId = setInterval(() => {
+            const ahora = Date.now();
+            const tiempoRestante = expiraEn - ahora;
+            const timerDiv = document.getElementById(`timer-${alumnoId}`);
+            
+            if (!timerDiv) {
+                clearInterval(intervalId);
+                return;
+            }
+
+            if (tiempoRestante <= 0) {
+                timerDiv.textContent = 'Expirado';
+                timerDiv.className = 'tiempo-restante expirado';
+                
+                const qrIndex = qrGenerados.findIndex(q => q.alumnoId === alumnoId);
+                if (qrIndex !== -1) {
+                    qrGenerados[qrIndex].activo = false;
+                    guardarQRsEnLocalStorage();
+                    
+                    const btn = document.getElementById(`btn-${alumnoId}`);
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.innerHTML = 'Regenerar QR';
+                        btn.className = 'btn-generar reenviar';
+                    }
+                }
+                
+                clearInterval(intervalId);
+                actualizarEstadisticas();
+            } else {
+                timerDiv.textContent = formatTiempoRestante(tiempoRestante);
+            }
+        }, 1000);
+
+        intervalIds.push(intervalId);
+    }
+
+    function formatTiempoRestante(ms) {
+        if (ms < 0) return '0:00';
+        const minutos = Math.floor(ms / 60000);
+        const segundos = Math.floor((ms % 60000) / 1000);
+        return `${minutos}:${segundos.toString().padStart(2, '0')}`;
+    }
+
+    // Guardar QR en localStorage
+    function guardarQRsEnLocalStorage() {
+        if (!grupoSeleccionado || !fechaSeleccionada) return;
+        
+        const key = `qrs_${grupoSeleccionado}_${fechaSeleccionada}`;
+        const qrsParaGuardar = qrGenerados.map(qr => ({
+            alumnoId: qr.alumnoId,
+            token: qr.token,
+            expiraEn: qr.expiraEn,
+            activo: qr.activo,
+            usado: qr.usado || false
+        }));
+        
+        localStorage.setItem(key, JSON.stringify(qrsParaGuardar));
+    }
+
+    // Cargar QR desde localStorage
+    function cargarQRsDeLocalStorage() {
+        if (!grupoSeleccionado || !fechaSeleccionada) return;
+        
+        const key = `qrs_${grupoSeleccionado}_${fechaSeleccionada}`;
+        const qrsGuardados = localStorage.getItem(key);
+        
+        if (qrsGuardados) {
+            try {
+                const qrs = JSON.parse(qrsGuardados);
+                qrGenerados = qrs.map(qr => ({
+                    ...qr,
+                    // Verificar si ya expiró
+                    activo: qr.activo && qr.expiraEn > Date.now() && !qr.usado
+                }));
+                console.log('QR cargados:', qrGenerados);
+            } catch (e) {
+                console.error('Error cargando QR de localStorage:', e);
+            }
+        }
+    }
+
+    // Verificar asistencias registradas
+    function verificarAsistenciasRegistradas() {
+        if (!grupoSeleccionado) return;
+        
+        const fecha = document.getElementById('fecha').value;
+        
+        fetch(`/obtener-asistencias-por-grupo/?grupo_id=${grupoSeleccionado}&fecha=${fecha}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.asistencias && data.asistencias.length > 0) {
+                    let cambios = false;
+                    
+                    data.asistencias.forEach(asistencia => {
+                        const alumnoId = asistencia.alumno_id;
+                        const qrIndex = qrGenerados.findIndex(q => q.alumnoId === alumnoId);
+                        
+                        if (qrIndex !== -1) {
+                            qrGenerados[qrIndex].activo = false;
+                            qrGenerados[qrIndex].usado = true;
+                            cambios = true;
+                        }
+                    });
+                    
+                    if (cambios) {
+                        guardarQRsEnLocalStorage();
+                        mostrarGridAlumnos();
+                        actualizarEstadisticas();
+                    }
+                }
+            })
+            .catch(error => console.error('Error verificando asistencias:', error));
+    }
+
+    function actualizarEstadisticas() {
+        const total = alumnosData.length;
+        const conQR = qrGenerados.length;
+        const ahora = Date.now();
+        const activos = qrGenerados.filter(q => q.activo && !q.usado && q.expiraEn > ahora).length;
+        const usados = qrGenerados.filter(q => q.usado).length;
+        const expirados = qrGenerados.filter(q => !q.activo && !q.usado).length;
+        const pendientes = total - (activos + usados + expirados);
+
+        document.getElementById('totalAlumnos').textContent = total;
+        document.getElementById('conQR').textContent = conQR;
+        document.getElementById('activos').textContent = activos;
+        document.getElementById('usados').textContent = usados;
+        document.getElementById('expirados').textContent = expirados;
+        document.getElementById('pendientes').textContent = pendientes;
+    }
+
+    function mostrarAlerta(mensaje, tipo) {
+        const alerta = document.createElement('div');
+        alerta.style.padding = '12px 16px';
+        alerta.style.borderRadius = '8px';
+        alerta.style.marginBottom = '15px';
+        alerta.style.fontSize = '14px';
+        alerta.style.display = 'flex';
+        alerta.style.alignItems = 'center';
+        alerta.style.gap = '10px';
+        
+        if (tipo === 'success') {
+            alerta.style.background = '#dcfce7';
+            alerta.style.color = '#166534';
+            alerta.style.border = '1px solid #86efac';
+        } else {
+            alerta.style.background = '#dbeafe';
+            alerta.style.color = '#1e40af';
+            alerta.style.border = '1px solid #93c5fd';
+        }
+        
+        alerta.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+            ${mensaje}
+        `;
+        
+        const panel = document.querySelector('.config-panel');
+        panel.parentNode.insertBefore(alerta, panel.nextSibling);
+        setTimeout(() => alerta.remove(), 3000);
+    }
+
+    // Limpiar intervalos al salir
+    window.addEventListener('beforeunload', function() {
+        intervalIds.forEach(id => clearInterval(id));
+    });
+</script>
+
+{% endblock %}

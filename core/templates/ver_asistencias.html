@@ -1,0 +1,394 @@
+{% extends 'sidebar.html' %}
+
+{% block header_title %}Ver Asistencias Registradas{% endblock %}
+
+{% block content %}
+<style>
+    * {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+            Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    }
+
+    .header-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .title-figma {
+        font-size: 18px;
+        font-weight: 400;
+        color: #000000;
+        line-height: 1.4;
+        letter-spacing: -0.01em;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 14px;
+        padding: 20px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e6e9f0;
+    }
+
+    .stat-title {
+        font-size: 14px;
+        color: #64748b;
+        margin-bottom: 8px;
+    }
+
+    .stat-number {
+        font-size: 32px;
+        font-weight: 700;
+        color: #1e40af;
+    }
+
+    .stat-sub {
+        font-size: 12px;
+        color: #94a3b8;
+        margin-top: 4px;
+    }
+
+    .filter-panel {
+        background: white;
+        border-radius: 14px;
+        padding: 20px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e6e9f0;
+        margin-bottom: 25px;
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        align-items: flex-end;
+    }
+
+    .filter-group {
+        flex: 1;
+        min-width: 150px;
+    }
+
+    .filter-label {
+        display: block;
+        font-size: 12px;
+        font-weight: 500;
+        color: #374151;
+        margin-bottom: 4px;
+    }
+
+    .filter-select, .filter-input {
+        width: 100%;
+        height: 40px;
+        padding: 8px 12px;
+        border-radius: 8px;
+        border: 1px solid #d1d5db;
+        background-color: #f9fafb;
+        font-size: 14px;
+    }
+
+    .btn-primary {
+        background-color: #1e40af;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        border: none;
+        height: 40px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-primary:hover {
+        background-color: #1e3a8a;
+    }
+
+    .table-container {
+        background: white;
+        border-radius: 14px;
+        padding: 20px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e6e9f0;
+        overflow-x: auto;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th {
+        text-align: left;
+        padding: 12px;
+        background-color: #f8fafc;
+        color: #374151;
+        font-size: 13px;
+        font-weight: 600;
+        border-bottom: 2px solid #e5e7eb;
+    }
+
+    td {
+        padding: 12px;
+        border-bottom: 1px solid #e5e7eb;
+        font-size: 13px;
+        color: #1f2937;
+    }
+
+    .badge {
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    .badge-success {
+        background-color: #dcfce7;
+        color: #166534;
+    }
+
+    .badge-warning {
+        background-color: #fef3c7;
+        color: #92400e;
+    }
+
+    .badge-danger {
+        background-color: #fee2e2;
+        color: #991b1b;
+    }
+
+    .grupo-badge {
+        background-color: #dbeafe;
+        color: #1e40af;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 500;
+    }
+
+    .export-btn {
+        background-color: #059669;
+        color: white;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 13px;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .export-btn:hover {
+        background-color: #047857;
+    }
+
+    .loading-spinner {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid #ffffff;
+        border-top-color: transparent;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+</style>
+
+<div class="header-actions">
+    <div class="header-text">
+        <h3 class="mb-1 title-figma">Registros de Asistencia</h3>
+        <p class="text-sm text-muted-foreground">Verifica las asistencias registradas por los alumnos</p>
+    </div>
+    
+    <button class="export-btn" onclick="exportToExcel()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+        Exportar Excel
+    </button>
+</div>
+
+<!-- Estadísticas -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-title">Asistencias hoy</div>
+        <div class="stat-number">{{ total_asistencias_hoy }}</div>
+        <div class="stat-sub">{{ hoy|date:"d/m/Y" }}</div>
+    </div>
+    
+    {% for grupo, cantidad in asistencias_por_grupo.items %}
+    <div class="stat-card">
+        <div class="stat-title">Grupo {{ grupo }}</div>
+        <div class="stat-number">{{ cantidad }}</div>
+        <div class="stat-sub">alumnos presentes</div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Filtros -->
+<div class="filter-panel">
+    <div class="filter-group">
+        <label class="filter-label">Grupo</label>
+        <select id="filtroGrupo" class="filter-select">
+            <option value="todos">Todos los grupos</option>
+            {% for grupo in grupos %}
+            <option value="{{ grupo.id }}">{{ grupo.clave }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    
+    <div class="filter-group">
+        <label class="filter-label">Fecha</label>
+        <input type="date" id="filtroFecha" class="filter-input" value="{{ hoy|date:'Y-m-d' }}">
+    </div>
+    
+    <div class="filter-group">
+        <button class="btn-primary" onclick="filtrarAsistencias()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="22 3 2 3 10 13 10 21 14 18 14 13 22 3"></polygon>
+            </svg>
+            Filtrar
+        </button>
+    </div>
+</div>
+
+<!-- Tabla de asistencias -->
+<div class="table-container">
+    <table id="tablaAsistencias">
+        <thead>
+            <tr>
+                <th>Alumno</th>
+                <th>Matrícula</th>
+                <th>Grupo</th>
+                <th>Materia</th>
+                <th>Fecha</th>
+                <th>Hora</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody id="tablaBody">
+            {% for asistencia in ultimas_asistencias %}
+            <tr>
+                <td>{{ asistencia.alumno.nombre }}</td>
+                <td><span class="grupo-badge">{{ asistencia.alumno.matricula }}</span></td>
+                <td>{{ asistencia.grupo_docente_materia.grupo.clave }}</td>
+                <td>{{ asistencia.grupo_docente_materia.materia.nombre }}</td>
+                <td>{{ asistencia.fecha|date:"d/m/Y" }}</td>
+                <td>
+                    {% if 'a las' in asistencia.comentario %}
+                        {{ asistencia.comentario|slice:"-5:" }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td>
+                    <span class="badge badge-success">
+                        {{ asistencia.estado.nombre }}
+                    </span>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" style="text-align: center; color: #94a3b8; padding: 40px;">
+                    No hay asistencias registradas
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+function filtrarAsistencias() {
+    const grupoId = document.getElementById('filtroGrupo').value;
+    const fecha = document.getElementById('filtroFecha').value;
+    
+    // Mostrar loading
+    const tbody = document.getElementById('tablaBody');
+    tbody.innerHTML = `
+        <tr>
+            <td colspan="7" style="text-align: center; padding: 40px;">
+                <span class="loading-spinner"></span> Cargando...
+            </td>
+        </tr>
+    `;
+    
+    fetch(`/api/filtrar-asistencias/?grupo_id=${grupoId}&fecha=${fecha}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.asistencias && data.asistencias.length > 0) {
+                tbody.innerHTML = data.asistencias.map(a => `
+                    <tr>
+                        <td>${a.alumno}</td>
+                        <td><span class="grupo-badge">${a.matricula}</span></td>
+                        <td>${a.grupo}</td>
+                        <td>${a.materia}</td>
+                        <td>${a.fecha}</td>
+                        <td>${a.hora}</td>
+                        <td><span class="badge badge-success">${a.estado}</span></td>
+                    </tr>
+                `).join('');
+            } else {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center; color: #94a3b8; padding: 40px;">
+                            No hay asistencias para este filtro
+                        </td>
+                    </tr>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="7" style="text-align: center; color: #ef4444; padding: 40px;">
+                        Error al cargar los datos
+                    </td>
+                </tr>
+            `;
+        });
+}
+
+function exportToExcel() {
+    const tabla = document.getElementById('tablaAsistencias');
+    const filas = tabla.querySelectorAll('tr');
+    let csv = [];
+    
+    filas.forEach(fila => {
+        const celdas = fila.querySelectorAll('td, th');
+        const filaCsv = [];
+        celdas.forEach(celda => {
+            filaCsv.push('"' + celda.innerText.replace(/"/g, '""') + '"');
+        });
+        csv.push(filaCsv.join(','));
+    });
+    
+    const blob = new Blob([csv.join('\n')], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `asistencias_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+}
+
+// Refrescar automáticamente cada 30 segundos
+setInterval(filtrarAsistencias, 30000);
+</script>
+{% endblock %}
