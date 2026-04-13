@@ -108,13 +108,75 @@
                         {% endfor %}
                     </div>
 
+                    <!-- ── Citas agendadas ── -->
+                    {% if alerta.tiene_citas %}
+                    <div style="margin-top:10px;">
+                        <div style="font-size:12px;font-weight:600;color:#6b7280;
+                                    margin-bottom:6px;display:flex;align-items:center;gap:5px;">
+                            <span class="mdi mdi-calendar-clock"></span>
+                            Citas agendadas
+                        </div>
+                        <div style="display:flex;flex-direction:column;gap:6px;">
+                            {% for cita in alerta.citas %}
+                            <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;
+                                        padding:8px 12px;display:flex;align-items:center;
+                                        justify-content:space-between;flex-wrap:wrap;gap:8px;">
+                                <div style="display:flex;align-items:center;gap:8px;">
+                                    <span class="mdi mdi-calendar-check" style="color:#15803d;"></span>
+                                    <div>
+                                        <span style="font-size:13px;font-weight:600;color:#15803d;">
+                                            {{ cita.fecha }} a las {{ cita.hora }}
+                                        </span>
+                                        <span style="font-size:11px;color:#6b7280;margin-left:8px;">
+                                            por {{ cita.creado_por }} ({{ cita.rol_creador }})
+                                        </span>
+                                    </div>
+                                </div>
+                                <div style="display:flex;align-items:center;gap:6px;">
+                                    <!-- Badge estado -->
+                                    {% if cita.estado == 'pendiente' %}
+                                    <span style="background:#fef9c3;color:#854d0e;border:1px solid #fde047;
+                                                border-radius:20px;padding:2px 8px;font-size:11px;font-weight:600;">
+                                        <span class="mdi mdi-clock-outline"></span> Pendiente
+                                    </span>
+                                    {% elif cita.estado == 'realizada' %}
+                                    <span style="background:#dcfce7;color:#15803d;border:1px solid #86efac;
+                                                border-radius:20px;padding:2px 8px;font-size:11px;font-weight:600;">
+                                        <span class="mdi mdi-check-circle"></span> Realizada
+                                    </span>
+                                    {% else %}
+                                    <span style="background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5;
+                                                border-radius:20px;padding:2px 8px;font-size:11px;font-weight:600;">
+                                        <span class="mdi mdi-close-circle"></span> Cancelada
+                                    </span>
+                                    {% endif %}
+                                </div>
+                                <!-- Comentario de la cita -->
+                                {% if cita.comentario %}
+                                <div style="width:100%;font-size:12px;color:#374151;
+                                            border-top:1px solid #bbf7d0;padding-top:6px;margin-top:2px;">
+                                    <span class="mdi mdi-comment-outline" style="color:#6b7280;"></span>
+                                    {{ cita.comentario }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
                     <!-- Botones principales -->
+                    <!-- Reemplaza el bloque de botones principales en tutor.html -->
                     <div class="acciones-principales" id="acciones-{{ alerta.id }}">
                         <button class="btn-accion btn-cerrar"
                                 onclick="mostrarFormComentario({{ alerta.id }}, 'cerrar')">
                             <span class="mdi mdi-check"></span> Cerrar alerta
                         </button>
                         {% if not alerta.derivada %}
+                        <button class="btn-accion btn-cita"
+                                onclick="mostrarFormComentario({{ alerta.id }}, 'cita')">
+                            <span class="mdi mdi-calendar-plus"></span> Agendar cita
+                        </button>
                         <button class="btn-accion btn-pedagogia"
                                 onclick="mostrarFormComentario({{ alerta.id }}, 'Pedagogia')">
                             <span class="mdi mdi-school-outline"></span> Pedagogía
@@ -128,6 +190,10 @@
                             <span class="mdi mdi-head-heart-outline"></span> Psicología
                         </button>
                         {% else %}
+                        <button class="btn-accion btn-cita"
+                                onclick="mostrarFormComentario({{ alerta.id }}, 'cita')">
+                            <span class="mdi mdi-calendar-plus"></span> Agendar cita
+                        </button>
                         <button class="btn-accion btn-enviada" disabled>
                             <span class="mdi mdi-send-check"></span> Enviada a {{ alerta.derivada_a }}
                         </button>
@@ -135,13 +201,40 @@
                     </div>
 
                     <!-- Formulario de comentario (oculto inicialmente) -->
+                    <!-- Reemplaza el form-comentario en tutor.html -->
                     <div class="form-comentario" id="form-{{ alerta.id }}" style="display:none;">
                         <div class="form-comentario-header">
                             <span class="mdi mdi-comment-text-outline" style="color:#6b7280;"></span>
                             <span id="form-label-{{ alerta.id }}" style="font-size:13px;font-weight:600;color:#374151;">
-                                Escribe un comentario sobre la sesión
+                                Escribe un comentario
                             </span>
                         </div>
+
+                        <!-- Campos de fecha y hora (solo para citas) -->
+                        <div id="campos-cita-{{ alerta.id }}" style="display:none;margin-bottom:10px;">
+                            <div style="display:flex;gap:10px;">
+                                <div style="flex:1;">
+                                    <label style="font-size:12px;font-weight:600;color:#6b7280;display:block;margin-bottom:4px;">
+                                        Fecha de la cita
+                                    </label>
+                                    <input type="date"
+                                        id="fecha-cita-{{ alerta.id }}"
+                                        style="width:100%;padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;
+                                                font-size:13px;font-family:inherit;outline:none;box-sizing:border-box;"
+                                        min="{{ 'today'|date:'Y-m-d' }}">
+                                </div>
+                                <div style="flex:1;">
+                                    <label style="font-size:12px;font-weight:600;color:#6b7280;display:block;margin-bottom:4px;">
+                                        Hora de la cita
+                                    </label>
+                                    <input type="time"
+                                        id="hora-cita-{{ alerta.id }}"
+                                        style="width:100%;padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;
+                                                font-size:13px;font-family:inherit;outline:none;box-sizing:border-box;">
+                                </div>
+                            </div>
+                        </div>
+
                         <textarea
                             id="textarea-{{ alerta.id }}"
                             class="comentario-textarea"
@@ -215,42 +308,47 @@
 
     // ── Mostrar formulario de comentario ─────────────────────────────────────
     function mostrarFormComentario(alertaId, accion) {
-        // Guardar qué acción se va a hacer
         accionPendiente[alertaId] = accion;
-
-        // Ocultar los botones principales
         document.getElementById(`acciones-${alertaId}`).style.display = 'none';
 
-        // Actualizar label según la acción
-        const label = document.getElementById(`form-label-${alertaId}`);
+        const label    = document.getElementById(`form-label-${alertaId}`);
         const btnLabel = document.getElementById(`btn-confirmar-label-${alertaId}`);
-        const btn = document.getElementById(`btn-confirmar-${alertaId}`);
+        const btn      = document.getElementById(`btn-confirmar-${alertaId}`);
+        const camposCita = document.getElementById(`campos-cita-${alertaId}`);
 
         const configs = {
             'cerrar':    { label: 'Comentario de cierre',      btn: 'Cerrar alerta',      cls: 'btn-confirmar-cerrar'    },
+            'cita':      { label: 'Comentario sobre la sesión previa', btn: 'Agendar y notificar', cls: 'btn-confirmar-cita' },
             'Pedagogia': { label: 'Comentario para Pedagogía', btn: 'Enviar a Pedagogía', cls: 'btn-confirmar-pedagogia' },
-            'Psicologia':{ label: 'Comentario para Psicología',btn: 'Enviar a Psicología',cls: 'btn-confirmar-psicologia' },
-            'Direccion': { label: 'Comentario para Dirección', btn: 'Enviar a Dirección', cls: 'btn-confirmar-direccion'  },
+            'Psicologia':{ label: 'Comentario para Psicología',btn: 'Enviar a Psicología',cls: 'btn-confirmar-psicologia'},
+            'Direccion': { label: 'Comentario para Dirección', btn: 'Enviar a Dirección', cls: 'btn-confirmar-direccion' },
         };
         const config = configs[accion] || configs['Direccion'];
         label.textContent    = config.label;
         btnLabel.textContent = config.btn;
         btn.className        = `btn-accion btn-confirmar ${config.cls}`;
 
-        // Mostrar formulario con animación
+        // Mostrar/ocultar campos de fecha y hora según la acción
+        camposCita.style.display = accion === 'cita' ? 'block' : 'none';
+
+        // Actualizar placeholder del textarea
+        const textarea = document.getElementById(`textarea-${alertaId}`);
+        textarea.placeholder = accion === 'cita'
+            ? 'Describe lo que se habló en la sesión previa, motivo de la cita, acuerdos...'
+            : 'Describe lo que se trató en la sesión, acuerdos, observaciones...';
+
         const form = document.getElementById(`form-${alertaId}`);
-        form.style.display = 'block';
-        form.style.opacity = '0';
+        form.style.display   = 'block';
+        form.style.opacity   = '0';
         form.style.transform = 'translateY(-6px)';
         requestAnimationFrame(() => {
             form.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
             form.style.opacity    = '1';
             form.style.transform  = 'translateY(0)';
         });
-
-        // Focus en el textarea
-        setTimeout(() => document.getElementById(`textarea-${alertaId}`).focus(), 150);
+        setTimeout(() => textarea.focus(), 150);
     }
+
 
     // ── Cancelar formulario ───────────────────────────────────────────────────
     function cancelarFormComentario(alertaId) {
@@ -267,20 +365,37 @@
         const btn        = document.getElementById(`btn-confirmar-${alertaId}`);
 
         if (!comentario) {
-            document.getElementById(`textarea-${alertaId}`).focus();
             document.getElementById(`textarea-${alertaId}`).style.borderColor = '#ef4444';
             mostrarSnack('Escribe un comentario antes de continuar', 'error');
             return;
         }
-
-        // Reset borde textarea
         document.getElementById(`textarea-${alertaId}`).style.borderColor = '';
 
-        btn.disabled      = true;
-        btn.innerHTML     = '<span class="mdi mdi-loading mdi-spin"></span> Guardando…';
+        // Validaciones extra para cita
+        if (accion === 'cita') {
+            const fecha = document.getElementById(`fecha-cita-${alertaId}`).value;
+            const hora  = document.getElementById(`hora-cita-${alertaId}`).value;
+            if (!fecha) {
+                document.getElementById(`fecha-cita-${alertaId}`).style.borderColor = '#ef4444';
+                mostrarSnack('Selecciona una fecha para la cita', 'error');
+                return;
+            }
+            if (!hora) {
+                document.getElementById(`hora-cita-${alertaId}`).style.borderColor = '#ef4444';
+                mostrarSnack('Selecciona una hora para la cita', 'error');
+                return;
+            }
+            document.getElementById(`fecha-cita-${alertaId}`).style.borderColor = '';
+            document.getElementById(`hora-cita-${alertaId}`).style.borderColor  = '';
+        }
+
+        btn.disabled  = true;
+        btn.innerHTML = '<span class="mdi mdi-loading mdi-spin"></span> Guardando…';
 
         if (accion === 'cerrar') {
             _cerrarAlerta(alertaId, comentario, btn);
+        } else if (accion === 'cita') {
+            _agendarCita(alertaId, comentario, btn);
         } else {
             _derivarAlerta(alertaId, accion, comentario, btn);
         }
@@ -393,6 +508,56 @@
     function getCsrf() {
         const m = document.cookie.match(/csrftoken=([^;]+)/);
         return m ? m[1] : '';
+    }
+
+    function _agendarCita(alertaId, comentario, btn) {
+        const fecha = document.getElementById(`fecha-cita-${alertaId}`).value;
+        const hora  = document.getElementById(`hora-cita-${alertaId}`).value;
+
+        fetch('/agendar-cita/', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrf() },
+            body:    JSON.stringify({ alerta_id: alertaId, fecha, hora, comentario })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                // Ocultar form, volver a mostrar botones
+                document.getElementById(`form-${alertaId}`).style.display = 'none';
+                document.getElementById(`textarea-${alertaId}`).value     = '';
+                document.getElementById(`acciones-${alertaId}`).style.display = 'flex';
+
+                // Resetear campos de cita
+                document.getElementById(`fecha-cita-${alertaId}`).value = '';
+                document.getElementById(`hora-cita-${alertaId}`).value  = '';
+
+                // Agregar badge de cita en la tarjeta
+                const card = document.getElementById(`alerta-${alertaId}`);
+                const badgesDiv = card.querySelector('.alerta-badges');
+                if (badgesDiv) {
+                    // Remover badge anterior si existe
+                    const badgeAnterior = badgesDiv.querySelector('.badge-cita');
+                    if (badgeAnterior) badgeAnterior.remove();
+
+                    badgesDiv.insertAdjacentHTML('afterbegin',
+                        `<span class="badge badge-cita">
+                            <span class="mdi mdi-calendar-check"></span>
+                            Cita ${data.fecha} ${data.hora}
+                        </span>`
+                    );
+                }
+
+                _resetBtn(alertaId, btn, 'cita');
+                mostrarSnack(`✅ Cita agendada para el ${data.fecha} a las ${data.hora}. Alumno notificado.`, 'success');
+            } else {
+                _resetBtn(alertaId, btn, 'cita');
+                mostrarSnack(data.error || 'Error al agendar la cita', 'error');
+            }
+        })
+        .catch(() => {
+            _resetBtn(alertaId, btn, 'cita');
+            mostrarSnack('Error de conexión', 'error');
+        });
     }
 </script>
 
@@ -731,5 +896,26 @@
         background: #9d174d; border-color: #9d174d; color: white;
     }
     .btn-confirmar-psicologia:hover:not(:disabled) { background: #831843; }
+
+
+.btn-cita {
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+    color: #15803d;
+}
+.btn-cita:hover:not(:disabled) { background: #dcfce7; border-color: #86efac; }
+
+.btn-confirmar-cita {
+    background: #15803d;
+    border-color: #15803d;
+    color: white;
+}
+.btn-confirmar-cita:hover:not(:disabled) { background: #166534; border-color: #166534; }
+
+.badge-cita {
+    background: #dcfce7;
+    color: #15803d;
+    border-color: #86efac;
+}
 </style>
 {% endblock %}
