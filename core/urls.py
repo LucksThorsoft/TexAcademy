@@ -8,8 +8,6 @@ urlpatterns = [
     path('grupos-alumnos', views.gruposAlumnos),
     path('actividades/', views.actividades),
     path('guardar-entregas/', views.guardar_entregas),
-    path('estadisticas', views.estadisticas),
-    path('alertas', views.alertas),
     path('sidebar', views.sidebar),
     path('director', views.director, name='director'),
     path('tutor', views.tutor),
