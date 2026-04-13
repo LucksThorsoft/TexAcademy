@@ -62,4 +62,7 @@ urlpatterns = [
     path('api/registrar-asistencia-qr/', views.api_registrar_asistencia_qr, name='api_registrar_asistencia_qr'),
     path('obtener-asistencias-por-grupo/', views.obtener_asistencias_por_grupo, name='obtener_asistencias_por_grupo'),
     path('api/filtrar-asistencias/', views.api_filtrar_asistencias, name='api_filtrar_asistencias'),
+    path('director/alumno/<int:alumno_id>/perfil/', views.perfil_alumno_director, name='perfil_alumno_director'),
+    path('obtener-estadisticas-desempeno/', views.obtener_estadisticas_desempeno, name='estadisticas'),
+    path('obtener-datos-graficas-asistencia/', views.obtener_datos_graficas_asistencia, name='obtener_datos_graficas_asistencia'),
 ]
