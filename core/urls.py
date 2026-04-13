@@ -72,4 +72,5 @@ urlpatterns = [
     # 👇 AGREGAR ESTAS NUEVAS URLs 👇
     path('new-group/', views.new_group, name='new_group'),  # Para crear grupo
     path('new-materia/', views.new_materia, name='new_materia'),  # Para asignar materia a grupo
+    path('agendar-cita/', views.agendar_cita, name='agendar_cita'),
 ]

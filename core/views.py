@@ -27,6 +27,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from datetime import datetime
 from django.contrib.auth.hashers import make_password, check_password
+from .services import notificar_tutor_alerta, notificar_alumno_cita
 
 # Create your views here.
 
@@ -5257,4 +5258,95 @@ def guardar_comentario(request):
             print(f"Error inesperado: {str(e)}")
             return JsonResponse({'error': str(e)}, status=500)
     
+    return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+
+
+@csrf_exempt
+def agendar_cita(request):
+    """Endpoint genérico para agendar citas — funciona para Tutor, Pedagogia, Psicologia y Director"""
+    if request.method == 'POST':
+        try:
+            data       = json.loads(request.body)
+            alerta_id  = data.get('alerta_id')
+            fecha      = data.get('fecha')
+            hora       = data.get('hora')
+            comentario = data.get('comentario', '').strip()
+
+            if not alerta_id:
+                return JsonResponse({'error': 'ID de alerta no proporcionado'}, status=400)
+            if not fecha or not hora:
+                return JsonResponse({'error': 'Fecha y hora son obligatorias'}, status=400)
+            if not comentario:
+                return JsonResponse({'error': 'El comentario es obligatorio'}, status=400)
+
+            usuario_id = request.session.get('usuario_id')
+            if not usuario_id:
+                return JsonResponse({'error': 'No autenticado'}, status=401)
+
+            # Detectar el rol del usuario en sesión
+            roles_sesion = request.session.get('usuario_roles', [])
+            ROLES_PERMITIDOS = ('Tutor', 'Pedagogia', 'Psicologia', 'Director')
+            rol_activo = next((r for r in ROLES_PERMITIDOS if r in roles_sesion), None)
+
+            if not rol_activo:
+                return JsonResponse({'error': 'Sin permiso para agendar citas'}, status=403)
+
+            alerta  = Alerta.objects.select_related('alumno__grupo').get(id=alerta_id)
+            usuario = Usuario.objects.get(id=usuario_id)
+
+            # Verificar que el usuario tiene relación con esta alerta según su rol
+            if rol_activo == 'Tutor':
+                if alerta.alumno.grupo.tutor_id != usuario_id:
+                    return JsonResponse({'error': 'Esta alerta no pertenece a tu grupo'}, status=403)
+            elif rol_activo in ('Pedagogia', 'Psicologia'):
+                if alerta.derivada_a != rol_activo:
+                    return JsonResponse({'error': f'Esta alerta no está derivada a {rol_activo}'}, status=403)
+            # Director puede agendar cita en cualquier alerta
+
+            # ── Convertir strings a objetos date/time ──
+            try:
+                fecha_obj = datetime.strptime(fecha, '%Y-%m-%d').date()
+                hora_obj  = datetime.strptime(hora,  '%H:%M').time()
+            except ValueError:
+                return JsonResponse({'error': 'Formato de fecha u hora inválido'}, status=400)
+
+            # Crear la cita
+            cita = Cita.objects.create(
+                alerta=alerta,
+                alumno=alerta.alumno,
+                creado_por=usuario,
+                rol_creador=rol_activo,
+                fecha=fecha_obj,    # ← objeto date, no string
+                hora=hora_obj,      # ← objeto time, no string
+                comentario=comentario,
+            )
+
+            # Registrar en el historial de la alerta
+            SeguimientoAlerta.objects.create(
+                alerta=alerta,
+                usuario=usuario,
+                accion='comentario',
+                comentario=(
+                    f"[{rol_activo}] Cita agendada para el "
+                    f"{cita.fecha.strftime('%d/%m/%Y')} a las "
+                    f"{cita.hora.strftime('%H:%M')}. {comentario}"
+                )
+            )
+
+            # Notificar al alumno
+            notificar_alumno_cita(cita)
+
+            return JsonResponse({
+                'success':    True,
+                'fecha':      cita.fecha.strftime('%d/%m/%Y'),
+                'hora':       cita.hora.strftime('%H:%M'),
+                'rol_creador': rol_activo,
+            })
+
+        except Alerta.DoesNotExist:
+            return JsonResponse({'error': 'Alerta no encontrada'}, status=404)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
     return JsonResponse({'error': 'Método no permitido'}, status=405)
