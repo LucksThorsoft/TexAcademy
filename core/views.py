@@ -5,11 +5,13 @@ from django.views.decorators.http import require_POST
 from django.http import JsonResponse
 import csv
 import re
+import traceback
 from io import TextIOWrapper
 from .forms import *
 from .models import *
 import json
 from .models import Grupo, Actividad, Entrega, Alumno, GrupoDocenteMateria, Parcial
+from datetime import datetime
 from django.db.models.functions import Coalesce
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
@@ -17,14 +19,237 @@ from datetime import datetime
 from django.contrib.auth.hashers import make_password, check_password
 from .services import notificar_tutor_alerta   # ← agrega este import
 
+from django.utils import timezone
 
 
 def home(request):
     return render(request, "home.html")
 
 
+
+# En views.py, modificar la función dashboard - Sección de actividades
+
 def dashboard(request):
-    return render(request, "dashboard.html")
+    # Verificar si el usuario está autenticado
+    if not request.session.get('usuario_id'):
+        return redirect('login')
+    
+    # Obtener el usuario actual desde la sesión
+    usuario_id = request.session.get('usuario_id')
+    
+    try:
+        # Obtener el usuario
+        usuario = Usuario.objects.get(id=usuario_id)
+        
+        # Obtener los roles del usuario
+        roles = request.session.get('usuario_roles', [])
+        
+        # Inicializar variables
+        grupos_data = []
+        total_alumnos = 0
+        alumnos_riesgo = 0
+        actividades_pendientes = 0
+        actividades_data = []
+        alertas_data = []
+        
+        # Si es docente, obtener sus grupos
+        if 'Docente' in roles:
+            # Obtener todos los grupos donde este docente imparte alguna materia
+            grupos_docente = GrupoDocenteMateria.objects.filter(
+                docente=usuario
+            ).select_related('grupo', 'materia').values('grupo').distinct()
+            
+            # Obtener los IDs de los grupos
+            grupo_ids = [g['grupo'] for g in grupos_docente]
+            
+            # Obtener los IDs de los GDM del docente para filtrar alertas
+            gdm_ids = GrupoDocenteMateria.objects.filter(
+                docente=usuario,
+                grupo__id__in=grupo_ids
+            ).values_list('id', flat=True)
+            
+            # Obtener los IDs de los parciales de esas materias
+            parciales_ids = Parcial.objects.filter(
+                grupo_docente_materia__id__in=gdm_ids
+            ).values_list('id', flat=True)
+            
+            # Obtener ALERTAS NO ATENDIDAS de nivel ALTO
+            alertas = Alerta.objects.filter(
+                parcial__id__in=parciales_ids,
+                atendida=False,
+                nivel_riesgo='Alto'
+            ).select_related(
+                'alumno',
+                'alumno__grupo',
+                'parcial',
+                'parcial__grupo_docente_materia__materia'
+            ).order_by('-fecha')[:10]
+            
+            # Procesar alertas para el template
+            for alerta in alertas:
+                # Obtener nombre del grupo con carrera
+                grupo = alerta.alumno.grupo
+                if hasattr(grupo, 'carrera') and grupo.carrera:
+                    grupo_nombre = f"{grupo.carrera} - {grupo.clave}"
+                else:
+                    grupo_nombre = f"Grupo {grupo.clave}"
+                
+                # Obtener materia
+                materia_nombre = "General"
+                if alerta.parcial and alerta.parcial.grupo_docente_materia:
+                    materia_nombre = alerta.parcial.grupo_docente_materia.materia.nombre
+                
+                # Calcular tiempo relativo
+                hoy = timezone.now().date()
+                fecha_alerta = alerta.fecha  # ya es un objeto date
+                
+                if fecha_alerta == hoy:
+                    tiempo = "Hoy"
+                elif (hoy - fecha_alerta).days == 1:
+                    tiempo = "Ayer"
+                else:
+                    dias = (hoy - fecha_alerta).days
+                    tiempo = f"Hace {dias} días"
+                
+                alertas_data.append({
+                    'id': alerta.id,
+                    'alumno_nombre': alerta.alumno.nombre,
+                    'alumno_matricula': alerta.alumno.matricula,
+                    'alumno_id': alerta.alumno.id,
+                    'descripcion': alerta.motivo,
+                    'tiempo': tiempo,
+                    'grupo_clave': grupo.clave,
+                    'grupo_nombre': grupo_nombre,
+                    'materia': materia_nombre,
+                    'nivel_riesgo': alerta.nivel_riesgo
+                })
+            
+            # Obtener los grupos completos con sus relaciones
+            grupos = Grupo.objects.filter(id__in=grupo_ids).prefetch_related(
+                'alumno_set',
+                'grupodocentemateria_set__materia'
+            )
+            
+            # Preparar datos de grupos
+            for grupo in grupos:
+                # Obtener las materias que el docente imparte en este grupo
+                materias = GrupoDocenteMateria.objects.filter(
+                    grupo=grupo,
+                    docente=usuario
+                ).select_related('materia')
+                
+                # Crear un nombre más descriptivo para el grupo
+                if hasattr(grupo, 'carrera') and grupo.carrera:
+                    nombre_completo = f"{grupo.carrera} - {grupo.clave}"
+                else:
+                    nombre_completo = f"Grupo {grupo.clave}"
+                
+                # Lista de materias que imparte en este grupo
+                materias_lista = [m.materia.nombre for m in materias]
+                
+                # Contar alumnos en este grupo
+                num_alumnos = Alumno.objects.filter(grupo=grupo).count()
+                total_alumnos += num_alumnos
+                
+                # Calcular alumnos en riesgo usando la función determinar_estado_alumno
+                alumnos_grupo = Alumno.objects.filter(grupo=grupo)
+                riesgo_grupo = 0
+                
+                for alumno in alumnos_grupo:
+                    # Usar la función unificada para determinar el estado
+                    _, _, en_riesgo = determinar_estado_alumno(alumno, usuario)
+                    if en_riesgo:
+                        riesgo_grupo += 1
+                
+                alumnos_riesgo += riesgo_grupo
+                
+                grupos_data.append({
+                    'id': grupo.id,
+                    'clave': grupo.clave,
+                    'nombre_completo': nombre_completo,
+                    'carrera': getattr(grupo, 'carrera', ''),
+                    'materias': materias_lista,
+                    'num_alumnos': num_alumnos,
+                    'alumnos_riesgo': riesgo_grupo
+                })
+            
+            # MODIFICACIÓN: Obtener actividades que NO tengan el 100% de entregas
+            hoy = datetime.now().date()
+            
+            # Obtener todas las actividades del docente (sin filtro de fecha)
+            todas_actividades = Actividad.objects.filter(
+                parcial__grupo_docente_materia__docente=usuario
+            ).select_related(
+                'parcial__grupo_docente_materia__grupo'
+            ).order_by('fecha_entrega')
+            
+            # Filtrar actividades que aún tienen entregas pendientes
+            actividades_pendientes_lista = []
+            for actividad in todas_actividades:
+                grupo = actividad.parcial.grupo_docente_materia.grupo
+                total_alumnos_act = Alumno.objects.filter(grupo=grupo).count()
+                entregadas = Entrega.objects.filter(
+                    actividad=actividad,
+                    entregado=True
+                ).count()
+                
+                # Solo incluir si NO tiene el 100% de entregas
+                if entregadas < total_alumnos_act:
+                    actividades_pendientes_lista.append(actividad)
+            
+            # Contar actividades pendientes (sin el 100% de entregas)
+            actividades_pendientes = len(actividades_pendientes_lista)
+            
+            # Tomar solo las primeras 5 para mostrar
+            actividades_mostrar = actividades_pendientes_lista[:5]
+            
+            # Procesar actividades para el template
+            for actividad in actividades_mostrar:
+                grupo = actividad.parcial.grupo_docente_materia.grupo
+                total_alumnos_act = Alumno.objects.filter(grupo=grupo).count()
+                entregadas = Entrega.objects.filter(
+                    actividad=actividad,
+                    entregado=True
+                ).count()
+                
+                # Calcular días restantes (pueden ser negativos si ya pasó la fecha)
+                dias_restantes = (actividad.fecha_entrega - hoy).days
+                porcentaje = int((entregadas / total_alumnos_act * 100)) if total_alumnos_act > 0 else 0
+                
+                # Crear nombre descriptivo para el grupo en actividades
+                if hasattr(grupo, 'carrera') and grupo.carrera:
+                    grupo_nombre = f"{grupo.carrera} - {grupo.clave}"
+                else:
+                    grupo_nombre = f"Grupo {grupo.clave}"
+                
+                actividades_data.append({
+                    'id': actividad.id,
+                    'titulo': actividad.titulo,
+                    'grupo_clave': grupo.clave,
+                    'grupo_nombre': grupo_nombre,
+                    'entregadas': entregadas,
+                    'total_alumnos': total_alumnos_act,
+                    'porcentaje_entregas': porcentaje,
+                    'dias_restantes': dias_restantes,
+                    'fecha_entrega': actividad.fecha_entrega
+                })
+        
+        context = {
+            'docente_nombre': usuario.nombre,
+            'roles': roles,
+            'grupos': grupos_data,
+            'total_alumnos': total_alumnos,
+            'alumnos_riesgo': alumnos_riesgo,
+            'actividades_pendientes': actividades_pendientes,
+            'actividades': actividades_data,
+            'total_grupos': len(grupos_data),
+            'alertas': alertas_data,
+        }
+        
+    except Usuario.DoesNotExist:
+        return redirect('login')
+    
+    return render(request, "dashboard.html", context)
 
 def gruposAlumnos(request):
     # Verificar si el usuario está autenticado
@@ -2556,3 +2781,128 @@ def perfil_alumno_director(request, alumno_id):
     }
 
     return render(request, 'perfilAlumnoDirector.html', context)
+
+
+def obtener_estadisticas_desempeno(request):
+    if request.method == 'GET':
+        gdm_id = request.GET.get('gdm_id')
+        docente_id = request.session.get('usuario_id')
+
+        if not gdm_id or not docente_id:
+            return JsonResponse({'estadisticas': []})
+
+        try:
+            gdm = GrupoDocenteMateria.objects.get(id=gdm_id, docente_id=docente_id)
+
+            alumnos = Alumno.objects.filter(grupo=gdm.grupo)
+
+            data = []
+
+            for alumno in alumnos:
+                asistencias = Asistencia.objects.filter(
+                    alumno=alumno,
+                    grupo_docente_materia=gdm
+                )
+
+                total = asistencias.count()
+
+                if total > 0:
+                    asistio = asistencias.filter(estado__nombre__iexact='Asistió').count()
+                    retardos = asistencias.filter(estado__nombre__iexact='Retardo').count()
+
+                    porcentaje = int(((asistio + retardos * 0.5) / total) * 100)
+
+                    if porcentaje >= 80:
+                        estado = "Bueno"
+                    elif porcentaje >= 60:
+                        estado = "Regular"
+                    else:
+                        estado = "Crítico"
+                else:
+                    estado = "Sin datos"
+
+                data.append({
+                    'id': alumno.id,
+                    'nombre': alumno.nombre,
+                    'matricula': alumno.matricula,
+                    'estado': estado,
+                })
+
+            return JsonResponse({'estadisticas': data})
+
+        except Exception as e:
+            print(e)
+            return JsonResponse({'estadisticas': []})
+        
+
+        
+def obtener_datos_graficas_asistencia(request):
+    """Endpoint para obtener datos de asistencias y faltas por mes para gráficas"""
+    if request.method == 'GET':
+        alumno_id = request.GET.get('alumno_id')
+        gdm_id = request.GET.get('gdm_id')
+        
+        if not alumno_id or not gdm_id:
+            return JsonResponse({'error': 'Faltan parámetros', 'success': False}, status=400)
+        
+        try:
+            alumno = Alumno.objects.get(id=alumno_id)
+            gdm = GrupoDocenteMateria.objects.get(id=gdm_id)
+            
+            # Obtener el año de la primera asistencia
+            primera_asistencia = Asistencia.objects.filter(
+                alumno=alumno,
+                grupo_docente_materia=gdm
+            ).order_by('fecha').first()
+            
+            año = primera_asistencia.fecha.year if primera_asistencia else 2026
+            
+            # Meses a mostrar (Enero a Abril)
+            meses = [
+                {'numero': 1, 'nombre': 'Ene'},
+                {'numero': 2, 'nombre': 'Feb'},
+                {'numero': 3, 'nombre': 'Mar'},
+                {'numero': 4, 'nombre': 'Abr'},
+            ]
+            
+            # Encontrar el máximo valor para escalar las gráficas
+            max_asistencias = 0
+            datos_por_mes = []
+            
+            for mes in meses:
+                asistencias_mes = Asistencia.objects.filter(
+                    alumno=alumno,
+                    grupo_docente_materia=gdm,
+                    fecha__month=mes['numero'],
+                    fecha__year=año
+                )
+                
+                total_asistencias = asistencias_mes.filter(estado__nombre='Asistió').count()
+                total_faltas = asistencias_mes.filter(estado__nombre='No asistió').count()
+                
+                max_asistencias = max(max_asistencias, total_asistencias, total_faltas)
+                
+                datos_por_mes.append({
+                    'mes': mes['nombre'],
+                    'asistencias': total_asistencias,
+                    'faltas': total_faltas,
+                })
+            
+            # Calcular la escala (máximo redondeado hacia arriba)
+            escala = max(max_asistencias, 5)  # Mínimo 5 para que se vea bien
+            
+            return JsonResponse({
+                'success': True,
+                'alumno_nombre': alumno.nombre,
+                'datos_por_mes': datos_por_mes,
+                'escala': escala
+            })
+            
+        except Alumno.DoesNotExist:
+            return JsonResponse({'error': 'Alumno no encontrado', 'success': False}, status=404)
+        except GrupoDocenteMateria.DoesNotExist:
+            return JsonResponse({'error': 'Materia no encontrada', 'success': False}, status=404)
+        except Exception as e:
+            return JsonResponse({'error': str(e), 'success': False}, status=500)
+    
+    return JsonResponse({'error': 'Método no permitido', 'success': False}, status=405)   

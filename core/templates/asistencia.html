@@ -5,6 +5,7 @@
 {% block content %}
 <script src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/js/all.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
     * {
         box-sizing: border-box;
@@ -410,12 +411,31 @@
         min-width: 35px;
     }
 
+    /* Badges rediseñados - forma ovalada y colores actualizados */
     .badge {
-        border-radius: 6px;
+        border-radius: 20px;
         font-size: 11px;
         font-weight: 700;
-        padding: 4px 8px;
+        padding: 5px 14px;
         color: white;
+        display: inline-block;
+        text-align: center;
+    }
+
+    .badge-bueno {
+        background-color: #10b981;
+    }
+
+    .badge-regular {
+        background-color: #f59e0b;
+    }
+
+    .badge-critico {
+        background-color: #dc2626;
+    }
+
+    .badge-default {
+        background-color: #94a3b8;
     }
 
     .alert-message {
@@ -466,6 +486,123 @@
         font-size: 14px;
     }
 
+    /* Estilos específicos para la tabla de estadísticas */
+    .stats-table-container {
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        overflow: hidden;
+        margin-bottom: 24px;
+    }
+
+    .stats-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .stats-table th {
+        background-color: #f8fafc;
+        padding: 12px 16px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #64748b;
+        border-bottom: 1px solid #e2e8f0;
+        text-align: left;
+    }
+
+    .stats-table td {
+        padding: 12px 16px;
+        font-size: 14px;
+        color: #1e293b;
+        border-bottom: 1px solid #f1f5f9;
+        vertical-align: middle;
+    }
+
+    .badge-critical {
+        background-color: #dc2626;
+        color: white;
+        padding: 5px 14px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    .badge-regular {
+        background-color: #f59e0b;
+        color: white;
+        padding: 5px 14px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    .badge-good {
+        background-color: #10b981;
+        color: white;
+        padding: 5px 14px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    /* Botón Ver en estadísticas - color silver */
+    .btn-view-stats {
+        background-color: #94a3b8;
+        color: white;
+        border: none;
+        padding: 6px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 500;
+        transition: background-color 0.2s;
+    }
+
+    .btn-view-stats:hover {
+        background-color: #64748b;
+    }
+
+    .progress-bar-stats {
+        width: 100px;
+        height: 8px;
+        background-color: #f1f5f9;
+        border-radius: 4px;
+        overflow: hidden;
+        display: inline-block;
+        margin-right: 12px;
+    }
+
+    .progress-fill-stats {
+        height: 100%;
+        border-radius: 4px;
+    }
+
+    .percentage-stats {
+        font-size: 13px;
+        font-weight: 500;
+        color: #1e293b;
+    }
+
+    .btn-generate-report {
+        width: 100%;
+        background-color: #10b981;
+        color: white;
+        border: none;
+        padding: 14px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        margin-top: 16px;
+    }
+
+    .btn-generate-report:hover {
+        background-color: #059669;
+    }
+
     @media (max-width: 768px) {
         .form-grid {
             grid-template-columns: 1fr;
@@ -490,6 +627,158 @@
             flex: 1;
             text-align: center;
         }
+        .progress-bar-stats {
+            width: 60px;
+
+/* Estilos para el modal - Versión compacta */
+//* Estilos para el modal - Gráficas horizontales */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+    background-color: white;
+    margin: 2% auto;
+    padding: 10px 12px;
+    border-radius: 8px;
+    width: 95%;
+    max-width: 1000px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    position: relative;
+}
+
+.close {
+    color: #94a3b8;
+    float: right;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    position: absolute;
+    right: 10px;
+    top: 5px;
+    z-index: 10;
+}
+
+.close:hover {
+    color: #1e293b;
+}
+
+.modal h2 {
+    margin: 0 0 6px 0;
+    color: #1e293b;
+    font-size: 13px;
+    font-weight: 600;
+    padding-right: 20px;
+}
+
+/* Contenedor horizontal - las 4 gráficas en una fila */
+.graficas-horizontal {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 6px;
+    margin-top: 5px;
+    overflow-x: auto;
+}
+
+.grafica-mes {
+    background-color: #f8fafc;
+    border-radius: 6px;
+    padding: 5px;
+    border: 1px solid #e2e8f0;
+    flex: 1;
+    min-width: 140px;
+}
+
+.grafica-mes h3 {
+    text-align: center;
+    margin: 0 0 3px 0;
+    color: #1e293b;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.chart-svg-container {
+    width: 100%;
+    height: auto;
+    display: flex;
+    justify-content: center;
+}
+
+.asistencia-chart {
+    width: 100%;
+    max-width: 160px;
+    height: auto;
+    display: block;
+}
+
+.chart-legend {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 3px;
+    padding-top: 3px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.legend-color {
+    width: 7px;
+    height: 7px;
+    border-radius: 2px;
+}
+
+.legend-color.green { background-color: #10b981; }
+.legend-color.red { background-color: #ef4444; }
+
+.legend-text {
+    font-size: 7px;
+    color: #64748b;
+}
+
+/* Scrollbar pequeña si no caben en pantalla pequeña */
+.graficas-horizontal::-webkit-scrollbar {
+    height: 3px;
+}
+
+.graficas-horizontal::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 3px;
+}
+
+.graficas-horizontal::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}
+
+@media (max-width: 768px) {
+    .graficas-horizontal {
+        gap: 4px;
+    }
+    .grafica-mes {
+        min-width: 120px;
+        padding: 4px;
+    }
+    .modal-content {
+        margin: 5% auto;
+        padding: 8px 10px;
+    }
+}
+
+
+        }
     }
 </style>
 
@@ -506,6 +795,7 @@
     <div class="tabs">
         <div class="tab active" onclick="showTab('registro', event)">Registro Diario</div>
         <div class="tab" onclick="showTab('historial', event)">Historial</div>
+        <div class="tab" onclick="showTab('estadisticas', event)">Estadísticas</div>
     </div>
 
     <!-- ══════════════════════════════════════════
@@ -704,6 +994,73 @@
         </div>
     </div>
 
+    <!-- ══════════════════════════════════════════
+         PESTAÑA: ESTADÍSTICAS
+    ══════════════════════════════════════════ -->
+    <div id="estadisticas-tab" class="tab-content">
+        <div class="card">
+            <div class="header-section">
+                <h1>Estadísticas de Desempeño</h1>
+                <p>Resumen de calificación académica por alumno según su asistencia</p>
+            </div>
+
+            <!-- Selector de grupo/materia -->
+            <div class="form-group" style="margin-bottom: 24px;">
+                <label>Grupo / Materia</label>
+                <div class="select-wrapper">
+                    <select id="estadisticasGrupo" class="custom-input"
+                            style="border:1px solid #e2e8f0; background-color: white;"
+                            onchange="cargarEstadisticas()">
+                        <option value="">Selecciona grupo y materia</option>
+                        {% for gm in grupos_materia %}
+                            <option value="{{ gm.gdm_id }}">{{ gm.label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <!-- Contenedor de la tabla de estadísticas -->
+            <div id="estadisticasTableContainer" style="display:none;">
+                <div class="stats-table-container">
+                    <table class="stats-table">
+                        <thead>
+                            <tr>
+                                <th>Alumno</th>
+                                <th>Matrícula</th>
+                                <th>Estado</th>
+                                <th>Estadistica</th>
+                            </tr>
+                        </thead>
+                        <tbody id="estadisticasBody"></tbody>
+                    </table>
+                </div>
+                <button class="btn-generate-report" onclick="generarReporteEstadisticas()">
+                    <i class="fa-solid fa-download"></i> Generar Reporte
+                </button>
+<!-- Modal ultra compacto -->
+<!-- Modal horizontal -->
+<div id="modalGraficas" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2 id="modalTitulo">Asistencia por Mes</h2>
+        <div id="graficas-container"></div>
+    </div>
+</div>
+      </div>
+
+            <div id="sinEstadisticasMessage" class="empty-state">
+                <i class="fa-solid fa-chart-simple"></i>
+                <h3>Selecciona un grupo para ver las estadísticas</h3>
+                <p>Los datos de desempeño se mostrarán aquí</p>
+            </div>
+
+            <div id="cargandoEstadisticasMessage" style="display:none;" class="empty-state">
+                <i class="fa-solid fa-spinner fa-spin"></i>
+                <h3>Cargando estadísticas...</h3>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <script>
@@ -743,9 +1100,17 @@
         event.target.classList.add('active');
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
         document.getElementById(`${tabName}-tab`).classList.add('active');
+        
+        // Si se abre la pestaña de estadísticas y ya hay un grupo seleccionado, cargar datos
+        if (tabName === 'estadisticas') {
+            const grupoSelect = document.getElementById('estadisticasGrupo');
+            if (grupoSelect && grupoSelect.value) {
+                cargarEstadisticas();
+            }
+        }
     }
 
-    // Historial sigue usando fetch ya que es solo lectura
+    // Historial (fetch)
     function cargarHistorial() {
         const gdmId = document.getElementById('historialGrupo').value;
 
@@ -787,10 +1152,17 @@
         body.innerHTML = '';
 
         historial.forEach(item => {
-            const colorBadge = item.estado === 'Bueno'    ? '#2563eb'
-                             : item.estado === 'Regular'  ? '#f59e0b'
-                             : item.estado === 'Crítico'  ? '#dc2626'
-                             : '#94a3b8';
+            // Determinar la clase del badge según el estado
+            let badgeClass = '';
+            if (item.estado === 'Bueno') {
+                badgeClass = 'badge-bueno';
+            } else if (item.estado === 'Regular') {
+                badgeClass = 'badge-regular';
+            } else if (item.estado === 'Crítico') {
+                badgeClass = 'badge-critico';
+            } else {
+                badgeClass = 'badge-default';
+            }
 
             const colorBarra = item.porcentaje >= 80 ? 'green'
                              : item.porcentaje >= 60 ? 'orange'
@@ -815,7 +1187,7 @@
                         </div>
                     </td>
                     <td>
-                        <span class="badge" style="background-color:${colorBadge};">
+                        <span class="badge ${badgeClass}">
                             ${item.estado}
                         </span>
                     </td>
@@ -824,6 +1196,526 @@
         });
     }
 
-    document.addEventListener('DOMContentLoaded', actualizarResumen);
+    // ==================== FUNCIONES PARA ESTADÍSTICAS ====================
+    function cargarEstadisticas() {
+        const gdmId = document.getElementById('estadisticasGrupo').value;
+        
+        console.log("=== cargarEstadisticas ===");
+        console.log("gdmId seleccionado:", gdmId);
+
+        if (!gdmId) {
+            console.log("No hay grupo seleccionado, mostrando mensaje vacío");
+            document.getElementById('estadisticasTableContainer').style.display = 'none';
+            document.getElementById('sinEstadisticasMessage').style.display = 'block';
+            return;
+        }
+
+        // Mostrar loading
+        document.getElementById('estadisticasTableContainer').style.display = 'none';
+        document.getElementById('sinEstadisticasMessage').style.display = 'none';
+        document.getElementById('cargandoEstadisticasMessage').style.display = 'block';
+
+        const url = `/obtener-estadisticas-desempeno/?gdm_id=${gdmId}`;
+        console.log("Fetching URL:", url);
+        
+        fetch(url)
+            .then(response => {
+                console.log("Response status:", response.status);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log("Data recibida:", data);
+                document.getElementById('cargandoEstadisticasMessage').style.display = 'none';
+
+                if (data.estadisticas && data.estadisticas.length > 0) {
+                    console.log(`Mostrando ${data.estadisticas.length} estudiantes`);
+                    actualizarTablaEstadisticas(data.estadisticas);
+                    document.getElementById('estadisticasTableContainer').style.display = 'block';
+                } else {
+                    console.log("No hay datos de estadísticas");
+                    document.getElementById('sinEstadisticasMessage').style.display = 'block';
+                    document.getElementById('sinEstadisticasMessage').innerHTML = `
+                        <i class="fa-solid fa-chart-simple" style="font-size:48px;margin-bottom:16px;color:#94a3b8;display:block;"></i>
+                        <h3 style="margin:0 0 8px 0;font-weight:500;">${data.message || 'No hay datos disponibles'}</h3>
+                        <p style="margin:0;font-size:14px;">Selecciona otro grupo o registra asistencias primero</p>
+                    `;
+                }
+            })
+            .catch(error => {
+                console.error('Error en fetch:', error);
+                document.getElementById('cargandoEstadisticasMessage').style.display = 'none';
+                document.getElementById('sinEstadisticasMessage').style.display = 'block';
+                document.getElementById('sinEstadisticasMessage').innerHTML = `
+                    <i class="fa-solid fa-circle-exclamation" style="font-size:48px;margin-bottom:16px;color:#ef4444;display:block;"></i>
+                    <h3 style="margin:0 0 8px 0;font-weight:500;">Error al cargar datos</h3>
+                    <p style="margin:0;font-size:14px;">Error: ${error.message}</p>
+                    <p style="margin-top:10px;font-size:12px;">Revisa la consola para más detalles</p>
+                `;
+            });
+    }
+
+    function actualizarTablaEstadisticas(estadisticas) {
+        const body = document.getElementById('estadisticasBody');
+        body.innerHTML = '';
+
+        estadisticas.forEach(item => {
+            let badgeClass = '';
+            if (item.estado === 'Crítico') {
+                badgeClass = 'badge-critical';
+            } else if (item.estado === 'Regular') {
+                badgeClass = 'badge-regular';
+            } else if (item.estado === 'Bueno') {
+                badgeClass = 'badge-good';
+            } else {
+                badgeClass = 'badge-good';
+            }
+
+            body.innerHTML += `
+                <tr>
+                    <td>${item.nombre}</td>
+                    <td>${item.matricula}</td>
+                    <td><span class="${badgeClass}">${item.estado}</span></td>
+                    <td>
+                        <button class="btn-view-stats" onclick="verEstadistica(${item.id})">
+                            Ver
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
+    }
+
+// Variables globales
+let chartsData = [];
+
+// Función para ver estadística
+// Función para ver estadística
+// Función para ver estadística
+// Función para ver estadística
+function verEstadistica(alumnoId) {
+    const gdmId = document.getElementById('estadisticasGrupo').value;
+    
+    if (!gdmId) {
+        alert('Selecciona un grupo y materia primero');
+        return;
+    }
+    
+    const modal = document.getElementById('modalGraficas');
+    const container = document.getElementById('graficas-container');
+    
+    container.innerHTML = '<div style="text-align:center; padding:15px;"><i class="fa-solid fa-spinner fa-spin" style="font-size:16px; color:#64748b;"></i></div>';
+    modal.style.display = 'block';
+    
+    fetch(`/obtener-datos-graficas-asistencia/?alumno_id=${alumnoId}&gdm_id=${gdmId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                generarGraficasHorizontales(data.datos_por_mes, data.alumno_nombre, data.escala);
+            } else {
+                container.innerHTML = `<div style="text-align:center; padding:10px; color:#dc2626; font-size:11px;">${data.error || 'Error'}</div>`;
+            }
+        })
+        .catch(error => {
+            container.innerHTML = '<div style="text-align:center; padding:10px; color:#dc2626; font-size:11px;">Error al cargar</div>';
+        });
+}
+
+// Función para generar gráficas HORIZONTALES (una al lado de la otra)
+function generarGraficasHorizontales(datosPorMes, alumnoNombre, escala) {
+    const container = document.getElementById('graficas-container');
+    
+    document.getElementById('modalTitulo').innerHTML = `📊 Asistencia: ${alumnoNombre}`;
+    
+    // NUEVAS DIMENSIONES (más grandes)
+    const width = 220;
+    const height = 160;
+    const barWidth = 30;
+    const barSpacing = 12;
+    const startX = (width - (barWidth * 2 + barSpacing)) / 2;
+    
+    const getBarHeight = (value) => {
+        const maxHeight = 100;
+        if (escala === 0) return 0;
+        return (value / escala) * maxHeight;
+    };
+    
+    // CONTENEDOR tipo grid (ya no aplastado)
+    let html = `
+        <div style="
+            display:flex;
+            flex-wrap:wrap;
+            justify-content:center;
+            gap:20px;
+            margin-top:10px;
+        ">
+    `;
+    
+    datosPorMes.forEach(mes => {
+        const asistencias = mes.asistencias;
+        const faltas = mes.faltas;
+        
+        const barAsistenciaHeight = getBarHeight(asistencias);
+        const barFaltaHeight = getBarHeight(faltas);
+        
+        const baseY = height - 25;
+        const asistenciaY = baseY - barAsistenciaHeight;
+        const faltaY = baseY - barFaltaHeight;
+        
+        html += `
+            <div style="
+                width:240px;
+                background:#ffffff;
+                border-radius:10px;
+                padding:12px;
+                border:1px solid #e2e8f0;
+                box-shadow:0 4px 10px rgba(0,0,0,0.05);
+            ">
+                
+                <h3 style="
+                    text-align:center;
+                    margin-bottom:10px;
+                    font-size:14px;
+                    font-weight:600;
+                    color:#1e293b;
+                ">
+                    ${mes.mes}
+                </h3>
+
+                <div style="display:flex; justify-content:center;">
+                    <svg viewBox="0 0 ${width} ${height}" width="${width}" height="${height}">
+                        
+                        <!-- Línea base -->
+                        <line x1="15" y1="${baseY}" x2="${width - 15}" y2="${baseY}" stroke="#cbd5e1" stroke-width="1" />
+                        
+                        <!-- Grid -->
+                        <line x1="15" y1="${baseY - 25}" x2="${width - 15}" y2="${baseY - 25}" stroke="#e2e8f0" />
+                        <line x1="15" y1="${baseY - 50}" x2="${width - 15}" y2="${baseY - 50}" stroke="#e2e8f0" />
+                        <line x1="15" y1="${baseY - 75}" x2="${width - 15}" y2="${baseY - 75}" stroke="#e2e8f0" />
+                        <line x1="15" y1="${baseY - 100}" x2="${width - 15}" y2="${baseY - 100}" stroke="#e2e8f0" />
+
+                        <!-- Etiquetas -->
+                        <text x="10" y="${baseY - 98}" text-anchor="end" font-size="10" fill="#94a3b8">${Math.round(escala)}</text>
+                        <text x="10" y="${baseY - 73}" text-anchor="end" font-size="10" fill="#94a3b8">${Math.round(escala * 0.75)}</text>
+                        <text x="10" y="${baseY - 48}" text-anchor="end" font-size="10" fill="#94a3b8">${Math.round(escala * 0.5)}</text>
+                        <text x="10" y="${baseY - 23}" text-anchor="end" font-size="10" fill="#94a3b8">${Math.round(escala * 0.25)}</text>
+
+                        <!-- Barra Asistencias -->
+                        <rect 
+                            x="${startX}" 
+                            y="${asistenciaY}" 
+                            width="${barWidth}" 
+                            height="${Math.max(barAsistenciaHeight, 2)}" 
+                            rx="4" 
+                            fill="#10b981"
+                            style="transition:all 0.4s ease;"
+                        />
+                        ${asistencias > 0 ? `
+                            <text x="${startX + barWidth/2}" y="${asistenciaY - 5}" 
+                                  text-anchor="middle" font-size="12" fill="#10b981" font-weight="bold">
+                                ${asistencias}
+                            </text>` : ''}
+
+                        <!-- Barra Faltas -->
+                        <rect 
+                            x="${startX + barWidth + barSpacing}" 
+                            y="${faltaY}" 
+                            width="${barWidth}" 
+                            height="${Math.max(barFaltaHeight, 2)}" 
+                            rx="4" 
+                            fill="#ef4444"
+                            style="transition:all 0.4s ease;"
+                        />
+                        ${faltas > 0 ? `
+                            <text x="${startX + barWidth + barSpacing + barWidth/2}" y="${faltaY - 5}" 
+                                  text-anchor="middle" font-size="12" fill="#ef4444" font-weight="bold">
+                                ${faltas}
+                            </text>` : ''}
+                    </svg>
+                </div>
+
+                <!-- Leyenda -->
+                <div style="
+                    display:flex;
+                    justify-content:center;
+                    gap:15px;
+                    margin-top:8px;
+                    padding-top:8px;
+                    border-top:1px solid #e2e8f0;
+                ">
+                    <div style="display:flex; align-items:center; gap:5px;">
+                        <div style="width:10px; height:10px; background:#10b981; border-radius:2px;"></div>
+                        <span style="font-size:12px;">Asistencias</span>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:5px;">
+                        <div style="width:10px; height:10px; background:#ef4444; border-radius:2px;"></div>
+                        <span style="font-size:12px;">Faltas</span>
+                    </div>
+                </div>
+
+            </div>
+        `;
+    });
+
+    html += `</div>`;
+    container.innerHTML = html;
+}
+
+// Cerrar modal
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('modalGraficas');
+    const closeBtn = document.querySelector('#modalGraficas .close');
+    
+    if (closeBtn) {
+        closeBtn.onclick = function() {
+            modal.style.display = 'none';
+        };
+    }
+    
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = 'none';
+        }
+    };
+});
+
+// Función para generar gráficas ultra compactas
+function generarGraficasCompactas(datosPorMes, alumnoNombre, escala) {
+    const container = document.getElementById('graficas-container');
+    
+    document.getElementById('modalTitulo').innerHTML = `Asistencia: ${alumnoNombre}`;
+    
+    // Dimensiones más pequeñas
+    const width = 180;
+    const height = 110;
+    const barWidth = 22;
+    const barSpacing = 6;
+    const startX = (width - (barWidth * 2 + barSpacing)) / 2;
+    
+    const getBarHeight = (value) => {
+        const maxHeight = 75;
+        if (escala === 0) return 0;
+        return (value / escala) * maxHeight;
+    };
+    
+    let html = '<div class="graficas-grid">';
+    
+    datosPorMes.forEach(mes => {
+        const asistencias = mes.asistencias;
+        const faltas = mes.faltas;
+        const barAsistenciaHeight = getBarHeight(asistencias);
+        const barFaltaHeight = getBarHeight(faltas);
+        
+        const baseY = height - 20;
+        const asistenciaY = baseY - barAsistenciaHeight;
+        const faltaY = baseY - barFaltaHeight;
+        
+        html += `
+            <div class="grafica-mes">
+                <h3>${mes.mes}</h3>
+                <div class="chart-svg-container">
+                    <svg viewBox="0 0 ${width} ${height}" class="asistencia-chart" style="height: ${height}px;">
+                        <!-- Líneas de grid -->
+                        <line x1="12" y1="${height - 20}" x2="${width - 12}" y2="${height - 20}" stroke="#cbd5e1" stroke-width="0.5" />
+                        <line x1="12" y1="${height - 45}" x2="${width - 12}" y2="${height - 45}" stroke="#e2e8f0" stroke-width="0.5" />
+                        <line x1="12" y1="${height - 70}" x2="${width - 12}" y2="${height - 70}" stroke="#e2e8f0" stroke-width="0.5" />
+                        <line x1="12" y1="${height - 95}" x2="${width - 12}" y2="${height - 95}" stroke="#e2e8f0" stroke-width="0.5" />
+                        
+                        <!-- Etiquetas Y -->
+                        <text x="8" y="${height - 17}" text-anchor="end" font-size="7" fill="#94a3b8">0</text>
+                        <text x="8" y="${height - 42}" text-anchor="end" font-size="7" fill="#94a3b8">${Math.round(escala * 0.33)}</text>
+                        <text x="8" y="${height - 67}" text-anchor="end" font-size="7" fill="#94a3b8">${Math.round(escala * 0.66)}</text>
+                        <text x="8" y="${height - 92}" text-anchor="end" font-size="7" fill="#94a3b8">${Math.round(escala)}</text>
+                        
+                        <!-- Barra Asistencias -->
+                        <rect x="${startX}" y="${asistenciaY}" width="${barWidth}" height="${Math.max(barAsistenciaHeight, 2)}" rx="2" fill="#10b981" />
+                        ${asistencias > 0 ? `<text x="${startX + barWidth/2}" y="${asistenciaY - 2}" text-anchor="middle" font-size="8" fill="#10b981" font-weight="bold">${asistencias}</text>` : ''}
+                        
+                        <!-- Barra Faltas -->
+                        <rect x="${startX + barWidth + barSpacing}" y="${faltaY}" width="${barWidth}" height="${Math.max(barFaltaHeight, 2)}" rx="2" fill="#ef4444" />
+                        ${faltas > 0 ? `<text x="${startX + barWidth + barSpacing + barWidth/2}" y="${faltaY - 2}" text-anchor="middle" font-size="8" fill="#ef4444" font-weight="bold">${faltas}</text>` : ''}
+                    </svg>
+                </div>
+                <div class="chart-legend">
+                    <div class="legend-item">
+                        <div class="legend-color green"></div>
+                        <span class="legend-text">A</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color red"></div>
+                        <span class="legend-text">F</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+// Cerrar modal
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('modalGraficas');
+    const closeBtn = document.querySelector('#modalGraficas .close');
+    
+    if (closeBtn) {
+        closeBtn.onclick = function() {
+            modal.style.display = 'none';
+        };
+    }
+    
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = 'none';
+        }
+    };
+});
+
+// Función para generar gráficas SVG (como en estadisticas.html)
+function generarGraficasSVG(datosPorMes, alumnoNombre, escala) {
+    const container = document.getElementById('graficas-container');
+    
+    // Actualizar título
+    document.getElementById('modalTitulo').innerHTML = `Asistencia Mensual - ${alumnoNombre}`;
+    
+    // Dimensiones del gráfico
+    const width = 220;
+    const height = 160;
+    const barWidth = 28;
+    const barSpacing = 8;
+    const startX = (width - (barWidth * 2 + barSpacing)) / 2;
+    
+    // Función para calcular altura de la barra (máximo 120px)
+    const getBarHeight = (value) => {
+        const maxHeight = 110;
+        if (escala === 0) return 0;
+        return (value / escala) * maxHeight;
+    };
+    
+    let html = '<div class="graficas-grid">';
+    
+    datosPorMes.forEach(mes => {
+        const asistencias = mes.asistencias;
+        const faltas = mes.faltas;
+        const barAsistenciaHeight = getBarHeight(asistencias);
+        const barFaltaHeight = getBarHeight(faltas);
+        
+        // Posición Y base (altura total - altura de la barra)
+        const baseY = height - 30;
+        const asistenciaY = baseY - barAsistenciaHeight;
+        const faltaY = baseY - barFaltaHeight;
+        
+        html += `
+            <div class="grafica-mes">
+                <h3>${mes.mes}</h3>
+                <div class="chart-svg-container">
+                    <svg viewBox="0 0 ${width} ${height}" class="asistencia-chart">
+                        <!-- Líneas de grid horizontales -->
+                        <line x1="15" y1="30" x2="${width - 15}" y2="30" stroke="#e2e8f0" stroke-width="0.5" />
+                        <line x1="15" y1="55" x2="${width - 15}" y2="55" stroke="#e2e8f0" stroke-width="0.5" />
+                        <line x1="15" y1="80" x2="${width - 15}" y2="80" stroke="#e2e8f0" stroke-width="0.5" />
+                        <line x1="15" y1="105" x2="${width - 15}" y2="105" stroke="#e2e8f0" stroke-width="0.5" />
+                        <line x1="15" y1="130" x2="${width - 15}" y2="130" stroke="#e2e8f0" stroke-width="0.5" />
+                        
+                        <!-- Etiquetas Y -->
+                        <text x="10" y="34" text-anchor="end" font-size="8" fill="#94a3b8">${Math.round(escala)}</text>
+                        <text x="10" y="59" text-anchor="end" font-size="8" fill="#94a3b8">${Math.round(escala * 0.75)}</text>
+                        <text x="10" y="84" text-anchor="end" font-size="8" fill="#94a3b8">${Math.round(escala * 0.5)}</text>
+                        <text x="10" y="109" text-anchor="end" font-size="8" fill="#94a3b8">${Math.round(escala * 0.25)}</text>
+                        <text x="10" y="134" text-anchor="end" font-size="8" fill="#94a3b8">0</text>
+                        
+                        <!-- Barra de Asistencias (verde) -->
+                        <rect x="${startX}" y="${asistenciaY}" width="${barWidth}" height="${barAsistenciaHeight}" rx="3" fill="#10b981" />
+                        <text x="${startX + barWidth/2}" y="${asistenciaY - 3}" text-anchor="middle" font-size="9" fill="#10b981" font-weight="bold">${asistencias}</text>
+                        
+                        <!-- Barra de Faltas (roja) -->
+                        <rect x="${startX + barWidth + barSpacing}" y="${faltaY}" width="${barWidth}" height="${barFaltaHeight}" rx="3" fill="#ef4444" />
+                        <text x="${startX + barWidth + barSpacing + barWidth/2}" y="${faltaY - 3}" text-anchor="middle" font-size="9" fill="#ef4444" font-weight="bold">${faltas}</text>
+                    </svg>
+                </div>
+                <div class="chart-legend">
+                    <div class="legend-item">
+                        <div class="legend-color green"></div>
+                        <span class="legend-text">Asistencias</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color red"></div>
+                        <span class="legend-text">Faltas</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+// Cerrar modal
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('modalGraficas');
+    const closeBtn = document.querySelector('#modalGraficas .close');
+    
+    if (closeBtn) {
+        closeBtn.onclick = function() {
+            modal.style.display = 'none';
+        };
+    }
+    
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = 'none';
+        }
+    };
+});
+// Cerrar modal
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('modalGraficas');
+    const closeBtn = document.querySelector('#modalGraficas .close');
+    
+    if (closeBtn) {
+        closeBtn.onclick = function() {
+            modal.style.display = 'none';
+            destruirGraficas();
+        };
+    }
+    
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = 'none';
+            destruirGraficas();
+        }
+    };
+});
+
+    function generarReporteEstadisticas() {
+        const gdmId = document.getElementById('estadisticasGrupo').value;
+        if (!gdmId) {
+            alert('Por favor, selecciona un grupo y materia primero');
+            return;
+        }
+        
+        // Redirigir a un endpoint que genere el reporte (PDF o Excel)
+        window.open(`/generar-reporte-estadisticas/?gdm_id=${gdmId}`, '_blank');
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        actualizarResumen();
+        
+        // Si hay un grupo preseleccionado en historial, cargar datos
+        const historialSelect = document.getElementById('historialGrupo');
+        if (historialSelect && historialSelect.value) {
+            cargarHistorial();
+        }
+        
+        // Si hay un grupo preseleccionado en estadísticas, cargar datos
+        const estadisticasSelect = document.getElementById('estadisticasGrupo');
+        if (estadisticasSelect && estadisticasSelect.value) {
+            cargarEstadisticas();
+        }
+    });
 </script>
 {% endblock %}
