@@ -1223,40 +1223,7 @@ def estadisticas_actividad_individual(request, id):
         import traceback
         traceback.print_exc()
         return JsonResponse({"error": str(e)}, status=500)
-        return redirect('login')
-
-    roles = request.session.get('usuario_roles', [])
-    if 'Director' not in roles:
-        return redirect('dashboard')
-
-    form = DocenteForm()
-    grupo_form = GrupoForm()
-    materia_form = GrupoDocenteMateriaForm()
-
-    relaciones = GrupoDocenteMateria.objects.select_related(
-        'grupo', 'materia', 'docente'
-    ).order_by('grupo__clave', 'materia__nombre')
-
-    grupos_data = []
-
-        for rel in relaciones:
-            grupo = rel.grupo
-            grupos_data.append({
-                'clave': grupo.clave,
-                'grupo_id': grupo.id,
-                'materia': rel.materia.nombre,
-                'docente': rel.docente.nombre,
-                'num_alumnos': Alumno.objects.filter(grupo=grupo).count(),
-                'tutor': grupo.tutor.nombre if grupo.tutor else 'Sin tutor',
-            })
-
-    return render(request, "director.html", {
-        "form": form,
-        "grupo_form": grupo_form,
-        "materia_form": materia_form,
-        "grupos": grupos_data
-    })
-
+    
 @require_POST
 def new_user(request):
     if not request.session.get('usuario_id'):
@@ -2175,55 +2142,11 @@ def new_materia(request):
             # Crear relación grupo-materia-docente
             GrupoDocenteMateria.objects.create(
                 grupo=grupo,
+                materia=materia,
                 docente=docente
-            ).first()
-            
-            if not gdm:
-                return JsonResponse({'error': 'No tienes materias asignadas en este grupo'}, status=400)
-            
-            # Guardar cada asistencia
-            asistencias_guardadas = 0
-            for alumno_id, estado_nombre in asistencias.items():
-                try:
-                    alumno = Alumno.objects.get(id=alumno_id)
-                    estado = EstadoAsistencia.objects.get(nombre=estado_nombre)
-                    
-                    # Crear o actualizar la asistencia
-                    asistencia, created = Asistencia.objects.update_or_create(
-                        alumno=alumno,
-                        grupo_docente_materia=gdm,
-                        fecha=fecha,
-                        defaults={
-                            'estado': estado,
-                            'comentario': ''
-                        }
-                    )
-                    
-                    asistencias_guardadas += 1
-                    print(f"Asistencia {'creada' if created else 'actualizada'} para {alumno.nombre}: {estado_nombre}")
-                    
-                except Alumno.DoesNotExist:
-                    print(f"Error: Alumno con ID {alumno_id} no encontrado")
-                except EstadoAsistencia.DoesNotExist:
-                    print(f"Error: Estado '{estado_nombre}' no encontrado")
-            
-            return JsonResponse({
-                'success': True, 
-                'message': f'Asistencia guardada correctamente para {asistencias_guardadas} alumnos',
-                'guardadas': asistencias_guardadas
-            })
-            
-        except Grupo.DoesNotExist:
-            return JsonResponse({'error': 'Grupo no encontrado'}, status=404)
-        except Usuario.DoesNotExist:
-            return JsonResponse({'error': 'Usuario no encontrado'}, status=404)
-        except json.JSONDecodeError:
-            return JsonResponse({'error': 'Datos JSON inválidos'}, status=400)
-        except Exception as e:
-            print(f"Error inesperado: {str(e)}")
-            return JsonResponse({'error': str(e)}, status=500)
-    
-    return JsonResponse({'error': 'Método no permitido'}, status=405)
+            )
+
+    return redirect('director')
 
 def new_cuatrimestre(request):
     if request.method == "POST":
@@ -5285,3 +5208,53 @@ def detalleActividad(request, id):
         return JsonResponse({"error": "Actividad no encontrada"}, status=404)
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
+    
+def guardar_comentario(request):
+    """Endpoint AJAX para guardar comentarios de alumnos"""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            alumno_id = data.get('alumno_id')
+            texto = data.get('texto')
+            docente_id = request.session.get('usuario_id')
+            
+            print(f"Guardando comentario - Alumno ID: {alumno_id}")
+            
+            # Validar datos requeridos
+            if not all([alumno_id, texto, docente_id]):
+                return JsonResponse({'error': 'Faltan datos requeridos'}, status=400)
+            
+            # Verificar que el alumno existe
+            try:
+                alumno = Alumno.objects.get(id=alumno_id)
+            except Alumno.DoesNotExist:
+                return JsonResponse({'error': 'Alumno no encontrado'}, status=404)
+            
+            # Verificar que el docente existe
+            try:
+                docente = Usuario.objects.get(id=docente_id)
+            except Usuario.DoesNotExist:
+                return JsonResponse({'error': 'Docente no encontrado'}, status=404)
+            
+            # Crear el comentario (tipo por defecto "General")
+            comentario = Comentario.objects.create(
+                alumno=alumno,
+                docente=docente,
+                tipo="General",  # Valor por defecto ya que no lo usas
+                texto=texto
+            )
+            
+            print(f"Comentario guardado con ID: {comentario.id}")
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Comentario guardado correctamente'
+            })
+            
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Datos JSON inválidos'}, status=400)
+        except Exception as e:
+            print(f"Error inesperado: {str(e)}")
+            return JsonResponse({'error': str(e)}, status=500)
+    
+    return JsonResponse({'error': 'Método no permitido'}, status=405)

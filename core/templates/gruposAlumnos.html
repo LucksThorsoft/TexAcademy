@@ -191,32 +191,36 @@
     /* ===== MODAL ===== */
     .modal-overlay {
         display: none;
-        position: fixed;
+        position: absolute; /* Cambiado de fixed a absolute */
         top: 0;
         left: 0;
+        right: 0;
+        bottom: 0;
         width: 100%;
         height: 100%;
         background: rgba(0, 0, 0, 0.5);
-        z-index: 1000;
+        z-index: 1050;
         justify-content: center;
         align-items: center;
+        backdrop-filter: blur(2px);
     }
-    
+
     .modal-overlay.active {
         display: flex;
     }
-    
+
     .modal-container {
         background: white;
         border-radius: 16px;
-        width: 100%;
-        max-width: 1000px;
-        height: 100vh;
-        max-height: 600px;
+        width: 90%;
+        max-width: 1200px;
+        height: 85vh;
+        max-height: 800px;
         overflow: hidden;
         box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
         display: flex;
         flex-direction: column;
+        position: relative;
     }
     
     /* Header del modal simplificado */
@@ -752,20 +756,153 @@
         background: #e8f5e9;
     }
 
-    /* Responsive */
-    @media (max-width: 768px) {
-        .unidad-form-grid {
-            grid-template-columns: 1fr;
-        }
-        
-        .config-actions {
-            flex-direction: column;
-        }
-        
-        .btn-unidad, .btn-guardar-unidades {
-            width: 100%;
-            justify-content: center;
-        }
+    /* ===== PONDERACIONES ===== */
+    .ponderaciones-container {
+        margin-top: 20px;
+        padding-top: 15px;
+        border-top: 1px dashed #e0e0e0;
+    }
+
+    .ponderaciones-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .ponderaciones-titulo {
+        font-size: 13px;
+        font-weight: 600;
+        color: #667eea;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .ponderaciones-titulo .mdi {
+        font-size: 16px;
+    }
+
+    .btn-agregar-ponderacion {
+        background: #f3f4f6;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        padding: 4px 10px;
+        font-size: 11px;
+        font-weight: 500;
+        color: #4b5563;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        transition: all 0.2s;
+    }
+
+    .btn-agregar-ponderacion:hover {
+        background: #eef2ff;
+        border-color: #667eea;
+        color: #667eea;
+    }
+
+    .ponderaciones-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .ponderacion-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        background: #f9fafb;
+        padding: 8px 12px;
+        border-radius: 8px;
+        border: 1px solid #f0f0f0;
+    }
+
+    .ponderacion-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex: 1;
+        flex-wrap: wrap;
+    }
+
+    .ponderacion-nombre-input {
+        flex: 3;
+        min-width: 150px;
+        padding: 6px 10px;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        font-size: 13px;
+        background: white;
+    }
+
+    .ponderacion-porcentaje-input {
+        width: 70px;
+        padding: 6px 10px;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        font-size: 13px;
+        text-align: center;
+        background: white;
+    }
+
+    .ponderacion-porcentaje-input:focus,
+    .ponderacion-nombre-input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+    }
+
+    .btn-eliminar-ponderacion {
+        background: none;
+        border: none;
+        color: #9ca3af;
+        cursor: pointer;
+        font-size: 18px;
+        padding: 4px;
+        border-radius: 4px;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+    }
+
+    .btn-eliminar-ponderacion:hover {
+        color: #dc2626;
+        background: #fee2e2;
+    }
+
+    .ponderaciones-total {
+        margin-top: 10px;
+        text-align: right;
+        font-size: 12px;
+        padding: 6px 10px;
+        background: #f8f9fa;
+        border-radius: 6px;
+    }
+
+    .ponderaciones-total.success {
+        color: #059669;
+        background: #e8f5e9;
+    }
+
+    .ponderaciones-total.error {
+        color: #dc2626;
+        background: #fee2e2;
+    }
+
+    .ponderaciones-empty {
+        text-align: center;
+        padding: 20px;
+        background: #fafafa;
+        border-radius: 8px;
+        color: #9ca3af;
+        font-size: 12px;
+        border: 1px dashed #e5e7eb;
     }
     
     /* ===== VISTA DE CALIFICACIONES ===== */
@@ -868,6 +1005,163 @@
         background: #e9ecef;
         color: #495057;
         font-size: 15px;
+    }
+
+    /* ===== ÍCONO DE INFORMACIÓN PARA CRITERIOS ===== */
+    .unidad-header-content {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+
+    .info-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 18px;
+        height: 18px;
+        background: #667eea;
+        color: white;
+        border-radius: 50%;
+        font-size: 11px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        flex-shrink: 0;
+    }
+
+    .info-icon:hover {
+        background: rgb(0, 0, 180);
+        transform: scale(1.05);
+    }
+
+    /* ===== MODAL DE CRITERIOS DE EVALUACIÓN ===== */
+    .criterios-modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 2000;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .criterios-modal-overlay.active {
+        display: flex;
+    }
+
+    .criterios-modal {
+        background: white;
+        border-radius: 16px;
+        width: 90%;
+        max-width: 400px;
+        overflow: hidden;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        animation: modalFadeIn 0.2s ease;
+    }
+
+    @keyframes modalFadeIn {
+        from {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    .criterios-modal-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 16px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .criterios-modal-header h3 {
+        color: white;
+        font-size: 16px;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .criterios-modal-close {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+        padding: 0;
+        line-height: 1;
+        opacity: 0.8;
+        transition: opacity 0.2s;
+    }
+
+    .criterios-modal-close:hover {
+        opacity: 1;
+    }
+
+    .criterios-modal-body {
+        padding: 20px;
+    }
+
+    .criterios-unidad-nombre {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eee;
+        font-size: 14px;
+    }
+
+    .criterios-lista {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .criterio-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 12px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        font-size: 13px;
+    }
+
+    .criterio-nombre {
+        color: #333;
+        font-weight: 500;
+    }
+
+    .criterio-porcentaje {
+        color: #059669;
+        font-weight: 600;
+        background: #e8f5e9;
+        padding: 2px 8px;
+        border-radius: 20px;
+    }
+
+    .criterios-empty {
+        text-align: center;
+        padding: 30px;
+        color: #9ca3af;
+        font-style: italic;
+    }
+
+    .criterios-modal-footer {
+        padding: 12px 20px;
+        border-top: 1px solid #eee;
+        text-align: right;
+        font-size: 11px;
+        color: #999;
     }
 
     .calificaciones-table td {
@@ -1037,8 +1331,7 @@
         
         .modal-container {
             width: 95%;
-            height: 75vh;
-            max-height: none;
+            height: 90vh;
         }
         
         .modal-header {
@@ -1105,11 +1398,25 @@
             padding: 8px 40px;
             font-size: 13px;
         }
+
+        .unidad-form-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .config-actions {
+            flex-direction: column;
+        }
+        
+        .btn-unidad, .btn-guardar-unidades {
+            width: 100%;
+            justify-content: center;
+        }
     }
     
     @media (max-width: 480px) {
         .modal-container {
-            height: 80vh;
+            width: 98%;
+            height: 95vh;
             border-radius: 12px;
         }
         
@@ -1258,228 +1565,245 @@
     }
 </style>
 
-<!-- Switch de vista principal -->
-<div class="view-switch" id="viewSwitch">
-    <button class="view-option active" data-view="groups">Mis Grupos</button>
-    <button class="view-option" data-view="students">Todos mis Alumnos</button>
-</div>
+<div class="main-content">
+    <!-- Switch de vista principal -->
+    <div class="view-switch" id="viewSwitch">
+        <button class="view-option active" data-view="groups">Mis Grupos</button>
+        <button class="view-option" data-view="students">Todos mis Alumnos</button>
+    </div>
 
-<!-- Vista de Mis Grupos -->
-<div id="groupsView" class="view-content">
-    {% if sin_cuatrimestre %}
-        <div class="no-cuatrimestre-message">
-            <div style="text-align: center; padding: 60px;">
-                <span class="mdi mdi-calendar-remove" style="font-size: 64px; color: #94a3b8;"></span>
-                <h3 style="color: #333; margin-top: 20px;">No hay cuatrimestre activo</h3>
-                <p style="color: #666; margin-top: 10px; max-width: 400px; margin-left: auto; margin-right: auto;">
-                    {{ mensaje }}. Contacta al director para que active un cuatrimestre.
+    <!-- Vista de Mis Grupos -->
+    <div id="groupsView" class="view-content">
+        {% if sin_cuatrimestre %}
+            <div class="no-cuatrimestre-message">
+                <div style="text-align: center; padding: 60px;">
+                    <span class="mdi mdi-calendar-remove" style="font-size: 64px; color: #94a3b8;"></span>
+                    <h3 style="color: #333; margin-top: 20px;">No hay cuatrimestre activo</h3>
+                    <p style="color: #666; margin-top: 10px; max-width: 400px; margin-left: auto; margin-right: auto;">
+                        {{ mensaje }}. Contacta al director para que active un cuatrimestre.
+                    </p>
+                </div>
+            </div>
+        {% else %}
+            <div class="groups-grid">
+                {% for grupo in grupos %}
+                <div class="group-card" 
+                    data-group-id="{{ grupo.grupo_id }}" 
+                    data-materia="{{ grupo.materias.0.nombre }}" 
+                    data-clave="{{ grupo.clave }}"
+                    data-alumnos="{{ grupo.alumnos_json }}"
+                    data-materias='{{ grupo.materias_json }}'>
+                    <div class="group-header">
+                        <div class="group-header-main">
+                            {% if grupo.materias %}
+                                <span class="materia-principal">{{ grupo.materias.0.nombre }}</span>
+                                <span class="group-separator">|</span>
+                                <span class="group-clave">{{ grupo.clave }}</span>
+                            {% else %}
+                                <span class="materia-principal">Sin materia</span>
+                                <span class="group-separator">|</span>
+                                <span class="group-clave">{{ grupo.clave }}</span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="group-meta">
+                            <span class="mdi mdi-account-multiple"></span>
+                            <span>{{ grupo.num_alumnos }} alumnos</span>
+                        </div>
+                    </div>
+                    
+                    <div class="group-stats">
+                        <div class="stat-item promedio">
+                            <div class="stat-label">Promedio Grupal</div>
+                            <div class="stat-value">
+                                {% if grupo.promedio_grupal_valido %}
+                                    {{ grupo.promedio_grupal|floatformat:1 }}
+                                {% else %}
+                                    --
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if grupo.alumnos_riesgo > 0 %}
+                        <div class="attention-btn">
+                            <span class="mdi mdi-alert"></span>
+                            <span>
+                                {{ grupo.alumnos_riesgo }} alumno{{ grupo.alumnos_riesgo|pluralize }} en riesgo
+                            </span>
+                        </div>
+                    {% endif %}
+                </div>
+                {% empty %}
+                <div class="no-groups">
+                    <div style="text-align: center; padding: 40px;">
+                        <span class="mdi mdi-book-open" style="font-size: 48px; color: #94a3b8;"></span>
+                        <p style="color: #666; font-size: 16px; margin-bottom: 10px; margin-top: 15px;">
+                            No tienes grupos asignados en el cuatrimestre actual
+                        </p>
+                        <p style="color: #999; font-size: 14px;">
+                            Contacta con el administrador para que te asigne grupos en este cuatrimestre
+                        </p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Vista de Todos los Alumnos -->
+    <div id="studentsView" class="view-content" style="display: none;">
+        <div class="students-grid">
+            <div style="text-align: center; padding: 40px;">
+                <p style="color: #666; font-size: 16px;">
+                    Vista de todos los alumnos (en desarrollo)
+                </p>
+                <p style="color: #999; font-size: 14px;">
+                    Esta funcionalidad estará disponible próximamente
                 </p>
             </div>
         </div>
-    {% else %}
-        <div class="groups-grid">
-            {% for grupo in grupos %}
-            <div class="group-card" 
-                data-group-id="{{ grupo.grupo_id }}" 
-                data-materia="{{ grupo.materias.0.nombre }}" 
-                data-clave="{{ grupo.clave }}"
-                data-alumnos="{{ grupo.alumnos_json }}"
-                data-materias='{{ grupo.materias_json }}'>
-                <div class="group-header">
-                    <div class="group-header-main">
-                        {% if grupo.materias %}
-                            <span class="materia-principal">{{ grupo.materias.0.nombre }}</span>
-                            <span class="group-separator">|</span>
-                            <span class="group-clave">{{ grupo.clave }}</span>
-                        {% else %}
-                            <span class="materia-principal">Sin materia</span>
-                            <span class="group-separator">|</span>
-                            <span class="group-clave">{{ grupo.clave }}</span>
-                        {% endif %}
+    </div>
+
+    <!-- ===== MODAL ===== -->
+    <div class="modal-overlay" id="groupModal">
+        <div class="modal-container">
+            <!-- Header simplificado -->
+            <div class="modal-header">
+                <div class="modal-title" id="modalTitleContainer">
+                    <div class="group-header-main" id="modalTitle">
+                        <span class="materia-principal" id="modalMateria">Materia</span>
+                        <span class="group-separator">|</span>
+                        <span class="group-clave" id="modalClave">Grupo</span>
+                    </div>
+                </div>
+                <button class="close-btn" id="closeModal">&times;</button>
+            </div>
+            
+            <!-- Switch interno -->
+            <div class="modal-switch-container" id="modalSwitchContainer">
+                <div class="modal-switch" id="modalSwitch">
+                    <button class="modal-switch-option active" data-modal-view="alumnos">Alumnos</button>
+                    <button class="modal-switch-option" data-modal-view="calificaciones">Calificaciones</button>
+                    <button class="modal-switch-option" data-modal-view="alertas">Alertas</button>
+                </div>
+            </div>
+
+            <!-- SNACKBAR PARA MENSAJES -->
+            <div id="snackbar" class="snackbar">
+                <span class="snackbar-icon"></span>
+                <span class="snackbar-message"></span>
+                <button class="snackbar-close" onclick="cerrarSnackbar()">&times;</button>
+            </div>
+            
+            <!-- Contenido -->
+            <div class="modal-content-wrapper">
+                <div class="modal-content">
+                    <!-- Lista de Alumnos -->
+                    <div class="modal-view active" id="modalListaAlumnos">
+                        <div class="alumnos-table-wrapper">
+                            <table class="alumnos-table">
+                                <thead>
+                                    <tr>
+                                        <th>Nombre</th>
+                                        <th>Matrícula</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="modalAlumnosBody"></tbody>
+                            </table>
+                        </div>
                     </div>
                     
-                    <div class="group-meta">
-                        <span class="mdi mdi-account-multiple"></span>
-                        <span>{{ grupo.num_alumnos }} alumnos</span>
-                    </div>
-                </div>
-                
-                <div class="group-stats">
-                    <div class="stat-item promedio">
-                        <div class="stat-label">Promedio Grupal</div>
-                        <div class="stat-value">
-                            {% if grupo.promedio_grupal_valido %}
-                                {{ grupo.promedio_grupal|floatformat:1 }}
-                            {% else %}
-                                --
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-                
-                {% if grupo.alumnos_riesgo > 0 %}
-                    <div class="attention-btn">
-                        <span class="mdi mdi-alert"></span>
-                        <span>
-                            {{ grupo.alumnos_riesgo }} alumno{{ grupo.alumnos_riesgo|pluralize }} en riesgo
-                        </span>
-                    </div>
-                {% endif %}
-            </div>
-            {% empty %}
-            <div class="no-groups">
-                <div style="text-align: center; padding: 40px;">
-                    <span class="mdi mdi-book-open" style="font-size: 48px; color: #94a3b8;"></span>
-                    <p style="color: #666; font-size: 16px; margin-bottom: 10px; margin-top: 15px;">
-                        No tienes grupos asignados en el cuatrimestre actual
-                    </p>
-                    <p style="color: #999; font-size: 14px;">
-                        Contacta con el administrador para que te asigne grupos en este cuatrimestre
-                    </p>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-    {% endif %}
-</div>
-
-<!-- Vista de Todos los Alumnos -->
-<div id="studentsView" class="view-content" style="display: none;">
-    <div class="students-grid">
-        <div style="text-align: center; padding: 40px;">
-            <p style="color: #666; font-size: 16px;">
-                Vista de todos los alumnos (en desarrollo)
-            </p>
-            <p style="color: #999; font-size: 14px;">
-                Esta funcionalidad estará disponible próximamente
-            </p>
-        </div>
-    </div>
-</div>
-
-<!-- ===== MODAL ===== -->
-<div class="modal-overlay" id="groupModal">
-    <div class="modal-container">
-        <!-- Header simplificado -->
-        <div class="modal-header">
-            <div class="modal-title" id="modalTitleContainer">
-                <div class="group-header-main" id="modalTitle">
-                    <span class="materia-principal" id="modalMateria">Materia</span>
-                    <span class="group-separator">|</span>
-                    <span class="group-clave" id="modalClave">Grupo</span>
-                </div>
-            </div>
-            <button class="close-btn" id="closeModal">&times;</button>
-        </div>
-        
-        <!-- Switch interno -->
-        <div class="modal-switch-container" id="modalSwitchContainer">
-            <div class="modal-switch" id="modalSwitch">
-                <button class="modal-switch-option active" data-modal-view="alumnos">Alumnos</button>
-                <button class="modal-switch-option" data-modal-view="calificaciones">Calificaciones</button>
-                <button class="modal-switch-option" data-modal-view="alertas">Alertas</button>
-            </div>
-        </div>
-
-        <!-- SNACKBAR PARA MENSAJES -->
-        <div id="snackbar" class="snackbar">
-            <span class="snackbar-icon"></span>
-            <span class="snackbar-message"></span>
-            <button class="snackbar-close" onclick="cerrarSnackbar()">&times;</button>
-        </div>
-        
-        <!-- Contenido -->
-        <div class="modal-content-wrapper">
-            <div class="modal-content">
-                <!-- Lista de Alumnos -->
-                <div class="modal-view active" id="modalListaAlumnos">
-                    <div class="alumnos-table-wrapper">
-                        <table class="alumnos-table">
-                            <thead>
-                                <tr>
-                                    <th>Nombre</th>
-                                    <th>Matrícula</th>
-                                    <th>Estado</th>
-                                </tr>
-                            </thead>
-                            <tbody id="modalAlumnosBody"></tbody>
-                        </table>
-                    </div>
-                </div>
-                
-                <!-- Vista de Calificaciones -->
-                <div class="modal-view" id="modalCalificaciones">
-                    <div class="calificaciones-container">
-                        <!-- Vista de configuración de parciales (se muestra si no hay parciales) -->
-                        <div id="configuracionParciales" style="display: none;">
-                            <div class="config-header">
-                                <h3 class="config-titulo">Configurar Unidades (Parciales)</h3>
-                                <p class="config-subtitulo">Define las unidades para <span id="materiaNombre"></span></p>
+                    <!-- Vista de Calificaciones -->
+                    <div class="modal-view" id="modalCalificaciones">
+                        <div class="calificaciones-container">
+                            <!-- Vista de configuración de parciales (se muestra si no hay parciales) -->
+                            <div id="configuracionParciales" style="display: none;">
+                                <div class="config-header">
+                                    <h3 class="config-titulo">Configurar Unidades (Parciales)</h3>
+                                    <p class="config-subtitulo">Define las unidades para <span id="materiaNombre"></span></p>
+                                </div>
+                                
+                                <div id="unidades-container">
+                                    <!-- Las unidades se agregarán aquí dinámicamente -->
+                                </div>
+                                
+                                <div class="config-actions">
+                                    <button class="btn-unidad" onclick="agregarUnidad()">
+                                        <span class="mdi mdi-plus"></span>
+                                        Agregar Unidad
+                                    </button>
+                                    <button class="btn-guardar-unidades" onclick="guardarUnidades()">
+                                        <span class="mdi mdi-content-save"></span>
+                                        Guardar Configuración
+                                    </button>
+                                </div>
+                                
+                                <div class="porcentaje-total" id="porcentajeTotal">
+                                    Total: 0%
+                                </div>
                             </div>
                             
-                            <div id="unidades-container">
-                                <!-- Las unidades se agregarán aquí dinámicamente -->
+                            <!-- Vista de tabla de calificaciones -->
+                            <div id="tablaCalificaciones" style="display: none; flex: 1; flex-direction: column; min-height: 0;">
+                                <div class="calificaciones-table-wrapper" id="calificacionesTableWrapper">
+                                    <!-- La tabla se generará aquí -->
+                                </div>
+                                <!-- El botón se agregará aquí dinámicamente -->
                             </div>
                             
-                            <div class="config-actions">
-                                <button class="btn-unidad" onclick="agregarUnidad()">
-                                    <span class="mdi mdi-plus"></span>
-                                    Agregar Unidad
-                                </button>
-                                <button class="btn-guardar-unidades" onclick="guardarUnidades()">
-                                    <span class="mdi mdi-content-save"></span>
-                                    Guardar Configuración
-                                </button>
-                            </div>
-                            
-                            <div class="porcentaje-total" id="porcentajeTotal">
-                                Total: 0%
+                            <!-- Mensaje de carga -->
+                            <div id="cargandoCalificaciones" style="display: none; text-align: center; padding: 40px;">
+                                <span class="mdi mdi-loading mdi-spin" style="font-size: 40px; color: #667eea;"></span>
+                                <p style="margin-top: 10px; color: #666;">Cargando...</p>
                             </div>
                         </div>
-                        
-                        <!-- Vista de tabla de calificaciones -->
-                        <div id="tablaCalificaciones" style="display: none; flex: 1; flex-direction: column; min-height: 0;">
-                            <div class="calificaciones-table-wrapper" id="calificacionesTableWrapper">
-                                <!-- La tabla se generará aquí -->
+                    </div>
+                    
+                    <!-- Vista de Alertas -->
+                    <div class="modal-view" id="modalAlertas">
+                        <div class="alertas-container">
+                    
+                            <!-- Toolbar: badges resumen -->
+                            <div class="alertas-toolbar" id="alertasToolbar" style="display:none;">
+                                <div class="alertas-summary" id="alertasSummary"></div>
                             </div>
-                            <!-- El botón se agregará aquí dinámicamente -->
-                        </div>
-                        
-                        <!-- Mensaje de carga -->
-                        <div id="cargandoCalificaciones" style="display: none; text-align: center; padding: 40px;">
-                            <span class="mdi mdi-loading mdi-spin" style="font-size: 40px; color: #667eea;"></span>
-                            <p style="margin-top: 10px; color: #666;">Cargando...</p>
+                    
+                            <!-- Loading -->
+                            <div class="alertas-loading" id="alertasLoading" style="display:none;">
+                                <span class="mdi mdi-loading mdi-spin" style="font-size:36px;"></span>
+                                <span style="font-size:14px;color:#666;">Cargando alertas…</span>
+                            </div>
+                    
+                            <!-- Lista de alertas -->
+                            <div class="alertas-list-wrapper" id="alertasListWrapper" style="display:none;">
+                                <div id="alertasList"></div>
+                            </div>
+                    
+                            <!-- Sin alertas -->
+                            <div class="alertas-empty" id="alertasEmpty" style="display:none;">
+                                <span class="mdi mdi-check-circle-outline"></span>
+                                <h4>Sin alertas activas</h4>
+                                <p>Todos los alumnos de este grupo están al día</p>
+                            </div>
+                    
                         </div>
                     </div>
                 </div>
-                
-                <!-- Vista de Alertas -->
-                <div class="modal-view" id="modalAlertas">
-                    <div class="alertas-container">
-                
-                        <!-- Toolbar: badges resumen -->
-                        <div class="alertas-toolbar" id="alertasToolbar" style="display:none;">
-                            <div class="alertas-summary" id="alertasSummary"></div>
+                <!-- Modal de criterios de evaluación -->
+                <div class="criterios-modal-overlay" id="criteriosModal">
+                    <div class="criterios-modal">
+                        <div class="criterios-modal-header">
+                            <h3 id="criteriosModalTitulo">Criterios de Evaluación</h3>
+                            <button class="criterios-modal-close" onclick="window.cerrarModalCriterios()">&times;</button>
                         </div>
-                
-                        <!-- Loading -->
-                        <div class="alertas-loading" id="alertasLoading" style="display:none;">
-                            <span class="mdi mdi-loading mdi-spin" style="font-size:36px;"></span>
-                            <span style="font-size:14px;color:#666;">Cargando alertas…</span>
+                        <div class="criterios-modal-body" id="criteriosModalBody">
+                            <!-- Contenido dinámico -->
                         </div>
-                
-                        <!-- Lista de alertas -->
-                        <div class="alertas-list-wrapper" id="alertasListWrapper" style="display:none;">
-                            <div id="alertasList"></div>
+                        <div class="criterios-modal-footer">
+                            Información referencial
                         </div>
-                
-                        <!-- Sin alertas -->
-                        <div class="alertas-empty" id="alertasEmpty" style="display:none;">
-                            <span class="mdi mdi-check-circle-outline"></span>
-                            <h4>Sin alertas activas</h4>
-                            <p>Todos los alumnos de este grupo están al día</p>
-                        </div>
-                
                     </div>
                 </div>
             </div>
@@ -1681,7 +2005,7 @@
         }
 
         // Asegurar que cargarCalificaciones sea global
-        window.cargarCalificaciones = function(grupoId, materiaId, materiaNombre, gdmId, tieneParciales, parcialesConfigurados, parcialesExistentes, calificacionesExistentes = []) {
+        window.cargarCalificaciones = function(grupoId, materiaId, materiaNombre, gdmId, tieneParciales, parcialesConfigurados, parcialesExistentes, calificacionesExistentes = [], ponderacionesPorUnidad = {}) {
             console.log('Cargando calificaciones:', {
                 grupoId, materiaId, materiaNombre, gdmId, tieneParciales, parcialesConfigurados, parcialesExistentes, calificacionesExistentes
             });
@@ -1729,9 +2053,15 @@
                 console.log('Mostrando tabla de calificaciones');
                 configView.style.display = 'none';
                 tablaView.style.display = 'block';
+
+                // Combinar parciales con sus ponderaciones
+                const parcialesConPonderaciones = (parcialesExistentes || []).map(parcial => ({
+                    ...parcial,
+                    ponderaciones: ponderacionesPorUnidad[parcial.numero] || []
+                }));
                 
                 // PASAR LOS ALUMNOS Y CALIFICACIONES A LA FUNCIÓN
-                window.generarTablaCalificaciones(parcialesExistentes || [], window.currentGrupoData || [], calificacionesExistentes);
+                window.generarTablaCalificaciones(parcialesConPonderaciones, window.currentGrupoData || [], calificacionesExistentes);
                 
             } else if (tieneParciales && !parcialesConfigurados) {
                 console.log('Mostrando formulario con parciales existentes');
@@ -1777,18 +2107,42 @@
             const parcialesOrdenados = [...parciales].sort((a, b) => a.numero - b.numero);
             
             // Crear una tarjeta por cada parcial existente
-            parcialesOrdenados.forEach((parcial, index) => {
+            parcialesOrdenados.forEach((parcialItem, index) => {  // Cambiado: 'parcial' -> 'parcialItem'
                 const numeroUnidad = index + 1;
                 const unidadId = `unidad-${numeroUnidad}`;
                 
                 const unidadDiv = document.createElement('div');
                 unidadDiv.className = 'unidad-card';
                 unidadDiv.id = unidadId;
-                unidadDiv.dataset.unidad = numeroUnidad;
+                unidadDiv.setAttribute('data-unidad', numeroUnidad);
                 
-                // Formatear fechas si vienen en formato YYYY-MM-DD
-                const fechaInicio = parcial.fecha_inicio || '';
-                const fechaFin = parcial.fecha_fin || '';
+                // CORREGIDO: Convertir fechas de dd/mm/yyyy a yyyy-mm-dd
+                let fechaInicio = '';
+                let fechaFin = '';
+                
+                if (parcialItem.fecha_inicio) {
+                    // Si viene en formato dd/mm/yyyy
+                    if (parcialItem.fecha_inicio.includes('/')) {
+                        const partes = parcialItem.fecha_inicio.split('/');
+                        if (partes.length === 3) {
+                            fechaInicio = `${partes[2]}-${partes[1]}-${partes[0]}`;
+                        }
+                    } else {
+                        fechaInicio = parcialItem.fecha_inicio;
+                    }
+                }
+                
+                if (parcialItem.fecha_fin) {
+                    // Si viene en formato dd/mm/yyyy
+                    if (parcialItem.fecha_fin.includes('/')) {
+                        const partes = parcialItem.fecha_fin.split('/');
+                        if (partes.length === 3) {
+                            fechaFin = `${partes[2]}-${partes[1]}-${partes[0]}`;
+                        }
+                    } else {
+                        fechaFin = parcialItem.fecha_fin;
+                    }
+                }
                 
                 unidadDiv.innerHTML = `
                     <div class="unidad-header">
@@ -1798,11 +2152,11 @@
                     <div class="unidad-form-grid">
                         <div class="unidad-form-group">
                             <label>Nombre de la Unidad</label>
-                            <input type="text" class="unidad-nombre" value="${parcial.nombre || ''}" placeholder="Ej: Introducción" onchange="window.actualizarPorcentajeTotal()" onfocus="window.limpiarError(this)">
+                            <input type="text" class="unidad-nombre" value="${window.escapeHtml(parcialItem.nombre || '')}" placeholder="Ej: Introducción" onchange="window.actualizarPorcentajeTotal()" onfocus="window.limpiarError(this)">
                         </div>
                         <div class="unidad-form-group">
                             <label>Porcentaje (%)</label>
-                            <input type="number" class="unidad-porcentaje" value="${parcial.porcentaje || ''}" min="1" max="100" placeholder="0-100" onchange="window.validarPorcentaje(this)" oninput="window.actualizarPorcentajeTotal()" onfocus="window.limpiarError(this)">
+                            <input type="number" class="unidad-porcentaje" value="${parcialItem.porcentaje || ''}" min="1" max="100" placeholder="0-100" onchange="window.validarPorcentaje(this)" oninput="window.actualizarPorcentajeTotal()" onfocus="window.limpiarError(this)">
                         </div>
                         <div class="unidad-form-group">
                             <label>Fecha de Inicio</label>
@@ -1813,9 +2167,50 @@
                             <input type="date" class="unidad-fecha-fin" value="${fechaFin}" onchange="window.actualizarFechas(); window.actualizarEstadoInputs();" onfocus="window.limpiarError(this)">
                         </div>
                     </div>
+                    
+                    <!-- SECCIÓN DE PONDERACIONES -->
+                    <div class="ponderaciones-container">
+                        <div class="ponderaciones-header">
+                            <span class="ponderaciones-titulo">
+                                <span class="mdi mdi-scale-balance"></span>
+                                Criterios de Evaluación
+                            </span>
+                            <button type="button" class="btn-agregar-ponderacion" onclick="window.agregarPonderacion(this)">
+                                <span class="mdi mdi-plus"></span>
+                                Agregar criterio
+                            </button>
+                        </div>
+                        <div class="ponderaciones-list" id="ponderaciones-${unidadId}">
+                            <!-- Las ponderaciones se cargarán aquí -->
+                        </div>
+                        <div class="ponderaciones-total" id="ponderaciones-total-${numeroUnidad}">
+                            Total: 0%
+                        </div>
+                    </div>
                 `;
                 
                 container.appendChild(unidadDiv);
+                
+                // CORREGIDO: Usar 'parcialItem' en lugar de 'parcial'
+                if (parcialItem.ponderaciones && parcialItem.ponderaciones.length > 0) {
+                    window.cargarPonderacionesEnUnidad(unidadDiv, parcialItem.ponderaciones);
+                } else {
+                    // Agregar una ponderación por defecto si no hay
+                    const ponderacionesList = unidadDiv.querySelector('.ponderaciones-list');
+                    const ponderacionPorDefecto = document.createElement('div');
+                    ponderacionPorDefecto.className = 'ponderacion-item';
+                    ponderacionPorDefecto.innerHTML = `
+                        <div class="ponderacion-info">
+                            <input type="text" class="ponderacion-nombre-input" placeholder="Ej: Actividades, Tareas, Examen" value="" onfocus="window.limpiarErrorPonderacion(this)">
+                            <input type="text" class="ponderacion-porcentaje-input" placeholder="%" maxlength="3" value="" oninput="window.validarPorcentajePonderacion(this)" onkeypress="return window.soloNumeros(event)" onfocus="window.limpiarErrorPonderacion(this)">
+                        </div>
+                        <button type="button" class="btn-eliminar-ponderacion" onclick="window.eliminarPonderacion(this)">
+                            <span class="mdi mdi-close"></span>
+                        </button>
+                    `;
+                    ponderacionesList.appendChild(ponderacionPorDefecto);
+                    window.actualizarTotalPonderaciones(null, unidadDiv);
+                }
             });
             
             // Actualizar el contador global
@@ -1825,7 +2220,7 @@
             window.actualizarFechas();
             window.actualizarPorcentajeTotal();
             window.actualizarEstadoInputs();
-            window.inicializarListenersFechas(); // <-- NUEVO
+            window.inicializarListenersFechas();
         };
 
         // Función para agregar una nueva unidad
@@ -1861,7 +2256,7 @@
             const unidadDiv = document.createElement('div');
             unidadDiv.className = 'unidad-card';
             unidadDiv.id = unidadId;
-            unidadDiv.dataset.unidad = nuevoNumero;
+            unidadDiv.setAttribute('data-unidad', nuevoNumero);
             
             unidadDiv.innerHTML = `
                 <div class="unidad-header">
@@ -1886,14 +2281,50 @@
                         <input type="date" class="unidad-fecha-fin" onchange="window.actualizarFechas(); window.actualizarEstadoInputs();" onfocus="window.limpiarError(this)">
                     </div>
                 </div>
+                
+                <!-- SECCIÓN DE PONDERACIONES -->
+                <div class="ponderaciones-container">
+                    <div class="ponderaciones-header">
+                        <span class="ponderaciones-titulo">
+                            <span class="mdi mdi-scale-balance"></span>
+                            Criterios de Evaluación
+                        </span>
+                        <button type="button" class="btn-agregar-ponderacion" onclick="window.agregarPonderacion(this)">
+                            <span class="mdi mdi-plus"></span>
+                            Agregar criterio
+                        </button>
+                    </div>
+                    <div class="ponderaciones-list" id="ponderaciones-${unidadId}">
+                        <!-- Se agregará una ponderación por defecto -->
+                    </div>
+                    <div class="ponderaciones-total" id="ponderaciones-total-${nuevoNumero}">
+                        Total: 0%
+                    </div>
+                </div>
             `;
             
             container.appendChild(unidadDiv);
+            
+            // ===== AGREGAR UNA PONDERACIÓN POR DEFECTO CON onfocus =====
+            const ponderacionesList = unidadDiv.querySelector('.ponderaciones-list');
+            const ponderacionPorDefecto = document.createElement('div');
+            ponderacionPorDefecto.className = 'ponderacion-item';
+            ponderacionPorDefecto.innerHTML = `
+                <div class="ponderacion-info">
+                    <input type="text" class="ponderacion-nombre-input" placeholder="Ej: Actividades, Tareas, Examen" value="" onfocus="window.limpiarErrorPonderacion(this)">
+                    <input type="text" class="ponderacion-porcentaje-input" placeholder="%" maxlength="3" value="" oninput="window.validarPorcentajePonderacion(this)" onkeypress="return window.soloNumeros(event)" onfocus="window.limpiarErrorPonderacion(this)">
+                </div>
+                <button type="button" class="btn-eliminar-ponderacion" onclick="window.eliminarPonderacion(this)">
+                    <span class="mdi mdi-close"></span>
+                </button>
+            `;
+            ponderacionesList.appendChild(ponderacionPorDefecto);
+            
             window.unidadActual = nuevoNumero + 1;
             window.actualizarFechas();
             window.actualizarPorcentajeTotal();
             window.actualizarEstadoInputs();
-            window.inicializarListenersFechas(); // <-- NUEVO
+            window.inicializarListenersFechas();
         };
 
         // Función para eliminar unidad
@@ -2191,17 +2622,111 @@
         window.guardarUnidades = function() {
             console.log('Guardando unidades...');
             
-            // VALIDACIÓN: Verificar que todos los campos estén completos
+            // VALIDACIÓN: Verificar que todos los campos de unidad estén completos
             const cards = document.querySelectorAll('.unidad-card');
             let camposIncompletos = false;
             let primerCampoVacio = null;
             
-            // Primero, limpiar todos los estilos de error anteriores
+            // Limpiar estilos de error anteriores
             document.querySelectorAll('.unidad-nombre, .unidad-porcentaje, .unidad-fecha-inicio, .unidad-fecha-fin').forEach(input => {
                 input.style.borderColor = '';
                 input.style.backgroundColor = '';
             });
             
+            // Limpiar estilos de error de ponderaciones
+            document.querySelectorAll('.ponderacion-nombre-input, .ponderacion-porcentaje-input').forEach(input => {
+                input.style.borderColor = '';
+                input.style.backgroundColor = '';
+            });
+            
+            // ===== NUEVA VALIDACIÓN: Verificar ponderaciones =====
+            let erroresPonderaciones = [];
+            
+            cards.forEach((card, index) => {
+                const unidadNumero = index + 1;
+                const ponderacionesItems = card.querySelectorAll('.ponderacion-item');
+                const ponderacionesList = card.querySelector('.ponderaciones-list');
+                const ponderacionesEmpty = card.querySelector('.ponderaciones-empty');
+                
+                // Verificar que NO esté vacío (sin ponderaciones)
+                if (ponderacionesItems.length === 0 || (ponderacionesEmpty && ponderacionesEmpty.style.display !== 'none')) {
+                    erroresPonderaciones.push({
+                        unidad: unidadNumero,
+                        error: 'Debe agregar al menos un criterio de evaluación'
+                    });
+                    camposIncompletos = true;
+                    
+                    // Resaltar el área de ponderaciones
+                    const ponderacionesContainer = card.querySelector('.ponderaciones-container');
+                    if (ponderacionesContainer) {
+                        ponderacionesContainer.style.border = '1px solid #dc2626';
+                        ponderacionesContainer.style.borderRadius = '8px';
+                        ponderacionesContainer.style.padding = '15px';
+                        ponderacionesContainer.style.backgroundColor = '#fee2e2';
+                    }
+                    return;
+                } else {
+                    // Restaurar estilo normal
+                    const ponderacionesContainer = card.querySelector('.ponderaciones-container');
+                    if (ponderacionesContainer) {
+                        ponderacionesContainer.style.border = '';
+                        ponderacionesContainer.style.borderRadius = '';
+                        ponderacionesContainer.style.padding = '';
+                        ponderacionesContainer.style.backgroundColor = '';
+                    }
+                }
+                
+                // Validar cada ponderación
+                ponderacionesItems.forEach((item, pondIndex) => {
+                    const nombreInput = item.querySelector('.ponderacion-nombre-input');
+                    const porcentajeInput = item.querySelector('.ponderacion-porcentaje-input');
+                    let tieneError = false;
+                    
+                    // Validar nombre
+                    if (!nombreInput.value.trim()) {
+                        nombreInput.style.borderColor = '#dc2626';
+                        nombreInput.style.backgroundColor = '#fee2e2';
+                        tieneError = true;
+                        camposIncompletos = true;
+                        if (!primerCampoVacio) primerCampoVacio = nombreInput;
+                    } else {
+                        nombreInput.style.borderColor = '';
+                        nombreInput.style.backgroundColor = '';
+                    }
+                    
+                    // Validar porcentaje
+                    const porcentajeVal = parseInt(porcentajeInput.value);
+                    if (!porcentajeInput.value.trim() || isNaN(porcentajeVal) || porcentajeVal < 1 || porcentajeVal > 100) {
+                        porcentajeInput.style.borderColor = '#dc2626';
+                        porcentajeInput.style.backgroundColor = '#fee2e2';
+                        tieneError = true;
+                        camposIncompletos = true;
+                        if (!primerCampoVacio) primerCampoVacio = porcentajeInput;
+                    } else {
+                        porcentajeInput.style.borderColor = '';
+                        porcentajeInput.style.backgroundColor = '';
+                    }
+                    
+                    if (tieneError) {
+                        erroresPonderaciones.push({
+                            unidad: unidadNumero,
+                            error: `Criterio ${pondIndex + 1}: Complete nombre y porcentaje válido (1-100)`
+                        });
+                    }
+                });
+                
+                // Validar suma de ponderaciones = 100%
+                const totalDiv = card.querySelector(`#ponderaciones-total-${unidadNumero}`);
+                if (totalDiv && totalDiv.classList.contains('error')) {
+                    erroresPonderaciones.push({
+                        unidad: unidadNumero,
+                        error: 'La suma de los porcentajes debe ser 100%'
+                    });
+                    camposIncompletos = true;
+                }
+            });
+            
+            // Validar campos de unidad (nombre, porcentaje, fechas)
             cards.forEach((card, index) => {
                 const nombre = card.querySelector('.unidad-nombre')?.value.trim();
                 const porcentaje = card.querySelector('.unidad-porcentaje')?.value;
@@ -2211,7 +2736,6 @@
                 if (!nombre || !porcentaje || !fechaInicio || !fechaFin) {
                     camposIncompletos = true;
                     
-                    // Resaltar los campos vacíos
                     if (!nombre) {
                         const input = card.querySelector('.unidad-nombre');
                         input.style.borderColor = '#dc2626';
@@ -2239,24 +2763,36 @@
                 }
             });
             
-            if (camposIncompletos) {
-                // Hacer scroll al primer campo vacío
+            // Mostrar errores de ponderaciones si existen
+            if (erroresPonderaciones.length > 0) {
+                // Mostrar mensaje de error resumido
+                const mensajeError = erroresPonderaciones.slice(0, 3).map(e => `Unidad ${e.unidad}: ${e.error}`).join('\n');
+                window.mostrarSnackbar(`Errores en criterios:\n${mensajeError}`, 'error', 5000);
+                
                 if (primerCampoVacio) {
                     primerCampoVacio.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     primerCampoVacio.focus();
                 }
-                return; // No continuar con el guardado
+                return;
             }
             
-            const unidades = [];
+            if (camposIncompletos) {
+                if (primerCampoVacio) {
+                    primerCampoVacio.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    primerCampoVacio.focus();
+                }
+                window.mostrarSnackbar('Complete todos los campos requeridos', 'warning');
+                return;
+            }
             
+            // Recolectar unidades
+            const unidades = [];
             cards.forEach((card, index) => {
                 const nombre = card.querySelector('.unidad-nombre')?.value.trim();
                 const porcentaje = card.querySelector('.unidad-porcentaje')?.value;
                 const fechaInicio = card.querySelector('.unidad-fecha-inicio')?.value;
                 const fechaFin = card.querySelector('.unidad-fecha-fin')?.value;
                 
-                // Ya validamos que todos existen, así que podemos agregarlos sin preocupación
                 unidades.push({
                     numero: index + 1,
                     nombre: nombre,
@@ -2267,13 +2803,25 @@
             });
             
             // Validar que el total sea 100%
-            const total = unidades.reduce((sum, u) => sum + u.porcentaje, 0);
-            if (total !== 100) {
-                window.mostrarSnackbar('El total de porcentajes debe ser 100%', 'warning');
+            const totalUnidades = unidades.reduce((sum, u) => sum + u.porcentaje, 0);
+            if (totalUnidades !== 100) {
+                window.mostrarSnackbar('El total de porcentajes de las unidades debe ser 100%', 'warning');
                 return;
             }
             
+            // Recolectar ponderaciones
+            const todasPonderaciones = window.obtenerTodasPonderaciones();
+            
+            // Validar que todas las unidades tengan ponderaciones
+            for (let i = 1; i <= unidades.length; i++) {
+                if (!todasPonderaciones[i] || todasPonderaciones[i].length === 0) {
+                    window.mostrarSnackbar(`Unidad ${i}: Debe agregar al menos un criterio de evaluación`, 'warning');
+                    return;
+                }
+            }
+            
             console.log('Unidades a guardar:', unidades);
+            console.log('Ponderaciones a guardar:', todasPonderaciones);
             
             // Deshabilitar botón y mostrar carga
             const btnGuardar = document.querySelector('.btn-guardar-unidades');
@@ -2290,7 +2838,8 @@
                 },
                 body: JSON.stringify({
                     gdm_id: window.gdmActualId,
-                    unidades: unidades
+                    unidades: unidades,
+                    ponderaciones: todasPonderaciones
                 })
             })
             .then(response => {
@@ -2303,42 +2852,37 @@
                 console.log('Respuesta del servidor:', data);
                 
                 if (data.success) {
-                    // Mostrar mensaje de éxito
-                    window.mostrarSnackbar('Unidades guardadas correctamente', 'success');
+                    window.mostrarSnackbar('Unidades y criterios guardados correctamente', 'success');
                     
-                    // ACTUALIZAR LOS DATOS DE LA MATERIA EN window.materiasData
-                    // Buscar la materia que acabamos de configurar
                     if (window.materiasData && window.materiasData.length > 0) {
                         const materiaIndex = window.materiasData.findIndex(m => m.id === window.gdmActualId);
                         if (materiaIndex !== -1) {
-                            // Actualizar los datos de la materia
                             window.materiasData[materiaIndex].tiene_parciales = true;
                             window.materiasData[materiaIndex].parciales_configurados = true;
                             window.materiasData[materiaIndex].parciales = data.parciales;
+                            window.materiasData[materiaIndex].ponderaciones = data.ponderaciones;
                         }
                     }
                     
-                    // Recargar la vista de calificaciones con los nuevos parciales
                     const materiaNombre = document.getElementById('materiaNombre').textContent;
-                    
                     window.cargarCalificaciones(
                         null,
                         window.materiaActualId,
                         materiaNombre,
                         window.gdmActualId,
-                        true,  // tieneParciales
-                        true,  // parcialesConfigurados (ahora ya están configurados)
+                        true,
+                        true,
                         data.parciales
                     );
                 } else {
-                    alert('Error: ' + (data.error || 'Error desconocido'));
+                    window.mostrarSnackbar('Error: ' + (data.error || 'Error desconocido'), 'error');
                     btnGuardar.innerHTML = textoOriginal;
                     btnGuardar.disabled = false;
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Error al guardar las unidades: ' + error.message);
+                window.mostrarSnackbar('Error al guardar: ' + error.message, 'error');
                 btnGuardar.innerHTML = textoOriginal;
                 btnGuardar.disabled = false;
             });
@@ -2348,6 +2892,228 @@
         window.limpiarError = function(input) {
             input.style.borderColor = '';
             input.style.backgroundColor = '';
+        };
+
+        // Variable global para llevar el control de IDs temporales de ponderaciones
+        window.ponderacionCounter = {};
+
+        // Agregar una nueva ponderación a una unidad
+        window.agregarPonderacion = function(btn) {
+            const unidadCard = btn.closest('.unidad-card');
+            const unidadId = unidadCard.id;
+            const unidadNumero = unidadCard.getAttribute('data-unidad');
+            const ponderacionesList = unidadCard.querySelector('.ponderaciones-list');
+            const ponderacionId = `temp-pond-${Date.now()}-${Math.random()}`;
+            
+            // Eliminar mensaje empty si existe
+            const emptyMsg = ponderacionesList.querySelector('.ponderaciones-empty');
+            if (emptyMsg) emptyMsg.remove();
+            
+            // Crear elemento de ponderación
+            const ponderacionDiv = document.createElement('div');
+            ponderacionDiv.className = 'ponderacion-item';
+            ponderacionDiv.id = ponderacionId;
+            ponderacionDiv.setAttribute('data-ponderacion-id', ponderacionId);
+            
+            ponderacionDiv.innerHTML = `
+                <div class="ponderacion-info">
+                    <input type="text" class="ponderacion-nombre-input" placeholder="Ej: Actividades, Tareas, Examen" value="" onfocus="window.limpiarErrorPonderacion(this)">
+                    <input type="text" class="ponderacion-porcentaje-input" placeholder="%" maxlength="3" value="" oninput="window.validarPorcentajePonderacion(this)" onkeypress="return window.soloNumeros(event)" onfocus="window.limpiarErrorPonderacion(this)">
+                </div>
+                <button type="button" class="btn-eliminar-ponderacion" onclick="window.eliminarPonderacion(this)">
+                    <span class="mdi mdi-close"></span>
+                </button>
+            `;
+            
+            ponderacionesList.appendChild(ponderacionDiv);
+            window.actualizarTotalPonderaciones(null, unidadCard);
+        };
+
+        // Eliminar una ponderación
+        window.eliminarPonderacion = function(btn) {
+            const ponderacionItem = btn.closest('.ponderacion-item');
+            const unidadCard = ponderacionItem.closest('.unidad-card');
+            const ponderacionesList = unidadCard.querySelector('.ponderaciones-list');
+            const ponderacionesItems = ponderacionesList.querySelectorAll('.ponderacion-item');
+            
+            // No permitir eliminar si es la única ponderación
+            if (ponderacionesItems.length === 1) {
+                window.mostrarSnackbar('Debe haber al menos un criterio de evaluación', 'warning');
+                return;
+            }
+            
+            ponderacionItem.remove();
+            
+            // Actualizar total
+            window.actualizarTotalPonderaciones(null, unidadCard);
+        };
+
+        // Validar que solo se ingresen números
+        window.soloNumeros = function(event) {
+            const charCode = event.which ? event.which : event.keyCode;
+            if (charCode < 48 || charCode > 57) {
+                event.preventDefault();
+                return false;
+            }
+            return true;
+        };
+
+        // Validar porcentaje de ponderación (0-100, solo enteros)
+        window.validarPorcentajePonderacion = function(input) {
+            // Eliminar cualquier caracter no numérico
+            let valor = input.value.replace(/[^0-9]/g, '');
+            
+            // Limitar a 3 dígitos (máximo 100)
+            if (valor.length > 3) {
+                valor = valor.slice(0, 3);
+            }
+            
+            // Convertir a número
+            let num = parseInt(valor);
+            if (isNaN(num)) {
+                num = 0;
+            }
+            
+            // Limitar entre 0 y 100
+            if (num > 100) {
+                num = 100;
+                valor = '100';
+            }
+            
+            input.value = valor;
+            
+            // Actualizar total de ponderaciones
+            window.actualizarTotalPonderaciones(input);
+        };
+
+        // Actualizar el total de porcentajes de ponderaciones de una unidad
+        window.actualizarTotalPonderaciones = function(input, unidadCardParam) {
+            let unidadCard;
+            
+            if (input) {
+                unidadCard = input.closest('.unidad-card');
+            } else if (unidadCardParam) {
+                unidadCard = unidadCardParam;
+            } else {
+                return;
+            }
+            
+            const unidadNumero = unidadCard.getAttribute('data-unidad');
+            const ponderaciones = unidadCard.querySelectorAll('.ponderacion-porcentaje-input');
+            let total = 0;
+            
+            ponderaciones.forEach(inputPond => {
+                let valor = parseInt(inputPond.value);
+                if (isNaN(valor)) valor = 0;
+                total += valor;
+            });
+            
+            const totalDiv = unidadCard.querySelector(`#ponderaciones-total-${unidadNumero}`);
+            if (totalDiv) {
+                totalDiv.textContent = `Total: ${total}%`;
+                
+                if (total === 100) {
+                    totalDiv.classList.add('success');
+                    totalDiv.classList.remove('error');
+                } else {
+                    totalDiv.classList.add('error');
+                    totalDiv.classList.remove('success');
+                }
+            }
+        };
+
+        // Obtener todas las ponderaciones de todas las unidades (para guardar)
+        window.obtenerTodasPonderaciones = function() {
+            const todasPonderaciones = {};
+            const unidadCards = document.querySelectorAll('.unidad-card');
+            
+            unidadCards.forEach(card => {
+                const unidadNumero = card.getAttribute('data-unidad');
+                const ponderacionesItems = card.querySelectorAll('.ponderacion-item');
+                const ponderaciones = [];
+                
+                ponderacionesItems.forEach(item => {
+                    const nombreInput = item.querySelector('.ponderacion-nombre-input');
+                    const porcentajeInput = item.querySelector('.ponderacion-porcentaje-input');
+                    
+                    // Solo agregar si nombre y porcentaje son válidos
+                    if (nombreInput && nombreInput.value.trim() && porcentajeInput.value && parseInt(porcentajeInput.value) > 0) {
+                        ponderaciones.push({
+                            nombre: nombreInput.value.trim(),
+                            porcentaje: parseInt(porcentajeInput.value)
+                        });
+                    }
+                });
+                
+                if (ponderaciones.length > 0) {
+                    todasPonderaciones[unidadNumero] = ponderaciones;
+                }
+            });
+            
+            return todasPonderaciones;
+        };
+
+        // Cargar ponderaciones existentes al editar
+        window.cargarPonderacionesEnUnidad = function(unidadCard, ponderaciones) {
+            const unidadNumero = unidadCard.getAttribute('data-unidad');
+            const ponderacionesList = unidadCard.querySelector('.ponderaciones-list');
+            
+            // Limpiar lista
+            ponderacionesList.innerHTML = '';
+            
+            if (!ponderaciones || ponderaciones.length === 0) {
+                // Agregar una ponderación vacía por defecto con onfocus
+                const ponderacionPorDefecto = document.createElement('div');
+                ponderacionPorDefecto.className = 'ponderacion-item';
+                ponderacionPorDefecto.innerHTML = `
+                    <div class="ponderacion-info">
+                        <input type="text" class="ponderacion-nombre-input" placeholder="Ej: Actividades, Tareas, Examen" value="" onfocus="window.limpiarErrorPonderacion(this)">
+                        <input type="text" class="ponderacion-porcentaje-input" placeholder="%" maxlength="3" value="" oninput="window.validarPorcentajePonderacion(this)" onkeypress="return window.soloNumeros(event)" onfocus="window.limpiarErrorPonderacion(this)">
+                    </div>
+                    <button type="button" class="btn-eliminar-ponderacion" onclick="window.eliminarPonderacion(this)">
+                        <span class="mdi mdi-close"></span>
+                    </button>
+                `;
+                ponderacionesList.appendChild(ponderacionPorDefecto);
+                window.actualizarTotalPonderaciones(null, unidadCard);
+                return;
+            }
+            
+            // Agregar cada ponderación existente con onfocus
+            ponderaciones.forEach(pond => {
+                const ponderacionId = `pond-${Date.now()}-${Math.random()}`;
+                const ponderacionDiv = document.createElement('div');
+                ponderacionDiv.className = 'ponderacion-item';
+                ponderacionDiv.id = ponderacionId;
+                
+                ponderacionDiv.innerHTML = `
+                    <div class="ponderacion-info">
+                        <input type="text" class="ponderacion-nombre-input" placeholder="Ej: Actividades, Tareas, Examen" value="${window.escapeHtml(pond.nombre)}" onfocus="window.limpiarErrorPonderacion(this)">
+                        <input type="text" class="ponderacion-porcentaje-input" placeholder="%" maxlength="3" value="${pond.porcentaje}" oninput="window.validarPorcentajePonderacion(this)" onkeypress="return window.soloNumeros(event)" onfocus="window.limpiarErrorPonderacion(this)">
+                    </div>
+                    <button type="button" class="btn-eliminar-ponderacion" onclick="window.eliminarPonderacion(this)">
+                        <span class="mdi mdi-close"></span>
+                    </button>
+                `;
+                
+                ponderacionesList.appendChild(ponderacionDiv);
+            });
+            
+            window.actualizarTotalPonderaciones(null, unidadCard);
+        };
+
+        // Limpiar estilos de error al enfocar un campo de ponderación
+        window.limpiarErrorPonderacion = function(input) {
+            input.style.borderColor = '';
+            input.style.backgroundColor = '';
+        };
+
+        // Función auxiliar para escapar HTML
+        window.escapeHtml = function(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         };
 
         // Función para generar la tabla de calificaciones
@@ -2363,19 +3129,15 @@
                 return;
             }
             
-            // Si no hay alumnos, mostrar mensaje
             if (!alumnos || alumnos.length === 0) {
-                wrapper.innerHTML = `
-                    <div style="text-align: center; padding: 40px; color: #666;">
-                        <span class="mdi mdi-account-group" style="font-size: 48px; color: #ccc;"></span>
-                        <h3 style="margin-top: 10px;">No hay alumnos en este grupo</h3>
-                        <p>Agrega alumnos para poder registrar calificaciones</p>
-                    </div>
-                `;
+                wrapper.innerHTML = `<div style="text-align: center; padding: 40px; color: #666;">
+                    <span class="mdi mdi-account-group" style="font-size: 48px; color: #ccc;"></span>
+                    <h3 style="margin-top: 10px;">No hay alumnos en este grupo</h3>
+                    <p>Agrega alumnos para poder registrar calificaciones</p>
+                </div>`;
                 return;
             }
             
-            // Crear un mapa de calificaciones para acceso rápido
             const calificacionesMap = {};
             if (calificacionesGuardadas && calificacionesGuardadas.length > 0) {
                 calificacionesGuardadas.forEach(cal => {
@@ -2384,28 +3146,31 @@
                 });
             }
             
-            // Crear estructura de la tabla
             let html = '<table class="calificaciones-table">';
-            
-            // PRIMERA FILA: Encabezado con los nombres de las unidades
             html += '<thead>';
-            html += '<tr class="calificaciones-header-row">';
-            html += '<th></th>'; // Columna de alumnos
             
-            parciales.forEach(parcial => {
-                // Formatear fechas
-                const fechaInicio = parcial.fecha_inicio ? parcial.fecha_inicio : '--/--/----';
-                const fechaFin = parcial.fecha_fin ? parcial.fecha_fin : '--/--/----';
+            // PRIMERA FILA: Encabezado con ícono de información
+            html += '<tr class="calificaciones-header-row">';
+            html += '<th></th>';
+            
+            parciales.forEach((parcial, idx) => {
+                const fechaInicio = parcial.fecha_inicio || '--/--/----';
+                const fechaFin = parcial.fecha_fin || '--/--/----';
+                
+                // Guardar las ponderaciones en un atributo data para usarlas en el click
+                const ponderacionesJson = JSON.stringify(parcial.ponderaciones || []);
                 
                 html += `<th>
                     <div class="unidad-header-content">
                         <span class="unidad-numero">Unidad ${parcial.numero}</span>
                         <span class="unidad-fechas">${fechaInicio} - ${fechaFin}</span>
+                        <span class="info-icon" onclick="window.mostrarCriterios(event, ${parcial.numero}, '${window.escapeHtml(parcial.nombre || 'Unidad ' + parcial.numero)}', \`${ponderacionesJson.replace(/`/g, '\\`')}\`)">
+                            <span class="mdi mdi-information" style="font-size: 10px;"></span>
+                        </span>
                     </div>
                 </th>`;
             });
             
-            // Columna de Promedio
             html += '<th></th>';
             html += '</tr>';
             
@@ -2417,58 +3182,42 @@
                 html += `<th>${parcial.nombre} - ${parcial.porcentaje}%</th>`;
             });
             
-            // Columna de Promedio
             html += '<th>Promedio</th>';
             html += '</tr>';
             html += '</thead>';
             
-            // CUERPO DE LA TABLA: Alumnos
+            // CUERPO DE LA TABLA (igual que antes)
             html += '<tbody id="calificacionesTableBody">';
             
             alumnos.forEach(alumno => {
                 html += '<tr>';
+                html += `<td><div class="alumno-info-cell"><span class="alumno-nombre">${alumno.nombre || 'No asignado'}</span><span class="alumno-matricula">${alumno.matricula || 'No asignado'}</span></div></td>`;
                 
-                // Columna de alumno (nombre + matrícula)
-                html += `<td>
-                    <div class="alumno-info-cell">
-                        <span class="alumno-nombre">${alumno.nombre || 'No asignado'}</span>
-                        <span class="alumno-matricula">${alumno.matricula || 'No asignado'}</span>
-                    </div>
-                </td>`;
-                
-                // Variables para calcular el promedio
                 let suma = 0;
                 let todasCompletas = true;
                 
-                // Columnas para cada parcial
                 parciales.forEach(parcial => {
                     const key = `${alumno.id}-${parcial.numero}`;
                     const calificacionGuardada = calificacionesMap[key] || '';
                     const porcentajeMaximo = parcial.porcentaje;
                     
-                    // Verificar si esta unidad tiene calificación
                     if (calificacionGuardada === '') {
                         todasCompletas = false;
                     } else {
                         const num = parseFloat(calificacionGuardada);
-                        if (!isNaN(num)) {
-                            suma += num;
-                        }
+                        if (!isNaN(num)) suma += num;
                     }
                     
-                    html += `<td>
-                        <input type="text" class="calificacion-input" 
-                            value="${calificacionGuardada}"
-                            placeholder="0-${porcentajeMaximo}"
-                            data-alumno-id="${alumno.id}"
-                            data-parcial="${parcial.numero}"
-                            data-porcentaje-max="${porcentajeMaximo}"
-                            data-original-value="${calificacionGuardada}"
-                            oninput="window.validarInputCalificacion(this); window.actualizarPromedio(this);">
-                    </td>`;
+                    html += `<td><input type="text" class="calificacion-input" 
+                        value="${calificacionGuardada}"
+                        placeholder="0-${porcentajeMaximo}"
+                        data-alumno-id="${alumno.id}"
+                        data-parcial="${parcial.numero}"
+                        data-porcentaje-max="${porcentajeMaximo}"
+                        data-original-value="${calificacionGuardada}"
+                        oninput="window.validarInputCalificacion(this); window.actualizarPromedio(this);"></td>`;
                 });
                 
-                // Calcular promedio
                 let promedioTexto = '-';
                 if (todasCompletas && suma > 0) {
                     const sumaRedondeada = window.redondearCalificacion(suma);
@@ -2477,38 +3226,76 @@
                 }
                 
                 html += `<td class="promedio-cell" id="promedio-${alumno.id}">${promedioTexto}</td>`;
-                
                 html += '</tr>';
             });
             
             html += '</tbody>';
             html += '</table>';
             
-            // SOLO LA TABLA DENTRO DEL WRAPPER
             wrapper.innerHTML = html;
             
-            // ACTUALIZAR O CREAR EL BOTÓN (si no existe)
+            // Agregar botón de guardar
             const calificacionesContainer = document.querySelector('.calificaciones-container');
             const tablaView = document.getElementById('tablaCalificaciones');
-            
             if (calificacionesContainer) {
-                // Buscar si ya existe el contenedor del botón
                 let botonContainer = tablaView.querySelector('.boton-guardar-container');
-                
                 if (!botonContainer) {
                     botonContainer = document.createElement('div');
                     botonContainer.className = 'boton-guardar-container';
                     tablaView.appendChild(botonContainer);
                 }
-                
-                botonContainer.innerHTML = `
-                    <button class="btn-guardar-calificaciones" onclick="window.guardarCalificaciones()">
-                        <span class="mdi mdi-content-save"></span>
-                        Guardar Calificaciones
-                    </button>
-                `;
+                botonContainer.innerHTML = `<button class="btn-guardar-calificaciones" onclick="window.guardarCalificaciones()"><span class="mdi mdi-content-save"></span> Guardar Calificaciones</button>`;
             }
         };
+
+        // Mostrar modal con los criterios de evaluación
+        window.mostrarCriterios = function(event, unidadNumero, unidadNombre, ponderacionesJson) {
+            event.stopPropagation();
+            
+            const ponderaciones = JSON.parse(ponderacionesJson);
+            const modal = document.getElementById('criteriosModal');
+            const modalTitulo = document.getElementById('criteriosModalTitulo');
+            const modalBody = document.getElementById('criteriosModalBody');
+            
+            modalTitulo.textContent = `Unidad ${unidadNumero}: ${unidadNombre}`;
+            
+            if (ponderaciones && ponderaciones.length > 0) {
+                let criteriosHtml = `<div class="criterios-lista">`;
+                ponderaciones.forEach(pond => {
+                    criteriosHtml += `
+                        <div class="criterio-item">
+                            <span class="criterio-nombre">${window.escapeHtml(pond.nombre)}</span>
+                            <span class="criterio-porcentaje">${pond.porcentaje}%</span>
+                        </div>
+                    `;
+                });
+                criteriosHtml += `</div>`;
+                modalBody.innerHTML = criteriosHtml;
+            } else {
+                modalBody.innerHTML = `<div class="criterios-empty">
+                    <span class="mdi mdi-information-outline"></span>
+                    <p>No se han definido criterios de evaluación para esta unidad</p>
+                </div>`;
+            }
+            
+            modal.classList.add('active');
+        };
+
+        // Cerrar modal de criterios
+        window.cerrarModalCriterios = function() {
+            const modal = document.getElementById('criteriosModal');
+            modal.classList.remove('active');
+        };
+
+        // Cerrar modal al hacer clic fuera
+        document.addEventListener('click', function(event) {
+            const modal = document.getElementById('criteriosModal');
+            if (modal && modal.classList.contains('active')) {
+                if (event.target === modal) {
+                    window.cerrarModalCriterios();
+                }
+            }
+        });
 
         // Función para validar en tiempo real
         window.validarInputCalificacion = function(input) {
