@@ -10,234 +10,71 @@ import traceback
 from io import TextIOWrapper
 from .forms import *
 from .models import *
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.contrib.auth.hashers import check_password
+from django.views.decorators.http import require_POST
+from django.http import JsonResponse
+import csv
+import re
+from io import TextIOWrapper
+from .forms import *
+from .models import *
+import json
+from .models import Grupo, Actividad, Entrega, Alumno, GrupoDocenteMateria, Parcial
+from django.db.models.functions import Coalesce
+from django.views.decorators.csrf import csrf_exempt
+from django.utils import timezone
+from datetime import datetime
+from django.contrib.auth.hashers import make_password, check_password
 
 # Create your views here.
 
-def dashboard(request):
-    # Verificar si el usuario está autenticado
-    if not request.session.get('usuario_id'):
-        return redirect('login')
-    
-    # Obtener el usuario actual desde la sesión
-    usuario_id = request.session.get('usuario_id')
-    
-    try:
-        # Obtener el usuario
-        usuario = Usuario.objects.get(id=usuario_id)
-        
-        # Obtener los roles del usuario
-        roles = request.session.get('usuario_roles', [])
-        
-        # Inicializar variables
-        grupos_data = []
-        total_alumnos = 0
-        alumnos_riesgo = 0
-        actividades_pendientes = 0
-        actividades_data = []
-        alertas_data = []
-        
-        # Si es docente, obtener sus grupos
-        if 'Docente' in roles:
-            # Obtener todos los grupos donde este docente imparte alguna materia
-            grupos_docente = GrupoDocenteMateria.objects.filter(
-                docente=usuario
-            ).select_related('grupo', 'materia').values('grupo').distinct()
-            
-            # Obtener los IDs de los grupos
-            grupo_ids = [g['grupo'] for g in grupos_docente]
-            
-            # Obtener los IDs de los GDM del docente para filtrar alertas
-            gdm_ids = GrupoDocenteMateria.objects.filter(
-                docente=usuario,
-                grupo__id__in=grupo_ids
-            ).values_list('id', flat=True)
-            
-            # Obtener los IDs de los parciales de esas materias
-            parciales_ids = Parcial.objects.filter(
-                grupo_docente_materia__id__in=gdm_ids
-            ).values_list('id', flat=True)
-            
-            # Obtener ALERTAS NO ATENDIDAS de nivel ALTO
-            alertas = Alerta.objects.filter(
-                parcial__id__in=parciales_ids,
-                atendida=False,
-                nivel_riesgo='Alto'
-            ).select_related(
-                'alumno',
-                'alumno__grupo',
-                'parcial',
-                'parcial__grupo_docente_materia__materia'
-            ).order_by('-fecha')[:10]
-            
-            # Procesar alertas para el template
-            for alerta in alertas:
-                # Obtener nombre del grupo con carrera
-                grupo = alerta.alumno.grupo
-                if hasattr(grupo, 'carrera') and grupo.carrera:
-                    grupo_nombre = f"{grupo.carrera} - {grupo.clave}"
-                else:
-                    grupo_nombre = f"Grupo {grupo.clave}"
-                
-                # Obtener materia
-                materia_nombre = "General"
-                if alerta.parcial and alerta.parcial.grupo_docente_materia:
-                    materia_nombre = alerta.parcial.grupo_docente_materia.materia.nombre
-                
-                # Calcular tiempo relativo
-                hoy = timezone.now().date()
-                fecha_alerta = alerta.fecha  # ya es un objeto date
-                
-                if fecha_alerta == hoy:
-                    tiempo = "Hoy"
-                elif (hoy - fecha_alerta).days == 1:
-                    tiempo = "Ayer"
-                else:
-                    dias = (hoy - fecha_alerta).days
-                    tiempo = f"Hace {dias} días"
-                
-                alertas_data.append({
-                    'id': alerta.id,
-                    'alumno_nombre': alerta.alumno.nombre,
-                    'alumno_matricula': alerta.alumno.matricula,
-                    'alumno_id': alerta.alumno.id,
-                    'descripcion': alerta.motivo,
-                    'tiempo': tiempo,
-                    'grupo_clave': grupo.clave,
-                    'grupo_nombre': grupo_nombre,
-                    'materia': materia_nombre,
-                    'nivel_riesgo': alerta.nivel_riesgo
-                })
-            
-            # Obtener los grupos completos con sus relaciones
-            grupos = Grupo.objects.filter(id__in=grupo_ids).prefetch_related(
-                'alumno_set',
-                'grupodocentemateria_set__materia'
-            )
-            
-            # Preparar datos de grupos
-            for grupo in grupos:
-                # Obtener las materias que el docente imparte en este grupo
-                materias = GrupoDocenteMateria.objects.filter(
-                    grupo=grupo,
-                    docente=usuario
-                ).select_related('materia')
-                
-                # Crear un nombre más descriptivo para el grupo
-                if hasattr(grupo, 'carrera') and grupo.carrera:
-                    nombre_completo = f"{grupo.carrera} - {grupo.clave}"
-                else:
-                    nombre_completo = f"Grupo {grupo.clave}"
-                
-                # Lista de materias que imparte en este grupo
-                materias_lista = [m.materia.nombre for m in materias]
-                
-                # Contar alumnos en este grupo
-                num_alumnos = Alumno.objects.filter(grupo=grupo).count()
-                total_alumnos += num_alumnos
-                
-                # Calcular alumnos en riesgo usando la función determinar_estado_alumno
-                alumnos_grupo = Alumno.objects.filter(grupo=grupo)
-                riesgo_grupo = 0
-                
-                for alumno in alumnos_grupo:
-                    # Usar la función unificada para determinar el estado
-                    _, _, en_riesgo = determinar_estado_alumno(alumno, usuario)
-                    if en_riesgo:
-                        riesgo_grupo += 1
-                
-                alumnos_riesgo += riesgo_grupo
-                
-                grupos_data.append({
-                    'id': grupo.id,
-                    'clave': grupo.clave,
-                    'nombre_completo': nombre_completo,
-                    'carrera': getattr(grupo, 'carrera', ''),
-                    'materias': materias_lista,
-                    'num_alumnos': num_alumnos,
-                    'alumnos_riesgo': riesgo_grupo
-                })
-            
-            # MODIFICACIÓN: Obtener actividades que NO tengan el 100% de entregas
-            hoy = datetime.now().date()
-            
-            # Obtener todas las actividades del docente (sin filtro de fecha)
-            todas_actividades = Actividad.objects.filter(
-                parcial__grupo_docente_materia__docente=usuario
-            ).select_related(
-                'parcial__grupo_docente_materia__grupo'
-            ).order_by('fecha_entrega')
-            
-            # Filtrar actividades que aún tienen entregas pendientes
-            actividades_pendientes_lista = []
-            for actividad in todas_actividades:
-                grupo = actividad.parcial.grupo_docente_materia.grupo
-                total_alumnos_act = Alumno.objects.filter(grupo=grupo).count()
-                entregadas = Entrega.objects.filter(
-                    actividad=actividad,
-                    entregado=True
-                ).count()
-                
-                # Solo incluir si NO tiene el 100% de entregas
-                if entregadas < total_alumnos_act:
-                    actividades_pendientes_lista.append(actividad)
-            
-            # Contar actividades pendientes (sin el 100% de entregas)
-            actividades_pendientes = len(actividades_pendientes_lista)
-            
-            # Tomar solo las primeras 5 para mostrar
-            actividades_mostrar = actividades_pendientes_lista[:5]
-            
-            # Procesar actividades para el template
-            for actividad in actividades_mostrar:
-                grupo = actividad.parcial.grupo_docente_materia.grupo
-                total_alumnos_act = Alumno.objects.filter(grupo=grupo).count()
-                entregadas = Entrega.objects.filter(
-                    actividad=actividad,
-                    entregado=True
-                ).count()
-                
-                # Calcular días restantes (pueden ser negativos si ya pasó la fecha)
-                dias_restantes = (actividad.fecha_entrega - hoy).days
-                porcentaje = int((entregadas / total_alumnos_act * 100)) if total_alumnos_act > 0 else 0
-                
-                # Crear nombre descriptivo para el grupo en actividades
-                if hasattr(grupo, 'carrera') and grupo.carrera:
-                    grupo_nombre = f"{grupo.carrera} - {grupo.clave}"
-                else:
-                    grupo_nombre = f"Grupo {grupo.clave}"
-                
-                actividades_data.append({
-                    'id': actividad.id,
-                    'titulo': actividad.titulo,
-                    'grupo_clave': grupo.clave,
-                    'grupo_nombre': grupo_nombre,
-                    'entregadas': entregadas,
-                    'total_alumnos': total_alumnos_act,
-                    'porcentaje_entregas': porcentaje,
-                    'dias_restantes': dias_restantes,
-                    'fecha_entrega': actividad.fecha_entrega
-                })
-        
-        context = {
-            'docente_nombre': usuario.nombre,
-            'roles': roles,
-            'grupos': grupos_data,
-            'total_alumnos': total_alumnos,
-            'alumnos_riesgo': alumnos_riesgo,
-            'actividades_pendientes': actividades_pendientes,
-            'actividades': actividades_data,
-            'total_grupos': len(grupos_data),
-            'alertas': alertas_data,
-        }
-        
-    except Usuario.DoesNotExist:
-        return redirect('login')
-    
-    return render(request, "dashboard.html", context)
 
 
 
 # En views.py, modificar la función dashboard - Sección de actividades
+def determinar_estado_alumno(alumno, docente):
+    """
+    Determina el estado de un alumno basado ÚNICAMENTE en sus alertas existentes
+    Retorna: (estado_texto, estado_clase, en_riesgo_boolean)
+    """
+    # Obtener las materias que este docente imparte en el grupo del alumno
+    materias_docente = GrupoDocenteMateria.objects.filter(
+        grupo=alumno.grupo,
+        docente=docente
+    )
+    
+    # Si el docente no tiene materias en este grupo, el alumno no tiene estado relevante
+    if not materias_docente.exists():
+        return ("Sin información", "status-info", False)
+    
+    # Obtener los parciales de las materias del docente
+    parciales_ids = Parcial.objects.filter(
+        grupo_docente_materia__in=materias_docente
+    ).values_list('id', flat=True)
+    
+    # Obtener alertas NO ATENDIDAS del alumno en estas materias
+    alertas = Alerta.objects.filter(
+        alumno=alumno,
+        atendida=False,
+        parcial__id__in=parciales_ids
+    )
+    
+    # Si no hay alertas, el alumno está estable
+    if not alertas.exists():
+        return ("Estable", "status-good", False)
+    
+    # Determinar el nivel MÁS ALTO de alerta
+    if alertas.filter(nivel_riesgo='Alto').exists():
+        return ("En Riesgo", "status-danger", True)
+    elif alertas.filter(nivel_riesgo='Medio').exists():
+        return ("Requiere Atención", "status-warning", False)
+    elif alertas.filter(nivel_riesgo='Bajo').exists():
+        return ("Precaución", "status-info", False)
+    
+    # Fallback (no debería ocurrir)
+    return ("Estable", "status-good", False)
 
 def dashboard(request):
     # Verificar si el usuario está autenticado
@@ -4490,3 +4327,833 @@ def obtener_datos_graficas_asistencia(request):
             return JsonResponse({'error': str(e), 'success': False}, status=500)
     
     return JsonResponse({'error': 'Método no permitido', 'success': False}, status=405)   
+
+# ========== VISTAS PARA QR (AGREGADAS DESPUÉS DE ACTIVIDADES) ==========
+
+@require_GET
+def api_materias_por_grupo(request, grupo_id):
+    """API para obtener materias de un grupo para un docente específico"""
+    print(f"🔵 api_materias_por_grupo - Grupo ID: {grupo_id}")
+    
+    if not request.session.get('usuario_id'):
+        return JsonResponse({'error': 'No autenticado'}, status=401)
+    
+    try:
+        usuario_id = request.session.get('usuario_id')
+        usuario = Usuario.objects.get(id=usuario_id)
+        
+        materias = GrupoDocenteMateria.objects.filter(
+            grupo_id=grupo_id,
+            docente=usuario
+        ).select_related('materia')
+        
+        materias_data = [{
+            'id': m.materia.id,
+            'nombre': m.materia.nombre
+        } for m in materias]
+        
+        print(f"🟢 Materias encontradas: {len(materias_data)}")
+        return JsonResponse({'materias': materias_data})
+        
+    except Exception as e:
+        print(f"🔴 Error: {str(e)}")
+        return JsonResponse({'error': str(e)}, status=500)
+
+@require_POST
+def api_generar_qr(request):
+    """API para generar un nuevo código QR"""
+    print("🔵 api_generar_qr")
+    
+    if not request.session.get('usuario_id'):
+        return JsonResponse({'error': 'No autenticado'}, status=401)
+    
+    try:
+        data = json.loads(request.body)
+        usuario_id = request.session.get('usuario_id')
+        usuario = Usuario.objects.get(id=usuario_id)
+        
+        # Crear token único
+        token = secrets.token_urlsafe(16)
+        
+        # Calcular expiración
+        fecha_hora = datetime.strptime(
+            f"{data['fecha']} {data['hora']}", 
+            "%Y-%m-%d %H:%M"
+        )
+        fecha_expiracion = (fecha_hora + timedelta(minutes=data['duracion'])).timestamp()
+        
+        # Obtener nombres
+        grupo = Grupo.objects.get(id=data['grupo'])
+        materia = Materia.objects.get(id=data['materia'])
+        
+        # Guardar en cache
+        qr_data = {
+            'id': token[:8],
+            'docente_id': usuario_id,
+            'docente_nombre': usuario.nombre,
+            'grupo_id': data['grupo'],
+            'grupo_nombre': grupo.clave,
+            'materia_id': data['materia'],
+            'materia_nombre': materia.nombre,
+            'token': token,
+            'fecha': data['fecha'],
+            'hora': data['hora'],
+            'duracion': data['duracion'],
+            'fecha_generacion': timezone.now().timestamp(),
+            'fecha_expiracion': fecha_expiracion,
+            'activo': True,
+            'escaneos': 0
+        }
+        
+        cache.set(f'qr_{token}', qr_data, timeout=3600)
+        
+        # Guardar en historial
+        cache_key = f'qr_history_{usuario_id}_{timezone.now().date()}'
+        historial = cache.get(cache_key, [])
+        historial.insert(0, {
+            'hora': data['hora'],
+            'grupo': grupo.clave,
+            'materia': materia.nombre,
+            'duracion': data['duracion'],
+            'token': token[:8],
+            'activo': True
+        })
+        historial = historial[:10]
+        cache.set(cache_key, historial, timeout=86400)
+        
+        print(f"🟢 QR generado: {token[:8]}")
+        return JsonResponse({
+            'success': True,
+            'token': token,
+            'grupo_nombre': grupo.clave,
+            'materia_nombre': materia.nombre,
+            'fecha': data['fecha'],
+            'hora': data['hora'],
+            'duracion': data['duracion']
+        })
+        
+    except Exception as e:
+        print(f"🔴 Error: {str(e)}")
+        return JsonResponse({'error': str(e)}, status=500)
+
+def generar_qr(request):
+    """Vista principal para generar códigos QR"""
+    print("🔵 Entrando a función generar_qr")
+    
+    if not request.session.get('usuario_id'):
+        return redirect('login')
+    
+    roles = request.session.get('usuario_roles', [])
+    if 'Docente' not in roles and 'Director' not in roles:
+        return redirect('dashboard')
+    
+    try:
+        usuario_id = request.session.get('usuario_id')
+        usuario = Usuario.objects.get(id=usuario_id)
+        
+        grupos_docente = GrupoDocenteMateria.objects.filter(
+            docente=usuario
+        ).select_related('grupo').values('grupo').distinct()
+        
+        grupo_ids = [g['grupo'] for g in grupos_docente]
+        grupos = Grupo.objects.filter(id__in=grupo_ids)
+        
+        cache_key = f'qr_history_{usuario_id}_{timezone.now().date()}'
+        historial_qr = cache.get(cache_key, [])
+        
+        context = {
+            'grupos': grupos,
+            'historial_qr': historial_qr,
+            'today': timezone.now().date(),
+            'now': timezone.now(),
+            'debug': True,
+        }
+        
+        return render(request, 'generar_qr.html', context)
+        
+    except Exception as e:
+        print(f"🔴 Error: {str(e)}")
+        return redirect('dashboard')
+
+@require_POST
+def api_validar_qr(request):
+    """API para validar QR escaneado por el alumno"""
+    print("🔵 api_validar_qr")
+    try:
+        data = json.loads(request.body)
+        token = data.get('token')
+        matricula = data.get('matricula')
+        device_id = data.get('device_id')
+        
+        print(f"📱 Validando QR - Token: {token}, Matrícula: {matricula}")
+        
+        # Validar datos requeridos
+        if not all([token, matricula]):
+            return JsonResponse({
+                'valido': False,
+                'error': 'Faltan datos requeridos'
+            }, status=400)
+        
+        # Buscar QR en cache
+        qr_data = cache.get(f'qr_{token}')
+        
+        if not qr_data:
+            print(f"❌ QR no encontrado: {token}")
+            return JsonResponse({
+                'valido': False,
+                'error': 'QR no válido o expirado'
+            }, status=400)
+        
+        # Verificar expiración
+        ahora = timezone.now().timestamp()
+        if ahora > qr_data['fecha_expiracion']:
+            cache.delete(f'qr_{token}')
+            print(f"❌ QR expirado: {token}")
+            return JsonResponse({
+                'valido': False,
+                'error': 'QR expirado'
+            }, status=400)
+        
+        # Verificar alumno
+        try:
+            alumno = Alumno.objects.get(matricula=matricula)
+            print(f"✅ Alumno encontrado: {alumno.nombre}")
+        except Alumno.DoesNotExist:
+            print(f"❌ Alumno no encontrado: {matricula}")
+            return JsonResponse({
+                'valido': False,
+                'error': 'Alumno no encontrado'
+            }, status=400)
+        
+        # Verificar que el alumno pertenezca al grupo
+        if alumno.grupo_id != qr_data['grupo_id']:
+            print(f"❌ Grupo incorrecto. Alumno: {alumno.grupo_id}, QR: {qr_data['grupo_id']}")
+            return JsonResponse({
+                'valido': False,
+                'error': 'No perteneces a este grupo'
+            }, status=400)
+        
+        # Obtener la relación grupo-docente-materia
+        gdm = GrupoDocenteMateria.objects.filter(
+            grupo_id=qr_data['grupo_id'],
+            materia_id=qr_data['materia_id'],
+            docente_id=qr_data['docente_id']
+        ).first()
+        
+        if not gdm:
+            print(f"❌ Configuración de clase inválida")
+            return JsonResponse({
+                'valido': False,
+                'error': 'Configuración de clase inválida'
+            }, status=400)
+        
+        # Verificar si ya registró asistencia hoy
+        fecha_clase = datetime.strptime(qr_data['fecha'], '%Y-%m-%d').date()
+        asistencia_existente = Asistencia.objects.filter(
+            alumno=alumno,
+            grupo_docente_materia=gdm,
+            fecha=fecha_clase
+        ).exists()
+        
+        if asistencia_existente:
+            print(f"❌ Asistencia ya registrada para {alumno.nombre}")
+            return JsonResponse({
+                'valido': False,
+                'error': 'Ya registraste asistencia para esta clase'
+            }, status=400)
+        
+        # Si todo está bien, incrementar contador de escaneos
+        qr_data['escaneos'] += 1
+        cache.set(f'qr_{token}', qr_data, timeout=3600)
+        
+        print(f"✅ QR válido para {alumno.nombre}")
+        
+        return JsonResponse({
+            'valido': True,
+            'mensaje': 'QR válido',
+            'clase_data': {
+                'grupo': qr_data['grupo_nombre'],
+                'materia': qr_data['materia_nombre'],
+                'fecha': qr_data['fecha'],
+                'hora': qr_data['hora'],
+                'docente': qr_data['docente_nombre'],
+                'gdm_id': gdm.id
+            }
+        })
+        
+    except Exception as e:
+        print(f"🔥 Error validando QR: {str(e)}")
+        return JsonResponse({'error': str(e)}, status=500)
+
+@require_POST
+def api_registrar_asistencia_qr(request):
+    """API para registrar la asistencia después de validar QR"""
+    print("🔵 api_registrar_asistencia_qr")
+    
+    if not request.session.get('usuario_id'):
+        return JsonResponse({'error': 'No autenticado'}, status=401)
+    
+    try:
+        data = json.loads(request.body)
+        matricula = data.get('matricula')
+        gdm_id = data.get('gdm_id')
+        fecha = data.get('fecha')
+        
+        alumno = Alumno.objects.get(matricula=matricula)
+        gdm = GrupoDocenteMateria.objects.get(id=gdm_id)
+        estado_asistio = EstadoAsistencia.objects.get(nombre='Asistió')
+        
+        asistencia = Asistencia.objects.create(
+            alumno=alumno,
+            grupo_docente_materia=gdm,
+            fecha=fecha,
+            estado=estado_asistio,
+            comentario='Registrado vía QR'
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'mensaje': 'Asistencia registrada correctamente',
+            'asistencia_id': asistencia.id
+        })
+        
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@csrf_exempt
+def api_login(request):
+    """API para login desde la app Flutter (SOLO MATRÍCULA)"""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            matricula = data.get('matricula')
+            # Ignoramos password completamente
+            
+            print(f"📱 Intento de login - Matrícula: {matricula}")
+            
+            if not matricula:
+                return JsonResponse({'error': 'Matrícula requerida'}, status=400)
+            
+            # Buscar alumno por matrícula
+            try:
+                alumno = Alumno.objects.get(matricula=matricula)
+                
+                # Login exitoso - NO verificamos contraseña
+                grupo_data = {
+                    'id': alumno.grupo.id if alumno.grupo else None,
+                    'clave': alumno.grupo.clave if alumno.grupo else 'Sin grupo'
+                }
+                
+                response_data = {
+                    'id': alumno.id,
+                    'nombre': alumno.nombre,
+                    'matricula': alumno.matricula,
+                    'grupo': grupo_data,
+                    'tipo': 'alumno'
+                }
+                
+                print(f"✅ Login exitoso para: {alumno.nombre}")
+                return JsonResponse(response_data)
+                
+            except Alumno.DoesNotExist:
+                print(f"❌ Alumno no encontrado: {matricula}")
+                return JsonResponse({
+                    'error': 'Matrícula no registrada'
+                }, status=404)
+                
+        except Exception as e:
+            print(f"🔥 Error en login: {str(e)}")
+            return JsonResponse({'error': str(e)}, status=500)
+    
+    return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+@csrf_exempt
+def api_registro_alumno(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            
+            print("📥 Datos recibidos:", data)  # Debug
+            
+            # Validar datos requeridos
+            if not data.get('nombre'):
+                return JsonResponse({'error': 'El nombre es requerido'}, status=400)
+            
+            if not data.get('matricula'):
+                return JsonResponse({'error': 'La matrícula es requerida'}, status=400)
+            
+            # Verificar si ya existe la matrícula
+            if Alumno.objects.filter(matricula=data['matricula']).exists():
+                return JsonResponse({'error': 'La matrícula ya está registrada'}, status=400)
+            
+            # Verificar que el grupo_id existe
+            grupo_id = data.get('grupo_id')
+            if not grupo_id:
+                return JsonResponse({'error': 'El grupo es requerido'}, status=400)
+            
+            try:
+                grupo = Grupo.objects.get(id=grupo_id)
+            except Grupo.DoesNotExist:
+                return JsonResponse({'error': 'El grupo no existe'}, status=400)
+            
+            # Crear el alumno
+            alumno = Alumno.objects.create(
+                nombre=data['nombre'],
+                matricula=data['matricula'],
+                grupo=grupo
+            )
+            
+            print(f"✅ Alumno creado: {alumno.nombre} - {alumno.matricula}")
+            
+            return JsonResponse({
+                'success': True,
+                'id': alumno.id,
+                'nombre': alumno.nombre,
+                'matricula': alumno.matricula,
+                'mensaje': 'Registro exitoso'
+            }, status=201)
+            
+        except Exception as e:
+            print(f"🔥 Error: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            return JsonResponse({'error': str(e)}, status=500)
+    
+    return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+@csrf_exempt
+def api_obtener_grupos(request):
+    """API para obtener lista de grupos disponibles para registro"""
+    if request.method == 'GET':
+        try:
+            grupos = Grupo.objects.all().order_by('clave')
+            grupos_data = [{
+                'id': g.id,
+                'clave': g.clave,
+                'nombre': f"Grupo {g.clave}"
+            } for g in grupos]
+            
+            return JsonResponse({
+                'grupos': grupos_data
+            })
+            
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    
+    return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+@csrf_exempt
+def api_verificar_sesion(request):
+    """API para verificar si un alumno tiene sesión activa"""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            matricula = data.get('matricula')
+            device_id = data.get('device_id')
+            
+            try:
+                alumno = Alumno.objects.get(matricula=matricula)
+                
+                # Aquí puedes verificar si el device_id coincide con el último usado
+                # Esto requeriría guardar el device_id en el modelo Alumno
+                
+                return JsonResponse({
+                    'valido': True,
+                    'alumno': {
+                        'id': alumno.id,
+                        'nombre': alumno.nombre,
+                        'matricula': alumno.matricula,
+                        'grupo_id': alumno.grupo.id if alumno.grupo else None
+                    }
+                })
+                
+            except Alumno.DoesNotExist:
+                return JsonResponse({
+                    'valido': False,
+                    'error': 'Alumno no encontrado'
+                }, status=404)
+                
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    
+    return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+@csrf_exempt
+def api_validar_qr_alumno(request):
+    """API para validar QR escaneado por el alumno y registrar asistencia"""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            matricula = data.get('matricula')
+            token = data.get('token')
+            
+            print(f"📱 Validando QR - Matrícula: {matricula}, Token: {token}")
+            
+            # Validar token (ej: "A001_123456789")
+            token_parts = token.split('_')
+            if len(token_parts) != 2:
+                return JsonResponse({'error': 'QR inválido'}, status=400)
+            
+            token_matricula = token_parts[0]
+            timestamp = token_parts[1]
+            
+            if token_matricula != matricula:
+                return JsonResponse({'error': 'QR no pertenece al alumno'}, status=400)
+            
+            # Verificar expiración (10 minutos máximo)
+            from django.utils import timezone
+            import datetime
+            
+            timestamp_int = int(timestamp) / 1000
+            tiempo_creacion = datetime.datetime.fromtimestamp(timestamp_int)
+            tiempo_creacion = timezone.make_aware(tiempo_creacion)
+            
+            ahora = timezone.now()
+            diferencia = (ahora - tiempo_creacion).total_seconds() / 60
+            
+            print(f"⏱️ Diferencia: {diferencia} minutos")
+            
+            if diferencia > 10:
+                return JsonResponse({'error': 'QR expirado'}, status=400)
+            
+            # Buscar alumno
+            try:
+                alumno = Alumno.objects.get(matricula=matricula)
+            except Alumno.DoesNotExist:
+                return JsonResponse({'error': 'Alumno no encontrado'}, status=404)
+            
+            # Registrar asistencia
+            fecha_hoy = ahora.date()
+            
+            # Buscar GDM (Grupo-Docente-Materia) para el grupo del alumno
+            # NOTA: Debes definir cómo identificar la materia/clase actual
+            gdm = GrupoDocenteMateria.objects.filter(
+                grupo=alumno.grupo
+            ).first()
+            
+            if not gdm:
+                return JsonResponse({'error': 'No hay clase programada'}, status=400)
+            
+            # Verificar si ya registró
+            if Asistencia.objects.filter(
+                alumno=alumno,
+                grupo_docente_materia=gdm,
+                fecha=fecha_hoy
+            ).exists():
+                return JsonResponse({'error': 'Ya registraste asistencia hoy'}, status=400)
+            
+            # Crear asistencia
+            estado_asistio, _ = EstadoAsistencia.objects.get_or_create(nombre='Asistió')
+            
+            asistencia = Asistencia.objects.create(
+                alumno=alumno,
+                grupo_docente_materia=gdm,
+                fecha=fecha_hoy,
+                estado=estado_asistio,
+                comentario=f'Registrado vía QR a las {ahora.strftime("%H:%M")}'
+            )
+            
+            return JsonResponse({
+                'success': True,
+                'valido': True,
+                'mensaje': 'Asistencia registrada correctamente'
+            })
+            
+        except Exception as e:
+            print(f"🔥 Error: {e}")
+            import traceback
+            traceback.print_exc()
+            return JsonResponse({'error': str(e)}, status=500)
+    
+    return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+@csrf_exempt
+def obtener_asistencias_por_grupo(request):
+    """API para obtener asistencias de un grupo en una fecha específica"""
+    if request.method == 'GET':
+        try:
+            grupo_id = request.GET.get('grupo_id')
+            fecha = request.GET.get('fecha')
+            
+            if not grupo_id or not fecha:
+                return JsonResponse({'error': 'Faltan parámetros'}, status=400)
+            
+            # Buscar GDM para el grupo
+            gdms = GrupoDocenteMateria.objects.filter(grupo_id=grupo_id)
+            
+            asistencias = Asistencia.objects.filter(
+                grupo_docente_materia__in=gdms,
+                fecha=fecha
+            ).values('alumno_id', 'estado__nombre')
+            
+            return JsonResponse({
+                'success': True,
+                'asistencias': list(asistencias)
+            })
+            
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    
+    return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+@csrf_exempt
+def api_actividades_alumno(request):
+    """API para obtener actividades pendientes de un alumno"""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            matricula = data.get('matricula')
+            
+            print(f"📱 Obteniendo actividades para matrícula: {matricula}")
+            
+            # Buscar alumno
+            try:
+                alumno = Alumno.objects.get(matricula=matricula)
+            except Alumno.DoesNotExist:
+                return JsonResponse({'error': 'Alumno no encontrado'}, status=404)
+            
+            # Obtener el grupo del alumno
+            grupo = alumno.grupo
+            if not grupo:
+                return JsonResponse({'actividades': []})
+            
+            # Obtener todas las materias que se imparten en el grupo del alumno
+            materias_grupo = GrupoDocenteMateria.objects.filter(grupo=grupo)
+            
+            actividades_pendientes = []
+            
+            for gdm in materias_grupo:
+                # Obtener parciales activos
+                parciales = Parcial.objects.filter(
+                    grupo_docente_materia=gdm,
+                    cerrado=False  # Solo parciales abiertos
+                )
+                
+                for parcial in parciales:
+                    # Obtener actividades del parcial
+                    actividades = Actividad.objects.filter(
+                        parcial=parcial,
+                        fecha_entrega__gte=timezone.now().date()  # No vencidas
+                    )
+                    
+                    for actividad in actividades:
+                        # Verificar si ya entregó
+                        entrega = Entrega.objects.filter(
+                            actividad=actividad,
+                            alumno=alumno
+                        ).first()
+                        
+                        if not entrega or not entrega.entregado:
+                            # Actividad pendiente
+                            actividades_pendientes.append({
+                                'id': actividad.id,
+                                'titulo': actividad.titulo,
+                                'descripcion': actividad.descripcion,
+                                'materia': gdm.materia.nombre,
+                                'grupo': grupo.clave,
+                                'fecha_entrega': actividad.fecha_entrega.strftime('%Y-%m-%d'),
+                                'fecha_entrega_formateada': actividad.fecha_entrega.strftime('%d/%m/%Y'),
+                                'dias_restantes': (actividad.fecha_entrega - timezone.now().date()).days,
+                                'parcial': parcial.nombre,
+                                'entregada': False
+                            })
+            
+            # Ordenar por fecha de entrega (más próximas primero)
+            actividades_pendientes.sort(key=lambda x: x['fecha_entrega'])
+            
+            print(f"✅ {len(actividades_pendientes)} actividades encontradas")
+            
+            return JsonResponse({
+                'success': True,
+                'actividades': actividades_pendientes,
+                'total': len(actividades_pendientes)
+            })
+            
+        except Exception as e:
+            print(f"🔥 Error: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            return JsonResponse({'error': str(e)}, status=500)
+    
+    return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+def ver_asistencias(request):
+    """Vista para ver las asistencias registradas por QR"""
+    # Verificar autenticación
+    if not request.session.get('usuario_id'):
+        return redirect('login')
+    
+    usuario_id = request.session.get('usuario_id')
+    
+    try:
+        usuario = Usuario.objects.get(id=usuario_id)
+        
+        # Obtener los grupos del docente
+        grupos_docente = GrupoDocenteMateria.objects.filter(
+            docente=usuario
+        ).select_related('grupo', 'materia').values('grupo').distinct()
+        
+        grupo_ids = [g['grupo'] for g in grupos_docente]
+        grupos = Grupo.objects.filter(id__in=grupo_ids)
+        
+        # Obtener asistencias del día actual (filtradas por grupos del docente)
+        hoy = timezone.now().date()
+        asistencias_hoy = Asistencia.objects.filter(
+            grupo_docente_materia__docente=usuario,
+            fecha=hoy
+        ).select_related(
+            'alumno',
+            'grupo_docente_materia__grupo',
+            'grupo_docente_materia__materia',
+            'estado'
+        ).order_by('-fecha', 'alumno__nombre')
+        
+        # Calcular totales
+        total_asistencias_hoy = asistencias_hoy.count()
+        asistencias_por_grupo = {}
+        
+        for asistencia in asistencias_hoy:
+            grupo_clave = asistencia.grupo_docente_materia.grupo.clave
+            if grupo_clave not in asistencias_por_grupo:
+                asistencias_por_grupo[grupo_clave] = 0
+            asistencias_por_grupo[grupo_clave] += 1
+        
+        # Obtener últimos 10 registros para mostrar en tabla
+        ultimas_asistencias = Asistencia.objects.filter(
+            grupo_docente_materia__docente=usuario
+        ).select_related(
+            'alumno',
+            'grupo_docente_materia__grupo',
+            'grupo_docente_materia__materia',
+            'estado'
+        ).order_by('-fecha', '-id')[:20]
+        
+        context = {
+            'grupos': grupos,
+            'asistencias_hoy': asistencias_hoy,
+            'ultimas_asistencias': ultimas_asistencias,
+            'total_asistencias_hoy': total_asistencias_hoy,
+            'asistencias_por_grupo': asistencias_por_grupo,
+            'hoy': hoy,
+            'docente_nombre': usuario.nombre,
+        }
+        
+        return render(request, "ver_asistencias.html", context)
+        
+    except Usuario.DoesNotExist:
+        return redirect('login')
+    except Exception as e:
+        print(f"Error en ver_asistencias: {e}")
+        return redirect('dashboard')
+
+@require_GET
+def api_filtrar_asistencias(request):
+    """API para filtrar asistencias por grupo y fecha"""
+    if not request.session.get('usuario_id'):
+        return JsonResponse({'error': 'No autenticado'}, status=401)
+    
+    try:
+        usuario_id = request.session.get('usuario_id')
+        grupo_id = request.GET.get('grupo_id')
+        fecha = request.GET.get('fecha')
+        
+        asistencias = Asistencia.objects.filter(
+            grupo_docente_materia__docente_id=usuario_id
+        ).select_related(
+            'alumno',
+            'grupo_docente_materia__grupo',
+            'grupo_docente_materia__materia',
+            'estado'
+        )
+        
+        if grupo_id and grupo_id != 'todos':
+            asistencias = asistencias.filter(
+                grupo_docente_materia__grupo_id=grupo_id
+            )
+        
+        if fecha:
+            asistencias = asistencias.filter(fecha=fecha)
+        
+        asistencias = asistencias.order_by('-fecha', 'alumno__nombre')[:50]
+        
+        data = []
+        for a in asistencias:
+            data.append({
+                'id': a.id,
+                'alumno': a.alumno.nombre,
+                'matricula': a.alumno.matricula,
+                'grupo': a.grupo_docente_materia.grupo.clave,
+                'materia': a.grupo_docente_materia.materia.nombre,
+                'fecha': a.fecha.strftime('%d/%m/%Y'),
+                'hora': a.comentario.split('a las ')[-1] if 'a las' in a.comentario else '-',
+                'estado': a.estado.nombre
+            })
+        
+        return JsonResponse({'asistencias': data})
+        
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+# AQUI SE TERMINAN LAS VISTAS RELACIONADAS CON QR Y SE REGRESA A LAS VISTAS PRINCIPALES #
+
+def detalleActividad(request, id):
+    try:
+        # Verificar autenticación con sesión manual
+        if not request.session.get('usuario_id'):
+            return JsonResponse({"error": "No autorizado"}, status=401)
+        
+        actividad = Actividad.objects.select_related(
+            'parcial',
+            'parcial__grupo_docente_materia',
+            'parcial__grupo_docente_materia__grupo',
+            'parcial__grupo_docente_materia__materia'
+        ).get(id=id)
+        
+        # Verificar que la actividad pertenezca al docente de la sesión
+        if actividad.parcial.grupo_docente_materia.docente_id != request.session.get('usuario_id'):
+            return JsonResponse({"error": "No tienes permiso"}, status=403)
+
+        grupo = actividad.parcial.grupo_docente_materia.grupo
+        materia = actividad.parcial.grupo_docente_materia.materia
+        parcial = actividad.parcial
+        
+        alumnos = grupo.alumno_set.all().order_by('nombre')
+
+        lista_alumnos = []
+        entregadas = 0
+
+        for alumno in alumnos:
+            entrega, created = Entrega.objects.get_or_create(
+                actividad=actividad,
+                alumno=alumno,
+                defaults={'entregado': False}
+            )
+
+            if entrega.entregado:
+                entregadas += 1
+
+            lista_alumnos.append({
+                "id": entrega.id,
+                "nombre": alumno.nombre,
+                "matricula": alumno.matricula,
+                "entregado": entrega.entregado
+            })
+
+        data = {
+            "titulo": actividad.titulo,
+            "descripcion": actividad.descripcion,
+            "grupo": grupo.clave,
+            "materia": materia.nombre,
+            "parcial": parcial.nombre,
+            "fecha_entrega": actividad.fecha_entrega.strftime('%d/%m/%Y'),
+            "entregadas": entregadas,
+            "total": alumnos.count(),
+            "alumnos": lista_alumnos
+        }
+
+        return JsonResponse(data)
+    
+    except Actividad.DoesNotExist:
+        return JsonResponse({"error": "Actividad no encontrada"}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
