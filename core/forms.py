@@ -20,10 +20,18 @@ class DocenteForm(forms.ModelForm):
             "placeholder": "Contraseña"
         })
     )
+    telefono = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={
+            "class": "form-control",
+            "placeholder": "Ej. 3121234567",
+            "maxlength": "20",
+        })
+    )
 
     class Meta:
         model = Usuario
-        fields = ["nombre", "correo", "password"]
+        fields = ["nombre", "correo", "password", "telefono"]
         widgets = {
             "nombre": forms.TextInput(attrs={
                 "class": "form-control",
@@ -38,6 +46,8 @@ class DocenteForm(forms.ModelForm):
     def save(self, commit=True):
         usuario = super().save(commit=False)
         usuario.password = make_password(self.cleaned_data["password"])
+        telefono = self.cleaned_data.get("telefono", "").strip()
+        usuario.telefono = telefono or None
         if commit:
             usuario.save()
         return usuario

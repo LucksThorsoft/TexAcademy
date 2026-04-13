@@ -17,6 +17,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from datetime import datetime
 from django.contrib.auth.hashers import make_password, check_password
+from .services import notificar_tutor_alerta   # ← agrega este import
+
 from django.utils import timezone
 
 
@@ -1507,6 +1509,7 @@ def director(request):
             grupo = rel.grupo
             grupos_data.append({
                 'clave': grupo.clave,
+                'grupo_id': grupo.id,
                 'materia': rel.materia.nombre,
                 'docente': rel.docente.nombre,
                 'num_alumnos': Alumno.objects.filter(grupo=grupo).count(),
@@ -1763,19 +1766,35 @@ def new_group(request):
                 reader = csv.DictReader(archivo_texto)
 
                 for fila in reader:
-                    nombre = fila.get("nombre")
-                    matricula = fila.get("matricula")
+                    nombre    = fila.get("nombre", "").strip()
+                    matricula = fila.get("matricula", "").strip()
+                    correo    = fila.get("correo", "").strip() or None
+                    telefono  = fila.get("telefono", "").strip() or None
 
                     if not nombre or not matricula:
                         continue
 
-                    Alumno.objects.get_or_create(
-                        matricula=matricula.strip(),
+                    alumno, created = Alumno.objects.get_or_create(
+                        matricula=matricula,
                         defaults={
-                            "nombre": nombre.strip(),
-                            "grupo": grupo
+                            "nombre":   nombre,
+                            "grupo":    grupo,
+                            "correo":   correo,
+                            "telefono": telefono,
                         }
                     )
+
+                    # Si el alumno ya existía, actualizar contacto si ahora viene en el CSV
+                    if not created:
+                        actualizar = False
+                        if correo and not alumno.correo:
+                            alumno.correo = correo
+                            actualizar = True
+                        if telefono and not alumno.telefono:
+                            alumno.telefono = telefono
+                            actualizar = True
+                        if actualizar:
+                            alumno.save()
 
             messages.success(request, "Grupo y alumnos creados correctamente")
 
@@ -1892,6 +1911,7 @@ def editar_docente(request, docente_id):
         return redirect('login')
 
     roles = request.session.get('usuario_roles', [])
+    docente.telefono = request.POST.get('telefono', '').strip() or None
     if 'Director' not in roles:
         return redirect('dashboard')
 
@@ -1936,7 +1956,7 @@ def obtener_materias_por_grupo(request):
 
     return JsonResponse({'error': 'Método no permitido'}, status=405)
 
-def _generar_alertas_alumno(alumno, parcial, gdm, calificacion):    
+def _generar_alertas_alumno(alumno, parcial, gdm, calificacion):
     motivos    = []
     calif_baja = False
     asist_baja = False
@@ -1953,7 +1973,7 @@ def _generar_alertas_alumno(alumno, parcial, gdm, calificacion):
             f"(mínimo esperado: {umbral_calif:.1f})"
         )
 
-    # 2. ASISTENCIA BAJA (solo dentro del rango de fechas del parcial)
+    # 2. ASISTENCIA BAJA
     asistencias_parcial = Asistencia.objects.filter(
         alumno=alumno,
         grupo_docente_materia=gdm,
@@ -1981,14 +2001,13 @@ def _generar_alertas_alumno(alumno, parcial, gdm, calificacion):
     elif calif_baja:                nivel_riesgo = 'Medio'
     else:                           nivel_riesgo = 'Bajo'
 
-    # 4. BUSCAR ALERTA EXISTENTE para este alumno + parcial
+    # 4. BUSCAR ALERTA EXISTENTE
     alerta_existente = Alerta.objects.filter(
         alumno=alumno,
         parcial=parcial
     ).first()
 
     if not motivos:
-        # Sin problemas → eliminar alerta si existía
         if alerta_existente:
             alerta_existente.delete()
             print(f"[ALERTA ELIMINADA] {alumno.nombre} — {parcial.nombre} ya no tiene problemas")
@@ -1997,20 +2016,29 @@ def _generar_alertas_alumno(alumno, parcial, gdm, calificacion):
     motivo_completo = ' | '.join(motivos)
 
     if alerta_existente:
-        # Actualizar — y reactivar si ya estaba atendida
+        # Solo notificar si cambió el nivel o el motivo
+        cambio_relevante = (
+            alerta_existente.motivo       != motivo_completo or
+            alerta_existente.nivel_riesgo != nivel_riesgo
+        )
         alerta_existente.motivo       = motivo_completo
         alerta_existente.nivel_riesgo = nivel_riesgo
         alerta_existente.atendida     = False
         alerta_existente.save()
         print(f"[ALERTA ACTUALIZADA] {alumno.nombre} — {nivel_riesgo}: {motivo_completo}")
+
+        if cambio_relevante:                                    # ← notificar solo si cambió algo
+            notificar_tutor_alerta(alerta_existente, es_nueva=False)
+
     else:
-        Alerta.objects.create(
+        nueva_alerta = Alerta.objects.create(
             alumno=alumno,
             parcial=parcial,
             motivo=motivo_completo,
             nivel_riesgo=nivel_riesgo
         )
         print(f"[ALERTA CREADA] {alumno.nombre} — {nivel_riesgo}: {motivo_completo}")
+        notificar_tutor_alerta(nueva_alerta, es_nueva=True)    # ← notificar siempre en alertas nuevas
  
  
 def obtener_alertas_grupo(request):
@@ -2535,6 +2563,224 @@ def derivar_alerta_direccion(request):
         return JsonResponse({'error': 'Alerta no encontrada'}, status=404)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+    
+def perfil_alumno_director(request, alumno_id):
+    if not request.session.get('usuario_id'):
+        return redirect('login')
+
+    roles = request.session.get('usuario_roles', [])
+    if 'Director' not in roles:
+        return redirect('dashboard')
+
+    alumno = get_object_or_404(Alumno, id=alumno_id)
+
+    # Todas las materias del grupo del alumno
+    materias_grupo = GrupoDocenteMateria.objects.filter(
+        grupo=alumno.grupo
+    ).select_related('materia', 'docente')
+
+    # ── CALIFICACIONES por materia ──────────────────────────────
+    materias_data = []
+    promedio_general_suma = 0
+    promedio_general_count = 0
+
+    for gdm in materias_grupo:
+        parciales = Parcial.objects.filter(
+            grupo_docente_materia=gdm
+        ).order_by('numero_parcial')
+
+        calificaciones_materia = []
+        suma_materia = 0
+        total_con_calif = 0
+
+        for parcial in parciales:
+            cal = CalificacionParcial.objects.filter(
+                alumno=alumno,
+                parcial=parcial
+            ).first()
+
+            valor = cal.calificacion if cal and cal.calificacion is not None else None
+
+            calificaciones_materia.append({
+                'parcial_numero': parcial.numero_parcial,
+                'parcial_nombre': parcial.nombre,
+                'parcial_porcentaje': parcial.porcentaje,
+                'calificacion': valor,
+            })
+
+            if valor is not None:
+                suma_materia += valor
+                total_con_calif += 1
+
+        # Promedio de la materia
+        todas_completas = total_con_calif == len(calificaciones_materia) and total_con_calif > 0
+
+        def redondear(valor):
+            entero = int(valor)
+            ultimo = entero % 10
+            if ultimo == 0:
+                return entero
+            elif ultimo <= 4:
+                return entero - ultimo
+            else:
+                return entero + (10 - ultimo)
+
+        promedio_materia = None
+        if todas_completas and suma_materia > 0:
+            promedio_materia = redondear(suma_materia) / 10
+
+        if promedio_materia is not None:
+            promedio_general_suma += promedio_materia
+            promedio_general_count += 1
+
+        materias_data.append({
+            'gdm_id': gdm.id,
+            'materia_nombre': gdm.materia.nombre,
+            'docente_nombre': gdm.docente.nombre,
+            'parciales': list(parciales.values('numero_parcial', 'nombre', 'porcentaje')),
+            'calificaciones': calificaciones_materia,
+            'promedio': promedio_materia,
+        })
+
+    promedio_general = round(promedio_general_suma / promedio_general_count, 1) if promedio_general_count > 0 else None
+
+    # ── ASISTENCIA todas las materias ──────────────────────────
+    asistencias_qs = Asistencia.objects.filter(
+        alumno=alumno
+    ).select_related(
+        'grupo_docente_materia__materia',
+        'grupo_docente_materia__docente',
+        'estado'
+    ).order_by('-fecha')
+
+    asistencia_data = []
+    for a in asistencias_qs:
+        asistencia_data.append({
+            'fecha': a.fecha.strftime('%d/%m/%Y'),
+            'materia': a.grupo_docente_materia.materia.nombre,
+            'docente': a.grupo_docente_materia.docente.nombre,
+            'estado': a.estado.nombre,
+            'comentario': a.comentario or '',
+            'gdm_id': a.grupo_docente_materia.id,
+        })
+
+    total_clases   = len(asistencia_data)
+    total_asistio  = sum(1 for a in asistencia_data if a['estado'] == 'Asistió')
+    total_retardos = sum(1 for a in asistencia_data if a['estado'] == 'Retardo')
+    total_faltas   = sum(1 for a in asistencia_data if a['estado'] == 'No asistió')
+    porcentaje_asistencia = int(((total_asistio + total_retardos * 0.5) / total_clases) * 100) if total_clases > 0 else 0
+
+    # Asistencia por materia (para el desglose)
+    asistencia_por_materia = {}
+    for a in asistencia_data:
+        gdm_id = a['gdm_id']
+        if gdm_id not in asistencia_por_materia:
+            asistencia_por_materia[gdm_id] = {
+                'materia': a['materia'],
+                'docente': a['docente'],
+                'asistencias': 0, 'retardos': 0, 'faltas': 0, 'total': 0
+            }
+        asistencia_por_materia[gdm_id]['total'] += 1
+        if a['estado'] == 'Asistió':
+            asistencia_por_materia[gdm_id]['asistencias'] += 1
+        elif a['estado'] == 'Retardo':
+            asistencia_por_materia[gdm_id]['retardos'] += 1
+        elif a['estado'] == 'No asistió':
+            asistencia_por_materia[gdm_id]['faltas'] += 1
+
+    for gdm_id, datos in asistencia_por_materia.items():
+        t = datos['total']
+        datos['porcentaje'] = int(((datos['asistencias'] + datos['retardos'] * 0.5) / t) * 100) if t > 0 else 0
+
+    asistencia_por_materia_list = list(asistencia_por_materia.values())
+
+    # ── ALERTAS todas las materias ─────────────────────────────
+    parciales_ids = Parcial.objects.filter(
+        grupo_docente_materia__in=materias_grupo
+    ).values_list('id', flat=True)
+
+    alertas_qs = Alerta.objects.filter(
+        alumno=alumno,
+        atendida=False,
+        parcial__id__in=parciales_ids
+    ).select_related('parcial__grupo_docente_materia__materia').order_by(
+        models.Case(
+            models.When(nivel_riesgo='Alto',  then=0),
+            models.When(nivel_riesgo='Medio', then=1),
+            models.When(nivel_riesgo='Bajo',  then=2),
+            default=3,
+            output_field=models.IntegerField(),
+        ),
+        '-fecha'
+    )
+
+    alertas_data = []
+    for alerta in alertas_qs:
+        materia_nombre = 'General'
+        if alerta.parcial and alerta.parcial.grupo_docente_materia:
+            materia_nombre = alerta.parcial.grupo_docente_materia.materia.nombre
+
+        alertas_data.append({
+            'id': alerta.id,
+            'motivo': alerta.motivo,
+            'motivos_lista': [m.strip() for m in alerta.motivo.split(' | ') if m.strip()],
+            'nivel_riesgo': alerta.nivel_riesgo,
+            'fecha': alerta.fecha.strftime('%d/%m/%Y'),
+            'materia': materia_nombre,
+            'parcial': alerta.parcial.nombre if alerta.parcial else None,
+        })
+
+    # Estado general del alumno
+    estado_alumno = 'Estable'
+    estado_clase  = 'status-good'
+    if any(a['nivel_riesgo'] == 'Alto'  for a in alertas_data):
+        estado_alumno = 'En Riesgo'
+        estado_clase  = 'status-danger'
+    elif any(a['nivel_riesgo'] == 'Medio' for a in alertas_data):
+        estado_alumno = 'Requiere Atención'
+        estado_clase  = 'status-warning'
+    elif any(a['nivel_riesgo'] == 'Bajo'  for a in alertas_data):
+        estado_alumno = 'Precaución'
+        estado_clase  = 'status-info'
+
+    # ── CUATRIMESTRE activo ────────────────────────────────────
+    from django.utils import timezone
+    hoy = timezone.now().date()
+    cuatrimestre_valido = False
+    if alumno.grupo.cuatrimestre:
+        cuatrimestre_valido = (
+            alumno.grupo.cuatrimestre.activo and
+            alumno.grupo.cuatrimestre.fecha_inicio <= hoy <= alumno.grupo.cuatrimestre.fecha_fin
+        )
+
+    context = {
+        'alumno': alumno,
+        'materias_data': materias_data,
+        'materias_data_json': json.dumps(materias_data, ensure_ascii=False, default=str),
+        'promedio_general': promedio_general,
+        'asistencia_data': asistencia_data,
+        'asistencia_data_json': json.dumps(asistencia_data, ensure_ascii=False),
+        'asistencia_por_materia': asistencia_por_materia_list,
+        'asistencia_por_materia_json': json.dumps(asistencia_por_materia_list, ensure_ascii=False),
+        'stats_generales': {
+            'asistencias': total_asistio,
+            'retardos': total_retardos,
+            'faltas': total_faltas,
+            'total_clases': total_clases,
+            'porcentaje': porcentaje_asistencia,
+        },
+        'alertas': alertas_data,
+        'total_alertas': len(alertas_data),
+        'alertas_alto':  sum(1 for a in alertas_data if a['nivel_riesgo'] == 'Alto'),
+        'alertas_medio': sum(1 for a in alertas_data if a['nivel_riesgo'] == 'Medio'),
+        'alertas_bajo':  sum(1 for a in alertas_data if a['nivel_riesgo'] == 'Bajo'),
+        'estado_alumno': estado_alumno,
+        'estado_clase':  estado_clase,
+        'cuatrimestre_valido': cuatrimestre_valido,
+        'total_materias': len(materias_data),
+    }
+
+    return render(request, 'perfilAlumnoDirector.html', context)
 
 
 def obtener_estadisticas_desempeno(request):
