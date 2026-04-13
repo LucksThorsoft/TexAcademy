@@ -7,7 +7,6 @@ urlpatterns = [
     path('dashboard', views.dashboard),
     path('grupos-alumnos', views.gruposAlumnos),
     path('actividades/', views.actividades),
-    path('actividades/<int:id>/detalle', views.detalleActividad),
     path('guardar-entregas/', views.guardar_entregas),
     path('estadisticas', views.estadisticas),
     path('alertas', views.alertas),
@@ -43,6 +42,36 @@ urlpatterns = [
     path('director/alertas/direccion/',  views.director_alertas_direccion_view, name='director_alertas_direccion'),
     path('cerrar-alerta-direccion/',     views.cerrar_alerta_direccion,         name='cerrar_alerta_direccion'),
     path('derivar-alerta-direccion/',    views.derivar_alerta_direccion,        name='derivar_alerta_direccion'),
+
+    path('actividades/<int:id>/detalle/', views.detalleActividad, name='detalle_actividad'),
+    path('actividades/estadisticas/', views.estadisticas_actividades, name='estadisticas_actividades'),
+    path('actividades/editar/<int:id>/', views.editar_actividad, name='editar_actividad'),
+    path('actividades/obtener/<int:id>/', views.obtener_actividad_para_editar, name='obtener_actividad_para_editar'),
+    path('actividades/estadisticas-individual/<int:id>/', views.estadisticas_actividad_individual, name='estadisticas_actividad_individual'),
+    path('actualizar-calificacion/', views.actualizar_calificacion_entrega, name='actualizar_calificacion_entrega'),
+    path('alumno/estadisticas/<int:alumno_id>/', views.estadisticas_alumno_individual, name='estadisticas_alumno_individual'),
+
+    # ========== RUTAS DE QR ==========
+    path('api/login/', views.api_login, name='api_login'),
+    path('api/grupos/', views.api_obtener_grupos, name='api_grupos'),
+    path('generar-qr/', views.generar_qr, name='generar_qr'),
+    path('ver_asistencias/', views.ver_asistencias, name='ver_asistencias'),
+    path('api/materias-por-grupo/<int:grupo_id>/', views.api_materias_por_grupo, name='api_materias_por_grupo'),
+    path('api/generar-qr/', views.api_generar_qr, name='api_generar_qr'),
+    path('api/validar-qr/', views.api_validar_qr, name='api_validar_qr'),
+    path('api/validar-qr-alumno/', views.api_validar_qr_alumno, name='api_validar_qr_alumno'),
+    path('api/registrar-asistencia-qr/', views.api_registrar_asistencia_qr, name='api_registrar_asistencia_qr'),
+    path('obtener-asistencias-por-grupo/', views.obtener_asistencias_por_grupo, name='obtener_asistencias_por_grupo'),
+    path('api/filtrar-asistencias/', views.api_filtrar_asistencias, name='api_filtrar_asistencias'),
     path('director/alumno/<int:alumno_id>/perfil/', views.perfil_alumno_director, name='perfil_alumno_director'),
+    path('obtener-estadisticas-desempeno/', views.obtener_estadisticas_desempeno, name='estadisticas'),
+    path('obtener-datos-graficas-asistencia/', views.obtener_datos_graficas_asistencia, name='obtener_datos_graficas_asistencia'),
+    path('detalle-actividad/<int:id>/', views.detalleActividad, name='detalle_actividad'),
+    path('guardar-entregas/', views.guardar_entregas, name='guardar_entregas'),
+    path('new-user/', views.new_user, name='new_user'),
+    
+    # 👇 AGREGAR ESTAS NUEVAS URLs 👇
+    path('new-group/', views.new_group, name='new_group'),  # Para crear grupo
+    path('new-materia/', views.new_materia, name='new_materia'),  # Para asignar materia a grupo
     path('agendar-cita/', views.agendar_cita, name='agendar_cita'),
 ]

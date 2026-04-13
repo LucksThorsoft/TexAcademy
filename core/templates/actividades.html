@@ -15,6 +15,8 @@
         justify-content: space-between;
         align-items: center;
         margin-bottom: 20px;
+        flex-wrap: wrap;
+        gap: 15px;
     }
 
     .header-text {
@@ -33,6 +35,11 @@
         color: #000000;
         line-height: 1.4;
         letter-spacing: -0.01em;
+    }
+
+    .actions-buttons {
+        display: flex;
+        gap: 12px;
     }
 
     .activities-container {
@@ -64,26 +71,40 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
     }
 
     .activity-title {
         font-size: 17px;
         font-weight: 600;
         color: #1f2937;
+        flex: 1;
     }
 
     .activity-status {
         background: rgb(30, 64, 175);
         color: #ffffff;
         padding: 4px 12px;
-        border-radius: 999px;
+        border-radius: 6px;
         font-size: 13px;
         font-weight: 500;
+        white-space: nowrap;
     }
 
     .activity-status.closed {
-        background: #e5e7eb;
-        color: #374151;
+        background: #9ca3af;
+        color: #ffffff;
+    }
+
+    .activity-status.vencida {
+        background: #dc2626;
+        color: #ffffff;
+    }
+
+    .activity-status.active {
+        background: #10b981;
+        color: #ffffff;
     }
 
     .activity-description {
@@ -91,19 +112,44 @@
         color: #6b7280;
     }
 
-    .activity-meta {
+    .badge-container {
         display: flex;
-        justify-content: space-between;
-        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin: 4px 0;
     }
 
-    .activity-group {
+    .badge-group {
         background: #f1f5f9;
         color: #1e293b;
         padding: 4px 10px;
         border-radius: 8px;
         font-size: 13px;
         font-weight: 500;
+    }
+
+    .badge-materia {
+        background: #e0e7ff;
+        color: #1e40af;
+        padding: 4px 10px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    .badge-parcial {
+        background: #dcfce7;
+        color: #166534;
+        padding: 4px 10px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .activity-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
     }
 
     .activity-date {
@@ -140,12 +186,12 @@
 
     .activity-progress-fill {
         height: 100%;
-        background: #1d4ed8;
+        background: #1e40af;
         border-radius: 999px;
         transition: width 0.3s ease;
     }
 
-    /* Modal base */
+    /* ===== MODALES CON SCROLL CORREGIDO ===== */
     .modal-overlay {
         position: fixed;
         top: 0;
@@ -157,6 +203,7 @@
         justify-content: center;
         align-items: center;
         z-index: 1000;
+        overflow: hidden;
     }
 
     .modal-content {
@@ -167,8 +214,45 @@
         max-width: 550px;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
         position: relative;
-        max-height: 90vh;
+        max-height: 85vh;
         overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+    }
+
+    #activityDetailModal .modal-content {
+        max-width: 700px;
+        max-height: 90vh;
+    }
+
+    .modal-content.report-modal {
+        max-width: 1200px;
+        width: 95%;
+        max-height: 90vh;
+    }
+
+    .modal-content.stats-modal {
+        max-width: 1000px;
+        width: 95%;
+        max-height: 90vh;
+    }
+
+    .modal-content::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .modal-content::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+
+    .modal-content::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 10px;
+    }
+
+    .modal-content::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
     }
 
     .modal-close-btn {
@@ -182,6 +266,7 @@
         cursor: pointer;
         transition: opacity 0.2s ease, background 0.2s ease;
         padding: 6px;
+        z-index: 10;
     }
 
     .modal-close-btn:hover {
@@ -202,14 +287,30 @@
         margin-bottom: 20px;
     }
 
-    .info-box {
+    .info-box-detail {
         background: #f1f5f9;
         border-radius: 10px;
         padding: 14px 16px;
-        display: flex;
-        justify-content: space-between;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
         margin-bottom: 18px;
         font-size: 14px;
+    }
+
+    .info-item {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .info-label {
+        font-size: 12px;
+        color: #64748b;
+        margin-bottom: 4px;
+    }
+
+    .info-value {
+        font-weight: 600;
         color: #1f2937;
     }
 
@@ -218,6 +319,7 @@
         justify-content: space-between;
         align-items: center;
         margin-bottom: 12px;
+        flex-shrink: 0;
     }
 
     .students-header h4 {
@@ -234,7 +336,8 @@
     .students-list {
         border: 1px solid #e5e7eb;
         border-radius: 12px;
-        overflow: hidden;
+        overflow-y: auto;
+        max-height: 350px;
     }
 
     .student-item {
@@ -243,6 +346,11 @@
         align-items: center;
         padding: 14px 16px;
         border-bottom: 1px solid #e5e7eb;
+        transition: background-color 0.2s;
+    }
+
+    .student-item:hover {
+        background-color: #f8fafc;
     }
 
     .student-item:last-child {
@@ -253,12 +361,15 @@
         display: flex;
         align-items: center;
         gap: 12px;
+        flex: 1;
+        cursor: pointer;
     }
 
     .student-left input {
         width: 18px;
         height: 18px;
-        accent-color: #1d4ed8;
+        accent-color: #1e40af;
+        cursor: pointer;
     }
 
     .student-name {
@@ -277,6 +388,24 @@
         height: 20px;
     }
 
+    .student-stats-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 6px 10px;
+        border-radius: 6px;
+        color: #059669;
+        font-size: 12px;
+        transition: background-color 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .student-stats-btn:hover {
+        background-color: #f0fdf4;
+    }
+
     .status-ok {
         color: #22c55e;
     }
@@ -285,7 +414,6 @@
         color: #94a3b8;
     }
 
-    /* Formulario crear actividad */
     .form-group {
         margin-bottom: 20px;
     }
@@ -298,26 +426,34 @@
         margin-bottom: 8px;
     }
 
-    .form-input {
+    .form-input,
+    .form-select {
         width: 100%;
         min-width: 0;
-        height: 36px;
-        padding: 4px 12px;
+        height: 40px;
+        padding: 8px 12px;
         border-radius: 8px;
         border: 1px solid #d1d5db;
         background-color: #f9fafb;
         color: #111827;
         font-size: 14px;
-        line-height: 1.25;
+        line-height: 1.5;
         box-sizing: border-box;
         transition: border-color 0.2s ease, box-shadow 0.2s ease;
     }
 
-    .form-input:focus {
+    .form-input:focus,
+    .form-select:focus {
         outline: none;
         border-color: rgb(30, 64, 175);
         box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
         background-color: #ffffff;
+    }
+
+    .form-select:disabled {
+        background-color: #e5e7eb;
+        cursor: not-allowed;
+        opacity: 0.7;
     }
 
     .form-textarea {
@@ -350,9 +486,10 @@
 
     .form-actions {
         display: flex;
-        justify-content: flex-end;
+        justify-content: center;
         gap: 12px;
         margin-top: 25px;
+        flex-shrink: 0;
     }
 
     .btn {
@@ -366,12 +503,17 @@
     }
 
     .btn-primary {
-        background-color: #1d4ed8;
+        background-color: #1e40af;
         color: white;
     }
 
     .btn-primary:hover {
-        background-color: #1e40af;
+        background-color: #1e3a8a;
+    }
+
+    .btn-primary:disabled {
+        background-color: #94a3b8;
+        cursor: not-allowed;
     }
 
     .btn-secondary {
@@ -383,6 +525,72 @@
         background-color: #e5e7eb;
     }
 
+    .btn-primary-moderno {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        white-space: nowrap;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.2s;
+        background-color: #1e40af;
+        color: white;
+        height: 40px;
+        padding: 8px 20px;
+        border: none;
+        cursor: pointer;
+        outline: none;
+        min-width: 140px;
+    }
+
+    .btn-primary-moderno:hover {
+        background-color: #1e3a8a;
+    }
+
+    .btn-primary-moderno:disabled {
+        background-color: #94a3b8;
+        cursor: not-allowed;
+        opacity: 0.7;
+    }
+
+    .btn-report {
+        background-color: #059669;
+        color: white;
+    }
+
+    .btn-report:hover {
+        background-color: #047857;
+    }
+
+    .btn-edit {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 4px;
+        border-radius: 6px;
+        transition: background-color 0.2s;
+    }
+
+    .btn-edit:hover {
+        background-color: #f3f4f6;
+    }
+
+    .btn-stats {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 4px;
+        border-radius: 6px;
+        transition: background-color 0.2s;
+        color: #059669;
+    }
+
+    .btn-stats:hover {
+        background-color: #f0fdf4;
+    }
+
     .add-activity-btn {
         display: flex;
         align-items: center;
@@ -391,360 +599,1853 @@
         background: rgb(30, 64, 175);
         color: white;
         border: none;
-        padding: 8px 12px;
+        padding: 10px 16px;
         border-radius: 8px;
         font-size: 15px;
+        font-weight: 500;
         cursor: pointer;
-        margin-bottom: 20px;
+        transition: background 0.2s;
     }
 
     .add-activity-btn:hover {
-        background: #1e40af;
+        background: #1e3a8a;
     }
-    
+
+    .alert-message {
+        background-color: #fef3c7;
+        border: 1px solid #fde68a;
+        color: #92400e;
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .report-section {
+        margin-bottom: 30px;
+    }
+
+    .report-section h3 {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #e5e7eb;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+
+    .stat-card {
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+        border: 1px solid #e6e9f0;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .stat-number {
+        font-size: 32px;
+        font-weight: 700;
+        margin-bottom: 5px;
+        color: #1f2937;
+    }
+
+    .stat-label {
+        font-size: 13px;
+        color: #6b7280;
+        font-weight: 500;
+    }
+
+    .stat-card.total .stat-number {
+        color: #1e40af;
+    }
+
+    .stat-card.promedio .stat-number {
+        color: #d97706;
+    }
+
+    .stat-card.activas .stat-number {
+        color: #0891b2;
+    }
+
+    .stat-card.vencidas .stat-number {
+        color: #dc2626;
+    }
+
+    .charts-container {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 25px;
+        margin-bottom: 30px;
+    }
+
+    .chart-box {
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 20px;
+        border: 1px solid #e6e9f0;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+
+    .chart-box h4 {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 15px;
+        text-align: center;
+    }
+
+    .chart-box canvas {
+        max-height: 250px;
+    }
+
+    .activities-table {
+        overflow-x: auto;
+    }
+
+    .activities-table table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .activities-table th,
+    .activities-table td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .activities-table th {
+        background: #f8fafc;
+        font-weight: 600;
+        color: #1f2937;
+    }
+
+    .activities-table tr:hover {
+        background: #f8fafc;
+    }
+
+    .progress-bar-mini {
+        width: 100px;
+        height: 6px;
+        background: #e5e7eb;
+        border-radius: 3px;
+        overflow: hidden;
+        display: inline-block;
+        margin-left: 8px;
+    }
+
+    .progress-fill-mini {
+        height: 100%;
+        background: #1e40af;
+        border-radius: 3px;
+    }
+
+    .status-badge {
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .status-badge.active {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .status-badge.closed {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .status-badge.vencida {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .toast-message {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #10b981;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        z-index: 1100;
+        animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    .loading-spinner {
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #1e40af;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 15px;
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    body.modal-open {
+        overflow: hidden;
+    }
+
+    @media (max-width: 768px) {
+        .activities-container {
+            grid-template-columns: 1fr;
+        }
+
+        .charts-container {
+            grid-template-columns: 1fr;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .actions-buttons {
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .add-activity-btn,
+        .btn-report {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .modal-content {
+            padding: 20px;
+        }
+
+        .student-item {
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .student-stats-btn {
+            margin-left: auto;
+        }
+    }
 </style>
 
 <div class="header-actions">
     <div class="header-text">
         <h3 class="mb-1 title-figma">Gestión de Actividades</h3>
-        <p class="text-sm text-muted-foreground">Crea y administra actividades, registra entregas</p>
+        <p class="text-sm text-muted-foreground">Crea y administra actividades por materia</p>
     </div>
 
-    <button class="add-activity-btn" onclick="openActivityForm()">
-        <svg class="plus-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none"
-            stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19" />
-            <line x1="5" y1="12" x2="19" y2="12" />
-        </svg>
-        Nueva Actividad
-    </button>
+    <div class="actions-buttons">
+        <button class="btn-report btn-primary-moderno" onclick="openReportModal()" style="background-color: #059669;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2">
+                <path d="M21 12v3a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4v-3"></path>
+                <path d="M12 2v8"></path>
+                <path d="m9 7 3-3 3 3"></path>
+            </svg>
+            Ver Reporte de Estadísticas
+        </button>
+        <button class="add-activity-btn" onclick="openActivityForm()" id="openFormBtn">
+            <svg class="plus-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18"
+                fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            Nueva Actividad
+        </button>
+    </div>
 </div>
+
+{% if not grupos_con_materias %}
+<div class="alert-message">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+    </svg>
+    No tienes grupos con materias asignadas.
+</div>
+{% endif %}
 
 <div class="activities-container" id="activitiesContainer">
     {% for actividad in actividades %}
-    <div class="activity-card" onclick="openActivityDetail('{{ actividad.id }}')">
+    <div class="activity-card" data-activity-id="{{ actividad.id }}" onclick="openActivityDetail('{{ actividad.id }}')">
         <div class="activity-header">
             <div class="activity-title">{{ actividad.titulo }}</div>
-            <div class="activity-status {% if actividad.parcial.cerrado %}closed{% endif %}">
-                {% if actividad.parcial.cerrado %}Cerrada{% else %}Activa{% endif %}
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <button class="btn-edit" onclick="event.stopPropagation(); openEditActivityForm('{{ actividad.id }}')"
+                    title="Editar actividad">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="#6b7280" stroke-width="2">
+                        <path d="M17 3l4 4-7 7H10v-4l7-7z"></path>
+                        <path d="M4 20h16"></path>
+                    </svg>
+                </button>
+                <div class="activity-status 
+                    {% if actividad.parcial.cerrado %}closed
+                    {% elif actividad.fecha_entrega|date:'Y-m-d' < hoy %} vencida
+                    {% else %}active
+                    {% endif %}">
+                    {% if actividad.parcial.cerrado %}
+                    Cerrada
+                    {% elif actividad.fecha_entrega|date:'Y-m-d' < hoy %} Cerrada {% else %} Activa {% endif %} </div>
+                </div>
+            </div>
+
+            <div class="activity-description">{{ actividad.descripcion|truncatechars:100 }}</div>
+
+            <div class="badge-container">
+                <span class="badge-group">{{ actividad.parcial.grupo_docente_materia.grupo.clave }}</span>
+                <span class="badge-materia">{{ actividad.parcial.grupo_docente_materia.materia.nombre }}</span>
+                <span class="badge-parcial">{{ actividad.parcial.nombre }}</span>
+            </div>
+
+            <div class="activity-meta">
+                <div class="activity-date">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M8 2v4"></path>
+                        <path d="M16 2v4"></path>
+                        <rect width="18" height="18" x="3" y="4" rx="2"></rect>
+                        <path d="M3 10h18"></path>
+                    </svg>
+                    {{ actividad.fecha_entrega|date:"d/m/Y" }}
+                </div>
+                <button class="btn-stats"
+                    onclick="event.stopPropagation(); openActivityStats('{{ actividad.id }}', '{{ actividad.titulo|escapejs }}')"
+                    title="Ver estadísticas de la actividad">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path d="M21 12v3a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4v-3"></path>
+                        <path d="M12 2v8"></path>
+                        <path d="m9 7 3-3 3 3"></path>
+                    </svg>
+                    Estadísticas
+                </button>
+            </div>
+
+            <div class="activity-progress-box">
+                <div class="activity-progress-header">
+                    <span>Entregas</span>
+                    <span>{{ actividad.entregadas|default:"0" }}/{{ actividad.total_alumnos|default:"0" }}</span>
+                </div>
+                <div class="activity-progress-track">
+                    <div class="activity-progress-fill" style="width: {{ actividad.porcentaje|default:0 }}%;"></div>
+                </div>
             </div>
         </div>
+        {% empty %}
+        <div style="grid-column: span 2; text-align: center; padding: 40px; background: #f9fafb; border-radius: 14px;">
+            <p style="color: #6b7280;">No hay actividades creadas. ¡Crea una nueva actividad!</p>
+        </div>
+        {% endfor %}
+    </div>
 
-        <div class="activity-description">{{ actividad.descripcion }}</div>
-
-        <div class="activity-meta">
-
-            <div class="activity-group">
-                {{ actividad.parcial.grupo_docente_materia.grupo.clave }}
-            </div>
-            <div class="activity-date">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                    class="lucide lucide-calendar" aria-hidden="true">
-                    <path d="M8 2v4"></path>
-                    <path d="M16 2v4"></path>
-                    <rect width="18" height="18" x="3" y="4" rx="2"></rect>
-                    <path d="M3 10h18"></path>
+    <!-- Modal para crear actividad -->
+    <div class="modal-overlay" id="activityModal">
+        <div class="modal-content">
+            <button type="button" class="modal-close-btn" onclick="closeActivityForm()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 6 6 18"></path>
+                    <path d="m6 6 12 12"></path>
                 </svg>
-                {{ actividad.fecha_entrega|date:"d/m/Y" }}
-            </div>
-        </div>
-    </div>
-    {% empty %}
-    <p>No hay actividades registradas.</p>
-    {% endfor %}
-</div>
+            </button>
 
-<!-- Modal crear actividad -->
-<div class="modal-overlay" id="activityModal">
-    <div class="modal-content">
-        <button type="button" class="modal-close-btn" onclick="closeActivityForm()">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M18 6 6 18"></path>
-                <path d="m6 6 12 12"></path>
-            </svg>
-        </button>
+            <h2 class="form-title">Crear Nueva Actividad</h2>
+            <p class="form-subtitle">Selecciona grupo y materia</p>
 
-        <h2 class="form-title">Crear Nueva Actividad</h2>
-        <p class="form-subtitle">Completa los datos de la actividad académica</p>
-
-        <form id="activityForm">
-            {% csrf_token %}
-            <div class="form-group">
-                <label class="form-label" for="activityName">Nombre de la Actividad</label>
-                <input type="text" id="activityName" name="titulo" class="form-input"
-                    placeholder="Ej: Proyecto Final - Módulo 3">
-            </div>
-
-            <div class="form-group">
-                <label class="form-label" for="activityDesc">Descripción</label>
-                <textarea id="activityDesc" name="descripcion" class="form-textarea"
-                    placeholder="Describe los objetivos y requisitos de la actividad..."></textarea>
-            </div>
-
-            <div class="form-row">
-                <div class="form-col">
-                    <label class="form-label" for="activityGroup">Grupo</label>
-                    <select id="activityGroup" name="grupo" class="form-input">
-                        <option value="">Selecciona un grupo</option>
-                        {% for grupo in grupos %}
-                        <option value="{{ grupo.id }}">{{ grupo.clave }}</option>
-                        {% endfor %}
-                    </select>
+            <form id="activityForm" method="POST">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label class="form-label" for="activityName">Título de la Actividad</label>
+                    <input type="text" id="activityName" name="titulo" class="form-input"
+                        placeholder="Ej: Proyecto Final" required>
                 </div>
 
-                <div class="form-col">
-                    <label class="form-label" for="activityDueDate">Fecha de Entrega</label>
-                    <input type="date" id="activityDueDate" name="fecha_entrega" class="form-input">
+                <div class="form-group">
+                    <label class="form-label" for="activityDesc">Descripción</label>
+                    <textarea id="activityDesc" name="descripcion" class="form-textarea"
+                        placeholder="Describe la actividad..." required></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-col">
+                        <label class="form-label" for="activityGroup">Grupo</label>
+                        <select id="activityGroup" name="grupoId" class="form-select" required>
+                            <option value="">Selecciona un grupo</option>
+                            {% for grupo in grupos_con_materias %}
+                            <option value="{{ grupo.id }}">{{ grupo.clave }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-col">
+                        <label class="form-label" for="activityMateria">Materia</label>
+                        <select id="activityMateria" name="grupo_docente_materia" class="form-select" required disabled>
+                            <option value="">Primero selecciona un grupo</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-col">
+                        <label class="form-label" for="activityDueDate">Fecha de Entrega</label>
+                        <input type="date" id="activityDueDate" name="fecha_entrega" class="form-input" required>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeActivityForm()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">Crear Actividad</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para editar actividad -->
+    <div class="modal-overlay" id="editActivityModal">
+        <div class="modal-content">
+            <button type="button" class="modal-close-btn" onclick="closeEditActivityForm()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 6 6 18"></path>
+                    <path d="m6 6 12 12"></path>
+                </svg>
+            </button>
+
+            <h2 class="form-title">Editar Actividad</h2>
+            <p class="form-subtitle">Modifica los datos de la actividad</p>
+
+            <form id="editActivityFormElement">
+                {% csrf_token %}
+                <input type="hidden" id="editActivityId" name="actividad_id">
+
+                <div class="form-group">
+                    <label class="form-label" for="editActivityName">Título de la Actividad</label>
+                    <input type="text" id="editActivityName" name="titulo" class="form-input" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="editActivityDesc">Descripción</label>
+                    <textarea id="editActivityDesc" name="descripcion" class="form-textarea" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="editActivityDueDate">Fecha de Entrega</label>
+                    <input type="date" id="editActivityDueDate" name="fecha_entrega" class="form-input" required>
+                </div>
+
+                <div class="info-box-detail" style="margin-bottom: 20px;">
+                    <div class="info-item">
+                        <span class="info-label">Grupo</span>
+                        <span class="info-value" id="editGroupInfo"></span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Materia</span>
+                        <span class="info-value" id="editMateriaInfo"></span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Parcial</span>
+                        <span class="info-value" id="editParcialInfo"></span>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeEditActivityForm()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para detalle de actividad -->
+    <div class="modal-overlay" id="activityDetailModal">
+        <div class="modal-content">
+            <button type="button" class="modal-close-btn" onclick="closeActivityDetail()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 6 6 18"></path>
+                    <path d="m6 6 12 12"></path>
+                </svg>
+            </button>
+
+            <h2 class="form-title" id="detailTitle"></h2>
+            <p class="form-subtitle" id="detailDescription"></p>
+
+            <div class="info-box-detail">
+                <div class="info-item">
+                    <span class="info-label">Grupo</span>
+                    <span class="info-value" id="detailGroup"></span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Materia</span>
+                    <span class="info-value" id="detailMateria"></span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Parcial</span>
+                    <span class="info-value" id="detailParcial"></span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Fecha Entrega</span>
+                    <span class="info-value" id="detailDate"></span>
                 </div>
             </div>
 
-            <div class="form-actions">
-                <button type="button" class="btn btn-secondary" onclick="closeActivityForm()">Cancelar</button>
-                <button type="submit" class="btn btn-primary">Crear Actividad</button>
+            <div class="students-header">
+                <h4>Lista de Alumnos</h4>
+                <span id="detailCount"></span>
             </div>
-        </form>
+
+            <div class="students-list" id="studentsList"></div>
+
+            <div class="form-actions" id="detailActions" style="margin-top:20px; justify-content: center;">
+                <button type="button" class="btn-primary-moderno" onclick="saveEntregas()" id="saveBtn">
+                    Guardar Cambios
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="closeActivityDetail()">
+                    Cerrar
+                </button>
+            </div>
+        </div>
     </div>
-</div>
 
-<!-- Modal detalle actividad -->
-<div class="modal-overlay" id="activityDetailModal">
-    <div class="modal-content">
-        <button type="button" class="modal-close-btn" onclick="closeActivityDetail()">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M18 6 6 18"></path>
-                <path d="m6 6 12 12"></path>
-            </svg>
-        </button>
-
-        <h2 class="form-title" id="detailTitle"></h2>
-        <p class="form-subtitle">Registra qué alumnos han entregado la actividad</p>
-
-        <div class="info-box">
-            <div>
-                <strong>Grupo</strong><br>
-                <span id="detailGroup"></span>
-            </div>
-            <div>
-                <strong>Fecha de Entrega</strong><br>
-                <span id="detailDate"></span>
-            </div>
-        </div>
-
-        <div class="students-header">
-            <h4>Lista de Alumnos</h4>
-            <span id="detailCount"></span>
-        </div>
-
-        <div class="students-list" id="studentsList"></div>
-        <div class="form-actions" style="margin-top:20px;">
-            <button type="button" class="btn btn-primary" onclick="saveEntregas()">
-                Guardar Cambios
+    <!-- Modal para reporte de estadísticas generales -->
+    <div class="modal-overlay" id="reportModal">
+        <div class="modal-content report-modal">
+            <button type="button" class="modal-close-btn" onclick="closeReportModal()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 6 6 18"></path>
+                    <path d="m6 6 12 12"></path>
+                </svg>
             </button>
-            <button type="button" class="btn btn-secondary" onclick="closeActivityDetail()">
-                Cerrar
-            </button>
-        </div>
 
+            <h2 class="form-title">Reporte de Estadísticas</h2>
+            <p class="form-subtitle">Análisis general de actividades</p>
+
+            <div id="reportContent">
+                <div style="text-align: center; padding: 40px;">
+                    <div class="loading-spinner"></div>
+                    <p>Cargando estadísticas...</p>
+                </div>
+            </div>
+
+            <div class="form-actions" style="margin-top:20px;">
+                <button type="button" class="btn btn-secondary" onclick="closeReportModal()">Cerrar</button>
+                <button type="button" class="btn-primary-moderno" onclick="exportReport()"
+                    style="background-color: #059669;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a4 4 0 0 1-2 2H5a4 4 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    Exportar Reporte
+                </button>
+            </div>
+        </div>
     </div>
-</div>
 
-<script>
-    function openActivityForm() {
-        document.getElementById('activityModal').style.display = 'flex';
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('activityDueDate').min = today;
-    }
+    <!-- Modal para estadísticas individuales de actividad -->
+    <div class="modal-overlay" id="statsActivityModal">
+        <div class="modal-content stats-modal">
+            <button type="button" class="modal-close-btn" onclick="closeStatsModal()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 6 6 18"></path>
+                    <path d="m6 6 12 12"></path>
+                </svg>
+            </button>
 
-    function closeActivityForm() {
-        document.getElementById('activityModal').style.display = 'none';
-        document.getElementById('activityForm').reset();
-    }
+            <h2 class="form-title" id="statsTitle">Estadísticas de Actividad</h2>
+            <p class="form-subtitle" id="statsSubtitle"></p>
 
-    function openActivityDetail(activityId) {
-        fetch(`/actividades/${activityId}/detalle`)
-            .then(response => response.json())
-            .then(data => {
+            <div id="statsContent">
+                <div style="text-align: center; padding: 40px;">
+                    <div class="loading-spinner"></div>
+                    <p>Cargando estadísticas...</p>
+                </div>
+            </div>
 
-                document.getElementById('detailTitle').textContent = data.titulo;
-                document.getElementById('detailGroup').textContent = data.grupo;
-                document.getElementById('detailDate').textContent = data.fecha_entrega;
-                document.getElementById('detailCount').textContent =
-                    `${data.entregadas}/${data.total} entregadas`;
+            <div class="form-actions" style="margin-top:20px;">
+                <button type="button" class="btn btn-secondary" onclick="closeStatsModal()">Cerrar</button>
+            </div>
+        </div>
+    </div>
 
-                const studentsList = document.getElementById('studentsList');
-                studentsList.innerHTML = '';
+    <!-- Modal para estadísticas individuales del alumno -->
+    <div class="modal-overlay" id="statsAlumnoModal">
+        <div class="modal-content stats-modal">
+            <button type="button" class="modal-close-btn" onclick="closeAlumnoStatsModal()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 6 6 18"></path>
+                    <path d="m6 6 12 12"></path>
+                </svg>
+            </button>
 
-                data.alumnos.forEach(alumno => {
+            <h2 class="form-title" id="alumnoStatsTitle">Estadísticas del Alumno</h2>
+            <p class="form-subtitle" id="alumnoStatsSubtitle"></p>
 
-                    const item = document.createElement('div');
-                    item.className = 'student-item';
+            <div id="alumnoStatsContent">
+                <div style="text-align: center; padding: 40px;">
+                    <div class="loading-spinner"></div>
+                    <p>Cargando estadísticas...</p>
+                </div>
+            </div>
 
-                    item.innerHTML = `
-                        <div class="student-left">
-                            <input type="checkbox"
-                                   class="student-checkbox"
-                                   data-id="${alumno.id}"
-                                   ${alumno.entregado ? 'checked' : ''}>
-                            <div>
-                                <div class="student-name">${alumno.nombre}</div>
-                                <div class="student-code">${alumno.matricula}</div>
-                            </div>
-                        </div>
-                        <div class="student-status">
-                            ${alumno.entregado ? `
-                                <svg xmlns="http://www.w3.org/2000/svg" class="status-ok" viewBox="0 0 24 24" fill="none"
-                                    stroke="currentColor" stroke-width="2">
-                                    <circle cx="12" cy="12" r="10"></circle>
-                                    <path d="m9 12 2 2 4-4"></path>
-                                </svg>
-                            ` : `
-                                <svg xmlns="http://www.w3.org/2000/svg" class="status-no" viewBox="0 0 24 24" fill="none"
-                                    stroke="currentColor" stroke-width="2">
-                                    <circle cx="12" cy="12" r="10"></circle>
-                                    <path d="m15 9-6 6"></path>
-                                    <path d="m9 9 6 6"></path>
-                                </svg>
-                            `}
-                        </div>
-                    `;
+            <div class="form-actions" style="margin-top:20px;">
+                <button type="button" class="btn btn-secondary" onclick="closeAlumnoStatsModal()">Cerrar</button>
+            </div>
+        </div>
+    </div>
 
-                    studentsList.appendChild(item);
-                });
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
-                document.getElementById('activityDetailModal').style.display = 'flex';
-            })
-            .catch(error => {
-                console.error("Error cargando detalle:", error);
-            });
-    }
+    {{ grupos_con_materias|json_script:"grupos-data" }}
 
-    function closeActivityDetail() {
-        document.getElementById('activityDetailModal').style.display = 'none';
-    }
+    <script>
+        var gruposData = [];
+        try {
+            gruposData = JSON.parse(document.getElementById('grupos-data').textContent);
+        } catch (e) {
+            gruposData = [];
+        }
 
-    function saveEntregas() {
+        var hoy = '{{ hoy }}';
+        var charts = {};
+        var alumnoCharts = {};
+        var currentActivityId = null;
 
-        const checkboxes = document.querySelectorAll('.student-checkbox');
-        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-
-        const entregas = [];
-
-        checkboxes.forEach(cb => {
-
-            // IMPORTANTE: solo enviar si tiene ID válido
-            if (cb.dataset.id) {
-                entregas.push({
-                    id: cb.dataset.id,
-                    entregado: cb.checked
-                });
+        function toggleBodyScroll(disable) {
+            if (disable) {
+                document.body.style.overflow = 'hidden';
+                document.body.classList.add('modal-open');
+            } else {
+                document.body.style.overflow = '';
+                document.body.classList.remove('modal-open');
             }
-        });
+        }
 
-        fetch("/guardar-entregas/", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": csrfToken
-            },
-            body: JSON.stringify({
-                entregas: entregas
-            })
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error("Error en servidor");
-            }
-            return response.json();
-        })
-        .then(data => {
-            alert("Cambios guardados correctamente ✅");
-            closeActivityDetail();
-        })
-        .catch(error => {
-            console.error("Error:", error);
-            alert("Ocurrió un error al guardar ❌");
-        });
-    }
-
-    document.addEventListener('DOMContentLoaded', function () {
-
-        const modalCreate = document.getElementById('activityModal');
-        const modalDetail = document.getElementById('activityDetailModal');
-        const form = document.getElementById("activityForm");
-
-        // Cerrar modal al hacer click fuera
-        modalCreate.addEventListener('click', function (event) {
-            if (event.target === modalCreate) {
-                closeActivityForm();
-            }
-        });
-
-        modalDetail.addEventListener('click', function (event) {
-            if (event.target === modalDetail) {
+        // ===== FUNCIONES PARA CREAR ACTIVIDAD =====
+        function openActivityForm() {
+            if (document.getElementById('activityDetailModal').style.display === 'flex') {
                 closeActivityDetail();
             }
-        });
+            if (document.getElementById('editActivityModal').style.display === 'flex') {
+                closeEditActivityForm();
+            }
+            if (document.getElementById('statsActivityModal').style.display === 'flex') {
+                closeStatsModal();
+            }
+            if (document.getElementById('statsAlumnoModal').style.display === 'flex') {
+                closeAlumnoStatsModal();
+            }
+            if (document.getElementById('reportModal').style.display === 'flex') {
+                closeReportModal();
+            }
 
-        // INTERCEPTAR SUBMIT
-        form.addEventListener("submit", function (e) {
-            e.preventDefault();
+            toggleBodyScroll(true);
+            document.getElementById('activityModal').style.display = 'flex';
+            var today = new Date().toISOString().split('T')[0];
+            document.getElementById('activityDueDate').min = today;
 
-            const formData = new FormData(form);
-            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            document.getElementById('activityGroup').value = '';
+            var materiaSelect = document.getElementById('activityMateria');
+            materiaSelect.innerHTML = '<option value="">Primero selecciona un grupo</option>';
+            materiaSelect.disabled = true;
+        }
 
-            fetch("/actividades/", {
+        function closeActivityForm() {
+            var modal = document.getElementById('activityModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+            document.getElementById('activityForm').reset();
+            document.getElementById('activityMateria').disabled = true;
+            toggleBodyScroll(false);
+        }
+
+        // ===== FUNCIONES PARA EDITAR ACTIVIDAD =====
+        function openEditActivityForm(activityId) {
+            if (document.getElementById('activityDetailModal').style.display === 'flex') {
+                closeActivityDetail();
+            }
+            if (document.getElementById('statsActivityModal').style.display === 'flex') {
+                closeStatsModal();
+            }
+            if (document.getElementById('statsAlumnoModal').style.display === 'flex') {
+                closeAlumnoStatsModal();
+            }
+            if (document.getElementById('reportModal').style.display === 'flex') {
+                closeReportModal();
+            }
+            if (document.getElementById('activityModal').style.display === 'flex') {
+                closeActivityForm();
+            }
+
+            toggleBodyScroll(true);
+
+            setTimeout(function () {
+                fetch(`/actividades/obtener/${activityId}/`)
+                    .then(function (response) {
+                        if (!response.ok) throw new Error('Error al cargar la actividad');
+                        return response.json();
+                    })
+                    .then(function (data) {
+                        if (data.success) {
+                            document.getElementById('editActivityId').value = data.actividad.id;
+                            document.getElementById('editActivityName').value = data.actividad.titulo;
+                            document.getElementById('editActivityDesc').value = data.actividad.descripcion;
+                            document.getElementById('editActivityDueDate').value = data.actividad.fecha_entrega;
+                            document.getElementById('editGroupInfo').textContent = data.actividad.grupo_clave;
+                            document.getElementById('editMateriaInfo').textContent = data.actividad.materia_nombre;
+                            document.getElementById('editParcialInfo').textContent = data.actividad.parcial_nombre;
+
+                            var today = new Date().toISOString().split('T')[0];
+                            document.getElementById('editActivityDueDate').min = today;
+
+                            document.getElementById('editActivityModal').style.display = 'flex';
+                        }
+                    })
+                    .catch(function (error) {
+                        toggleBodyScroll(false);
+                        alert("Error: " + error.message);
+                    });
+            }, 100);
+        }
+
+        function closeEditActivityForm() {
+            var modal = document.getElementById('editActivityModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+            document.getElementById('editActivityFormElement').reset();
+            toggleBodyScroll(false);
+        }
+
+        // ===== FUNCIONES PARA DETALLE DE ACTIVIDAD =====
+        function openActivityDetail(activityId) {
+            if (document.getElementById('editActivityModal').style.display === 'flex') {
+                closeEditActivityForm();
+            }
+            if (document.getElementById('statsActivityModal').style.display === 'flex') {
+                closeStatsModal();
+            }
+            if (document.getElementById('statsAlumnoModal').style.display === 'flex') {
+                closeAlumnoStatsModal();
+            }
+            if (document.getElementById('reportModal').style.display === 'flex') {
+                closeReportModal();
+            }
+            if (document.getElementById('activityModal').style.display === 'flex') {
+                closeActivityForm();
+            }
+
+            toggleBodyScroll(true);
+            currentActivityId = activityId;
+            var url = `/actividades/${activityId}/detalle/`;
+
+            fetch(url)
+                .then(function (response) {
+                    if (!response.ok) {
+                        throw new Error('Error al cargar el detalle');
+                    }
+                    return response.json();
+                })
+                .then(function (data) {
+                    document.getElementById('detailTitle').textContent = data.titulo || '';
+                    document.getElementById('detailDescription').textContent = data.descripcion || '';
+                    document.getElementById('detailGroup').textContent = data.grupo || '';
+                    document.getElementById('detailMateria').textContent = data.materia || 'No especificada';
+                    document.getElementById('detailParcial').textContent = data.parcial || 'No especificado';
+                    document.getElementById('detailDate').textContent = data.fecha_entrega || '';
+                    document.getElementById('detailCount').textContent =
+                        (data.entregadas || 0) + '/' + (data.total || 0) + ' entregadas';
+
+                    var studentsList = document.getElementById('studentsList');
+                    studentsList.innerHTML = '';
+
+                    if (data.alumnos && data.alumnos.length > 0) {
+                        // En la función openActivityDetail, cuando se crea cada alumno
+                        for (var i = 0; i < data.alumnos.length; i++) {
+                            var alumno = data.alumnos[i];
+                            var item = document.createElement('div');
+                            item.className = 'student-item';
+
+                            var checkeado = alumno.entregado ? 'checked' : '';
+
+                            var icono = alumno.entregado ?
+                                '<svg xmlns="http://www.w3.org/2000/svg" class="status-ok" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path></svg>' :
+                                '<svg xmlns="http://www.w3.org/2000/svg" class="status-no" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="m15 9-6 6"></path><path d="m9 9 6 6"></path></svg>';
+
+                            // CORREGIDO: Usar alumno.id correctamente (el ID del alumno, no del entrega)
+                            var alumnoIdReal = alumno.alumno_id || alumno.id;
+
+                            item.innerHTML =
+                                '<div class="student-left" onclick="event.stopPropagation(); openAlumnoStats(' + alumnoIdReal + ', \'' + (alumno.nombre || '').replace(/'/g, "\\'") + '\')">' +
+                                '<input type="checkbox" class="student-checkbox" data-id="' + alumno.id + '" ' + checkeado + ' onclick="event.stopPropagation()">' +
+                                '<div>' +
+                                '<div class="student-name">' + (alumno.nombre || '') + '</div>' +
+                                '<div class="student-code">' + (alumno.matricula || '') + '</div>' +
+                                '</div>' +
+                                '</div>' +
+                                '<div class="student-status">' + icono + '</div>' +
+                                '<button class="student-stats-btn" onclick="event.stopPropagation(); openAlumnoStats(' + alumnoIdReal + ', \'' + (alumno.nombre || '').replace(/'/g, "\\'") + '\')" title="">Estadísticas</button>'
+
+                            studentsList.appendChild(item);
+                        }
+                    } else {
+                        studentsList.innerHTML = '<div style="text-align: center; padding: 40px; color: #6b7280;">No hay alumnos asignados a esta actividad.</div>';
+                    }
+
+                    var actionsDiv = document.getElementById('detailActions');
+                    if (actionsDiv) {
+                        actionsDiv.innerHTML = `
+                    <button type="button" class="btn-primary-moderno" onclick="saveEntregas()" id="saveBtn" style="background-color: #1e40af;">
+                        Guardar Cambios
+                    </button>
+                    <button type="button" class="btn-primary-moderno" onclick="openEditActivityForm(${activityId})" style="background-color: #f59e0b;">
+                        Editar Actividad
+                    </button>
+                    <button type="button" class="btn-primary-moderno" onclick="openActivityStats(${activityId}, '${data.titulo.replace(/'/g, "\\'")}')" style="background-color: #059669;">
+                        Ver Estadísticas de Actividad
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="closeActivityDetail()">
+                        Cerrar
+                    </button>
+                `;
+                    }
+
+                    document.getElementById('activityDetailModal').style.display = 'flex';
+                })
+                .catch(function (error) {
+                    toggleBodyScroll(false);
+                    alert("Error al cargar el detalle: " + error.message);
+                });
+        }
+
+        function closeActivityDetail() {
+            var modal = document.getElementById('activityDetailModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+            toggleBodyScroll(false);
+        }
+
+        function saveEntregas() {
+            var checkboxes = document.querySelectorAll('.student-checkbox');
+            var csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            var saveBtn = document.getElementById('saveBtn');
+
+            if (!saveBtn) return;
+
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Guardando...';
+
+            var entregas = [];
+            for (var i = 0; i < checkboxes.length; i++) {
+                var cb = checkboxes[i];
+                if (cb.dataset.id) {
+                    entregas.push({
+                        id: parseInt(cb.dataset.id),
+                        entregado: cb.checked
+                    });
+                }
+            }
+
+            fetch("/guardar-entregas/", {
                 method: "POST",
                 headers: {
+                    "Content-Type": "application/json",
                     "X-CSRFToken": csrfToken
                 },
-                body: formData
+                body: JSON.stringify({ entregas: entregas })
             })
-            .then(response => response.json())
-            .then(data => {
+                .then(function (response) {
+                    return response.json();
+                })
+                .then(function (data) {
+                    if (data.success) {
+                        alert("Cambios guardados correctamente");
+                        closeActivityDetail();
+                        location.reload();
+                    } else {
+                        throw new Error(data.error || "Error al guardar");
+                    }
+                })
+                .catch(function (error) {
+                    alert("Error al guardar: " + error.message);
+                    if (saveBtn) {
+                        saveBtn.disabled = false;
+                        saveBtn.textContent = 'Guardar Cambios';
+                    }
+                });
+        }
 
-                if (data.error) {
-                    alert(data.error);
-                    return;
+        // ===== FUNCIONES PARA ESTADÍSTICAS INDIVIDUALES DE ACTIVIDAD =====
+        function openActivityStats(activityId, activityTitle) {
+            if (document.getElementById('activityDetailModal').style.display === 'flex') {
+                closeActivityDetail();
+            }
+            if (document.getElementById('editActivityModal').style.display === 'flex') {
+                closeEditActivityForm();
+            }
+            if (document.getElementById('statsAlumnoModal').style.display === 'flex') {
+                closeAlumnoStatsModal();
+            }
+            if (document.getElementById('reportModal').style.display === 'flex') {
+                closeReportModal();
+            }
+            if (document.getElementById('activityModal').style.display === 'flex') {
+                closeActivityForm();
+            }
+
+            toggleBodyScroll(true);
+            document.getElementById('statsActivityModal').style.display = 'flex';
+            document.getElementById('statsTitle').textContent = activityTitle;
+            document.getElementById('statsSubtitle').textContent = 'Estadísticas detalladas de la actividad';
+
+            var statsContent = document.getElementById('statsContent');
+            statsContent.innerHTML = '<div style="text-align: center; padding: 40px;"><div class="loading-spinner"></div><p>Cargando estadísticas...</p></div>';
+
+            fetch(`/actividades/estadisticas-individual/${activityId}/`)
+                .then(function (response) {
+                    if (!response.ok) throw new Error('Error al cargar estadísticas');
+                    return response.json();
+                })
+                .then(function (data) {
+                    renderActivityStats(data);
+                })
+                .catch(function (error) {
+                    statsContent.innerHTML = '<div class="alert-message" style="margin: 20px;">Error: ' + error.message + '</div>';
+                });
+        }
+
+        function closeStatsModal() {
+            var modal = document.getElementById('statsActivityModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+            toggleBodyScroll(false);
+        }
+
+        function renderActivityStats(data) {
+            var statsContent = document.getElementById('statsContent');
+            var actividad = data.actividad;
+            var stats = data.estadisticas;
+
+            var html = '';
+
+            html += '<div class="info-box-detail" style="margin-bottom: 20px;">';
+            html += '<div class="info-item"><span class="info-label">Materia</span><span class="info-value">' + escapeHtml(actividad.materia) + '</span></div>';
+            html += '<div class="info-item"><span class="info-label">Grupo</span><span class="info-value">' + escapeHtml(actividad.grupo) + '</span></div>';
+            html += '<div class="info-item"><span class="info-label">Parcial</span><span class="info-value">' + escapeHtml(actividad.parcial) + '</span></div>';
+            html += '<div class="info-item"><span class="info-label">Fecha Límite</span><span class="info-value">' + actividad.fecha_entrega + '</span></div>';
+            html += '<div class="info-item"><span class="info-label">Estado</span><span class="info-value"><span style="color: ' + actividad.estado_color + ';">' + actividad.estado.toUpperCase() + '</span></span></div>';
+            html += '</div>';
+
+            html += '<div class="stats-grid" style="margin-bottom: 20px;">';
+            html += '<div class="stat-card"><div class="stat-number">' + stats.total_alumnos + '</div><div class="stat-label">Total Alumnos</div></div>';
+            html += '<div class="stat-card"><div class="stat-number" style="color: #10b981;">' + stats.entregas_completadas + '</div><div class="stat-label">Entregas Completadas</div></div>';
+            html += '<div class="stat-card"><div class="stat-number" style="color: #f59e0b;">' + stats.entregas_pendientes + '</div><div class="stat-label">Pendientes</div></div>';
+            html += '<div class="stat-card"><div class="stat-number" style="color: #3b82f6;">' + stats.porcentaje_entregas + '%</div><div class="stat-label">Porcentaje de Entrega</div></div>';
+            html += '</div>';
+
+            if (stats.promedio_calificacion) {
+                html += '<div class="stats-grid" style="margin-bottom: 20px;">';
+                html += '<div class="stat-card"><div class="stat-number" style="color: #8b5cf6;">' + stats.promedio_calificacion + '</div><div class="stat-label">Promedio</div></div>';
+                html += '<div class="stat-card"><div class="stat-number" style="color: #10b981;">' + (stats.calificacion_max || '-') + '</div><div class="stat-label">Calificación Máxima</div></div>';
+                html += '<div class="stat-card"><div class="stat-number" style="color: #ef4444;">' + (stats.calificacion_min || '-') + '</div><div class="stat-label">Calificación Mínima</div></div>';
+                html += '</div>';
+
+                html += '<div class="chart-box" style="margin-bottom: 20px;">';
+                html += '<h4>Distribución de Calificaciones</h4>';
+                html += '<canvas id="rangosChart" style="max-height: 200px;"></canvas>';
+                html += '</div>';
+            }
+
+            html += '<div class="report-section">';
+            html += '<h3>Lista de Alumnos</h3>';
+            html += '<div class="activities-table">';
+            html += '<table>';
+            html += '<thead><tr>';
+            html += '<th>Alumno</th>';
+            html += '<th>Matrícula</th>';
+            html += '<th>Estado</th>';
+            html += '<th>Calificación</th>';
+            html += '<th>Acciones</th>';
+            html += '</tr></thead>';
+            html += '<tbody>';
+
+            // En renderActivityStats, cuando se crea la tabla de alumnos
+            // En renderActivityStats, dentro del bucle for donde se crea la tabla de alumnos
+            for (var i = 0; i < data.alumnos.length; i++) {
+                var alumno = data.alumnos[i];
+                var estadoIcon = alumno.entregado ?
+                    '<span style="color: #10b981;">✓ Entregado</span>' :
+                    '<span style="color: #ef4444;">✗ Pendiente</span>';
+
+                var calificacionValue = alumno.calificacion !== null ? alumno.calificacion : '-';
+
+                var alumnoIdReal = alumno.alumno_id || alumno.id;
+
+                html += '<tr>';
+                html += '<td>' + escapeHtml(alumno.nombre) + '</td>';
+                html += '<td>' + escapeHtml(alumno.matricula) + '</td>';
+                html += '<td>' + estadoIcon + '</td>';
+                html += '<td>' + calificacionValue + '</td>';
+                html += '<td><button class="student-stats-btn" onclick="openAlumnoStats(' + alumnoIdReal + ', \'' + (alumno.nombre || '').replace(/'/g, "\\'") + '\')" title="Ver estadísticas del alumno">' +
+                    '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
+                    '<path d="M21 12v3a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4v-3"></path>' +
+                    '<path d="M12 2v8"></path>' +
+                    '<path d="m9 7 3-3 3 3"></path>' +
+                    '</svg>' +
+                    ' Estadísticas</button></td>';
+                html += '</tr>';
+            }
+
+            html += '</tbody>';
+            html += '</table>';
+            html += '</div></div>';
+
+            statsContent.innerHTML = html;
+
+            if (stats.promedio_calificacion) {
+                var ctx = document.getElementById('rangosChart');
+                if (ctx) {
+                    new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: ['Excelente (90-100)', 'Bueno (80-89)', 'Regular (70-79)', 'Insuficiente (60-69)', 'Reprobado (0-59)'],
+                            datasets: [{
+                                label: 'Número de Alumnos',
+                                data: [
+                                    stats.rangos_calificaciones.excelente,
+                                    stats.rangos_calificaciones.bueno,
+                                    stats.rangos_calificaciones.regular,
+                                    stats.rangos_calificaciones.insuficiente,
+                                    stats.rangos_calificaciones.reprobado
+                                ],
+                                backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#6b7280']
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true
+                        }
+                    });
+                }
+            }
+        }
+
+        function exportActivityReport() {
+            var statsContent = document.getElementById('statsContent').cloneNode(true);
+            var title = document.getElementById('statsTitle').textContent;
+
+            var exportHtml = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Reporte de Actividad - ${title}</title>
+        <style>
+            * { font-family: system-ui, -apple-system, sans-serif; }
+            body { padding: 40px; max-width: 1200px; margin: 0 auto; }
+            h1 { color: #1f2937; }
+            .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin: 20px 0; }
+            .stat-card { background: #ffffff; border-radius: 12px; padding: 20px; text-align: center; border: 1px solid #e6e9f0; }
+            .stat-number { font-size: 32px; font-weight: 700; }
+            .info-box-detail { background: #f1f5f9; border-radius: 10px; padding: 14px 16px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 18px; }
+            table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+            th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+            th { background: #f8fafc; }
+            @media print {
+                body { padding: 20px; }
+            }
+        </style>
+    </head>
+    <body>
+        <div style="text-align: center; margin-bottom: 30px;">
+            <h1>${title}</h1>
+            <p>Fecha de generación: ${new Date().toLocaleString()}</p>
+            <hr>
+        </div>
+        ${statsContent.innerHTML}
+        <div style="margin-top: 40px; text-align: center; font-size: 12px; color: #6b7280;">
+            Reporte generado automáticamente - Sistema de Gestión de Actividades
+        </div>
+    </body>
+    </html>
+    `;
+
+            var blob = new Blob([exportHtml], { type: 'text/html' });
+            var link = document.createElement('a');
+            var url = URL.createObjectURL(blob);
+            link.href = url;
+            link.download = `reporte_actividad_${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${new Date().toISOString().split('T')[0]}.html`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        // ===== FUNCIONES PARA ESTADÍSTICAS INDIVIDUALES DEL ALUMNO =====
+        // CORREGIDO: Función openAlumnoStats
+        function openAlumnoStats(alumnoId, alumnoNombre) {
+            console.log("Abriendo estadísticas para alumno ID:", alumnoId, "Nombre:", alumnoNombre);
+
+            if (!alumnoId || alumnoId === 'undefined') {
+                alert("Error: No se pudo identificar al alumno");
+                return;
+            }
+
+            if (document.getElementById('activityDetailModal').style.display === 'flex') {
+                closeActivityDetail();
+            }
+            if (document.getElementById('editActivityModal').style.display === 'flex') {
+                closeEditActivityForm();
+            }
+            if (document.getElementById('statsActivityModal').style.display === 'flex') {
+                closeStatsModal();
+            }
+            if (document.getElementById('reportModal').style.display === 'flex') {
+                closeReportModal();
+            }
+            if (document.getElementById('activityModal').style.display === 'flex') {
+                closeActivityForm();
+            }
+
+            toggleBodyScroll(true);
+            document.getElementById('statsAlumnoModal').style.display = 'flex';
+            document.getElementById('alumnoStatsTitle').textContent = 'Estadísticas: ' + alumnoNombre;
+            document.getElementById('alumnoStatsSubtitle').textContent = 'Rendimiento académico y actividades';
+
+            var statsContent = document.getElementById('alumnoStatsContent');
+            statsContent.innerHTML = '<div style="text-align: center; padding: 40px;"><div class="loading-spinner"></div><p>Cargando estadísticas del alumno...</p></div>';
+
+            fetch(`/alumno/estadisticas/${alumnoId}/`)
+                .then(function (response) {
+                    if (!response.ok) {
+                        throw new Error('Error al cargar estadísticas: ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(function (data) {
+                    renderAlumnoStats(data);
+                })
+                .catch(function (error) {
+                    console.error("Error:", error);
+                    statsContent.innerHTML = '<div class="alert-message" style="margin: 20px;">Error: ' + error.message + '</div>';
+                });
+        }
+
+        function closeAlumnoStatsModal() {
+            var modal = document.getElementById('statsAlumnoModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+            toggleBodyScroll(false);
+
+            for (var key in alumnoCharts) {
+                if (alumnoCharts[key]) {
+                    alumnoCharts[key].destroy();
+                }
+            }
+            alumnoCharts = {};
+        }
+
+        function renderAlumnoStats(data) {
+            var statsContent = document.getElementById('alumnoStatsContent');
+            var alumno = data.alumno;
+            var stats = data.estadisticas;
+
+            var html = '';
+
+            html += '<div class="info-box-detail" style="margin-bottom: 20px;">';
+            html += '<div class="info-item"><span class="info-label">Nombre</span><span class="info-value">' + escapeHtml(alumno.nombre) + '</span></div>';
+            html += '<div class="info-item"><span class="info-label">Matrícula</span><span class="info-value">' + escapeHtml(alumno.matricula) + '</span></div>';
+            html += '<div class="info-item"><span class="info-label">Grupo</span><span class="info-value">' + escapeHtml(alumno.grupo) + '</span></div>';
+            html += '</div>';
+
+            html += '<div class="stats-grid" style="margin-bottom: 20px;">';
+            html += '<div class="stat-card"><div class="stat-number">' + stats.total_actividades + '</div><div class="stat-label">Total Actividades</div></div>';
+            html += '<div class="stat-card"><div class="stat-number" style="color: #10b981;">' + stats.actividades_completadas + '</div><div class="stat-label">Completadas</div></div>';
+            html += '<div class="stat-card"><div class="stat-number" style="color: #f59e0b;">' + stats.actividades_pendientes + '</div><div class="stat-label">Pendientes</div></div>';
+            html += '<div class="stat-card"><div class="stat-number" style="color: #3b82f6;">' + stats.porcentaje_completado + '%</div><div class="stat-label">% Completado</div></div>';
+            html += '</div>';
+
+            if (stats.promedio_calificaciones) {
+                html += '<div class="stats-grid" style="margin-bottom: 20px;">';
+                html += '<div class="stat-card"><div class="stat-number" style="color: #8b5cf6;">' + stats.promedio_calificaciones + '</div><div class="stat-label">Promedio</div></div>';
+                html += '<div class="stat-card"><div class="stat-number" style="color: #10b981;">' + (stats.mejor_calificacion || '-') + '</div><div class="stat-label">Mejor Calificación</div></div>';
+                html += '<div class="stat-card"><div class="stat-number" style="color: #ef4444;">' + (stats.peor_calificacion || '-') + '</div><div class="stat-label">Peor Calificación</div></div>';
+                html += '</div>';
+            }
+
+            if (data.total_alertas > 0) {
+                html += '<div class="report-section">';
+                html += '<h3 style="color: #dc2626;">⚠️ Alertas Activas (' + data.total_alertas + ')</h3>';
+                html += '<div class="activities-table">';
+                html += '<table>';
+                html += '<thead><tr>';
+                html += '<th>Fecha</th>';
+                html += '<th>Materia</th>';
+                html += '<th>Parcial</th>';
+                html += '<th>Nivel</th>';
+                html += '<th>Motivo</th>';
+                html += '</tr></thead>';
+                html += '<tbody>';
+
+                for (var i = 0; i < data.alertas.length; i++) {
+                    var alerta = data.alertas[i];
+                    var nivelColor = alerta.nivel_riesgo === 'Alto' ? '#dc2626' : (alerta.nivel_riesgo === 'Medio' ? '#f59e0b' : '#10b981');
+                    html += '<tr>';
+                    html += '<td>' + alerta.fecha + '</td>';
+                    html += '<td>' + escapeHtml(alerta.materia) + '</td>';
+                    html += '<td>' + (alerta.parcial || '-') + '</td>';
+                    html += '<td><span style="color: ' + nivelColor + '; font-weight: bold;">' + alerta.nivel_riesgo + '</span></td>';
+                    html += '<td>' + escapeHtml(alerta.motivo.substring(0, 100)) + (alerta.motivo.length > 100 ? '...' : '') + '</td>';
+                    html += '</tr>';
                 }
 
-                const container = document.getElementById("activitiesContainer");
+                html += '</tbody>';
+                html += '</table>';
+                html += '</div></div>';
+            }
 
-                const card = document.createElement("div");
-                card.className = "activity-card";
-                card.onclick = function () {
-                    openActivityDetail(data.id);
-                };
+            if (data.materias.length > 0) {
+                html += '<div class="chart-box" style="margin-bottom: 20px;">';
+                html += '<h4>📊 Rendimiento por Materia</h4>';
+                html += '<canvas id="materiasAlumnoChart" style="max-height: 300px;"></canvas>';
+                html += '</div>';
+            }
 
-                card.innerHTML = `
-                    <div class="activity-header">
-                        <div class="activity-title">${data.titulo}</div>
-                        <div class="activity-status ${data.cerrado ? 'closed' : ''}">
-                            ${data.cerrado ? 'Cerrada' : 'Activa'}
-                        </div>
-                    </div>
+            html += '<div class="report-section">';
+            html += '<h3>📋 Detalle de Actividades</h3>';
+            html += '<div class="activities-table">';
+            html += '<table>';
+            html += '<thead><tr>';
+            html += '<th>Actividad</th>';
+            html += '<th>Materia</th>';
+            html += '<th>Parcial</th>';
+            html += '<th>Fecha Límite</th>';
+            html += '<th>Estado</th>';
+            html += '<th>Calificación</th>';
+            html += '</tr></thead>';
+            html += '<tbody>';
 
-                    <div class="activity-description">${data.descripcion}</div>
+            for (var i = 0; i < data.actividades.length; i++) {
+                var act = data.actividades[i];
+                var estadoClass = act.estado === 'activa' ? 'active' : (act.estado === 'cerrada' ? 'cerrada' : 'closed');
+                var estadoText = act.estado === 'activa' ? 'Activa' : (act.estado === 'cerrada' ? 'Cerrada' : 'Cerrada');
+                var entregaIcon = act.entregado ? '✓' : '✗';
+                var entregaColor = act.entregado ? '#10b981' : '#ef4444';
 
-                    <div class="activity-meta">
-                        <div class="activity-group">${data.grupo}</div>
-                        <div class="activity-date">${data.fecha}</div>
-                    </div>
-                `;
+                html += '<tr>';
+                html += '<td>' + escapeHtml(act.titulo) + '</td>';
+                html += '<td>' + escapeHtml(act.materia) + '</td>';
+                html += '<td>' + escapeHtml(act.parcial) + '</td>';
+                html += '<td>' + act.fecha_entrega + '</td>';
+                html += '<td><span class="status-badge ' + estadoClass + '">' + estadoText + '</span></td>';
+                html += '<td><span style="color: ' + entregaColor + ';">' + entregaIcon + '</span> ' + (act.calificacion || '-') + '</td>';
+                html += '</tr>';
+            }
 
-                container.prepend(card);
+            html += '</tbody>';
+            html += '</table>';
+            html += '</div></div>';
+
+            statsContent.innerHTML = html;
+
+            if (data.materias.length > 0) {
+                var ctx = document.getElementById('materiasAlumnoChart');
+                if (ctx) {
+                    var materiasLabels = data.materias.map(function (m) { return m.nombre; });
+                    var materiasPorcentajes = data.materias.map(function (m) { return m.porcentaje; });
+
+                    alumnoCharts.materias = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: materiasLabels,
+                            datasets: [{
+                                label: 'Porcentaje de Actividades Completadas',
+                                data: materiasPorcentajes,
+                                backgroundColor: '#3b82f6',
+                                borderRadius: 8
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    max: 100,
+                                    title: {
+                                        display: true,
+                                        text: 'Porcentaje (%)'
+                                    }
+                                }
+                            },
+                            plugins: {
+                                tooltip: {
+                                    callbacks: {
+                                        label: function (context) {
+                                            var materia = data.materias[context.dataIndex];
+                                            return [
+                                                'Completadas: ' + materia.completadas + '/' + materia.total_actividades,
+                                                'Porcentaje: ' + materia.porcentaje + '%',
+                                                'Promedio: ' + (materia.promedio || 'N/A')
+                                            ];
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+        }
+
+        function exportAlumnoReport() {
+            var statsContent = document.getElementById('alumnoStatsContent').cloneNode(true);
+            var title = document.getElementById('alumnoStatsTitle').textContent;
+
+            var exportHtml = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Reporte de Alumno - ${title}</title>
+        <style>
+            * { font-family: system-ui, -apple-system, sans-serif; }
+            body { padding: 40px; max-width: 1200px; margin: 0 auto; }
+            h1 { color: #1f2937; }
+            .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin: 20px 0; }
+            .stat-card { background: #ffffff; border-radius: 12px; padding: 20px; text-align: center; border: 1px solid #e6e9f0; }
+            .stat-number { font-size: 32px; font-weight: 700; }
+            .info-box-detail { background: #f1f5f9; border-radius: 10px; padding: 14px 16px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 18px; }
+            table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+            th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+            th { background: #f8fafc; }
+            .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; }
+            .status-badge.active { background: #dcfce7; color: #166534; }
+            .status-badge.vencida { background: #fee2e2; color: #991b1b; }
+            .status-badge.closed { background: #fef3c7; color: #92400e; }
+            @media print {
+                body { padding: 20px; }
+            }
+        </style>
+    </head>
+    <body>
+        <div style="text-align: center; margin-bottom: 30px;">
+            <h1>${title}</h1>
+            <p>Fecha de generación: ${new Date().toLocaleString()}</p>
+            <hr>
+        </div>
+        ${statsContent.innerHTML}
+        <div style="margin-top: 40px; text-align: center; font-size: 12px; color: #6b7280;">
+            Reporte generado automáticamente - Sistema de Gestión de Actividades
+        </div>
+    </body>
+    </html>
+    `;
+
+            var blob = new Blob([exportHtml], { type: 'text/html' });
+            var link = document.createElement('a');
+            var url = URL.createObjectURL(blob);
+            link.href = url;
+            link.download = `reporte_alumno_${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${new Date().toISOString().split('T')[0]}.html`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        // ===== FUNCIONES PARA REPORTE GENERAL =====
+        function openReportModal() {
+            if (document.getElementById('activityDetailModal').style.display === 'flex') {
+                closeActivityDetail();
+            }
+            if (document.getElementById('editActivityModal').style.display === 'flex') {
+                closeEditActivityForm();
+            }
+            if (document.getElementById('statsActivityModal').style.display === 'flex') {
+                closeStatsModal();
+            }
+            if (document.getElementById('statsAlumnoModal').style.display === 'flex') {
+                closeAlumnoStatsModal();
+            }
+            if (document.getElementById('activityModal').style.display === 'flex') {
                 closeActivityForm();
-            })
-            .catch(error => {
-                console.error("Error:", error);
-            });
+            }
+
+            toggleBodyScroll(true);
+            document.getElementById('reportModal').style.display = 'flex';
+            loadStatistics();
+        }
+
+        function closeReportModal() {
+            var modal = document.getElementById('reportModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+            toggleBodyScroll(false);
+            for (var key in charts) {
+                if (charts[key]) {
+                    charts[key].destroy();
+                }
+            }
+            charts = {};
+        }
+
+        function loadStatistics() {
+            var reportContent = document.getElementById('reportContent');
+            reportContent.innerHTML = '<div style="text-align: center; padding: 40px;"><div class="loading-spinner"></div><p>Cargando estadísticas...</p></div>';
+
+            fetch("/actividades/estadisticas/")
+                .then(function (response) {
+                    if (!response.ok) {
+                        throw new Error('Error al cargar estadísticas');
+                    }
+                    return response.json();
+                })
+                .then(function (data) {
+                    renderReport(data);
+                })
+                .catch(function (error) {
+                    reportContent.innerHTML = '<div class="alert-message" style="margin: 20px;">Error al cargar estadísticas: ' + error.message + '</div>';
+                });
+        }
+
+        function renderReport(data) {
+            var reportContent = document.getElementById('reportContent');
+
+            var html = '';
+
+            html += '<div class="report-section">';
+            html += '<h3>📊 Resumen General</h3>';
+            html += '<div class="stats-grid">';
+            html += '<div class="stat-card total"><div class="stat-number">' + data.total_actividades + '</div><div class="stat-label">Total Actividades</div></div>';
+            html += '<div class="stat-card promedio"><div class="stat-number">' + data.promedio_entregas + '%</div><div class="stat-label">Promedio de Entregas</div></div>';
+            html += '<div class="stat-card activas"><div class="stat-number">' + data.actividades_activas + '</div><div class="stat-label">Actividades Activas</div></div>';
+            html += '<div class="stat-card vencidas"><div class="stat-number">' + data.actividades_vencidas + '</div><div class="stat-label">Actividades Vencidas</div></div>';
+            html += '</div></div>';
+
+            html += '<div class="charts-container">';
+
+            html += '<div class="chart-box">';
+            html += '<h4>📊 Estado de Actividades</h4>';
+            html += '<canvas id="chartEstado"></canvas>';
+            html += '</div>';
+
+            html += '<div class="chart-box">';
+            html += '<h4>📚 Rendimiento por Materia</h4>';
+            html += '<canvas id="chartMaterias"></canvas>';
+            html += '</div>';
+
+            html += '<div class="chart-box">';
+            html += '<h4>⏰ Entregas a Tiempo vs Tarde</h4>';
+            html += '<canvas id="chartTiempo"></canvas>';
+            html += '</div>';
+
+            html += '</div>';
+
+            html += '<div class="report-section">';
+            html += '<h3>📋 Detalle de Actividades</h3>';
+            html += '<div class="activities-table">';
+            html += '<table>';
+            html += '<thead><tr>';
+            html += '<th>Actividad</th>';
+            html += '<th>Materia</th>';
+            html += '<th>Grupo</th>';
+            html += '<th>Entregas</th>';
+            html += '<th>Progreso</th>';
+            html += '<th>Estado</th>';
+            html += '<th>Fecha Límite</th>';
+            html += '</tr></thead>';
+            html += '<tbody>';
+
+            for (var i = 0; i < data.actividades_detalle.length; i++) {
+                var act = data.actividades_detalle[i];
+                var estadoClass = '';
+                var estadoText = '';
+                if (act.estado === 'activa') {
+                    estadoClass = 'active';
+                    estadoText = 'Activa';
+                } else if (act.estado === 'vencida') {
+                    estadoClass = 'vencida';
+                    estadoText = 'Vencida';
+                } else {
+                    estadoClass = 'closed';
+                    estadoText = 'Cerrada';
+                }
+
+                html += '<tr>';
+                html += '<td>' + escapeHtml(act.titulo) + '</td>';
+                html += '<td>' + escapeHtml(act.materia) + '</td>';
+                html += '<td>' + escapeHtml(act.grupo) + '</td>';
+                html += '<td>' + act.entregadas + '/' + act.total_alumnos + '</td>';
+                html += '<td><div style="display: flex; align-items: center;"><span>' + act.porcentaje + '%</span><div class="progress-bar-mini"><div class="progress-fill-mini" style="width: ' + act.porcentaje + '%;"></div></div></div></td>';
+                html += '<td><span class="status-badge ' + estadoClass + '">' + estadoText + '</span></td>';
+                html += '<td>' + act.fecha_entrega + '</td>';
+                html += '</tr>';
+            }
+
+            html += '</tbody>';
+            html += '</table>';
+            html += '</div></div>';
+
+            reportContent.innerHTML = html;
+
+            setTimeout(function () {
+                createCharts(data);
+            }, 100);
+        }
+
+        function createCharts(data) {
+            var ctxEstado = document.getElementById('chartEstado');
+            if (ctxEstado) {
+                if (charts.estado) charts.estado.destroy();
+                charts.estado = new Chart(ctxEstado, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Activas', 'Vencidas', 'Cerradas'],
+                        datasets: [{
+                            data: [data.charts.estado_activas, data.charts.estado_vencidas, data.charts.estado_cerradas],
+                            backgroundColor: ['#10b981', '#f59e0b', '#9ca3af'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: { color: '#374151' }
+                            }
+                        }
+                    }
+                });
+            }
+
+            var ctxMaterias = document.getElementById('chartMaterias');
+            if (ctxMaterias && data.charts.materias_labels && data.charts.materias_labels.length > 0) {
+                if (charts.materias) charts.materias.destroy();
+                charts.materias = new Chart(ctxMaterias, {
+                    type: 'doughnut',
+                    data: {
+                        labels: data.charts.materias_labels,
+                        datasets: [{
+                            data: data.charts.materias_data,
+                            backgroundColor: ['#059669', '#10b981', '#34d399', '#6ee7b7', '#1e40af', '#3b82f6', '#60a5fa', '#93c5fd', '#f59e0b', '#fbbf24'],
+                            borderWidth: 0,
+                            cutout: '60%'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: { position: 'right', labels: { boxWidth: 12, padding: 10, font: { size: 11 } } },
+                            tooltip: { callbacks: { label: function (context) { return context.label + ': ' + context.raw + '%'; } } }
+                        }
+                    }
+                });
+            }
+
+            var ctxTiempo = document.getElementById('chartTiempo');
+            if (ctxTiempo) {
+                if (charts.tiempo) charts.tiempo.destroy();
+                charts.tiempo = new Chart(ctxTiempo, {
+                    type: 'pie',
+                    data: {
+                        labels: ['Entregas a Tiempo', 'Entregas Tarde', 'No Entregadas'],
+                        datasets: [{
+                            data: [data.charts.tiempo_data.atiempo, data.charts.tiempo_data.tarde, data.charts.tiempo_data.no_entregadas],
+                            backgroundColor: ['#22c55e', '#f59e0b', '#ef4444'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: { position: 'bottom', labels: { color: '#374151' } },
+                            tooltip: { callbacks: { label: function (context) { var total = data.charts.tiempo_data.atiempo + data.charts.tiempo_data.tarde + data.charts.tiempo_data.no_entregadas; var percentage = ((context.raw / total) * 100).toFixed(1); return context.label + ': ' + context.raw + ' (' + percentage + '%)'; } } }
+                        }
+                    }
+                });
+            }
+        }
+
+        function exportReport() {
+            var reportContent = document.getElementById('reportContent').cloneNode(true);
+
+            var exportHtml = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Reporte de Actividades - ${new Date().toLocaleDateString()}</title>
+        <style>
+            * { font-family: system-ui, -apple-system, sans-serif; }
+            body { padding: 40px; max-width: 1200px; margin: 0 auto; }
+            h1 { color: #1f2937; }
+            .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin: 20px 0; }
+            .stat-card { background: #ffffff; border-radius: 12px; padding: 20px; text-align: center; border: 1px solid #e6e9f0; }
+            .stat-number { font-size: 32px; font-weight: 700; }
+            .stat-card.total .stat-number { color: #1e40af; }
+            .stat-card.promedio .stat-number { color: #d97706; }
+            .stat-card.activas .stat-number { color: #0891b2; }
+            .stat-card.vencidas .stat-number { color: #dc2626; }
+            .charts-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; margin: 20px 0; }
+            .chart-box { background: #ffffff; border-radius: 12px; padding: 20px; border: 1px solid #e6e9f0; }
+            table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+            th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+            th { background: #f8fafc; }
+            .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; }
+            .status-badge.active { background: #dcfce7; color: #166534; }
+            .status-badge.vencida { background: #fee2e2; color: #991b1b; }
+            .status-badge.closed { background: #fef3c7; color: #92400e; }
+            .progress-bar-mini { width: 100px; height: 6px; background: #e5e7eb; border-radius: 3px; display: inline-block; margin-left: 8px; }
+            .progress-fill-mini { height: 100%; background: #1e40af; border-radius: 3px; }
+            .report-section { margin-bottom: 30px; }
+            .report-section h3 { border-bottom: 2px solid #e5e7eb; padding-bottom: 10px; }
+            @media print { body { padding: 20px; } }
+        </style>
+    </head>
+    <body>
+        <div style="text-align: center; margin-bottom: 30px;">
+            <h1>Reporte de Actividades</h1>
+            <p>Fecha de generación: ${new Date().toLocaleString()}</p>
+            <hr>
+        </div>
+        ${reportContent.innerHTML}
+        <div style="margin-top: 40px; text-align: center; font-size: 12px; color: #6b7280;">
+            Reporte generado automáticamente - Sistema de Gestión de Actividades
+        </div>
+    </body>
+    </html>
+    `;
+
+            var blob = new Blob([exportHtml], { type: 'text/html' });
+            var link = document.createElement('a');
+            var url = URL.createObjectURL(blob);
+            link.href = url;
+            link.download = `reporte_actividades_${new Date().toISOString().split('T')[0]}.html`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            var div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ===== EVENT LISTENERS =====
+        document.addEventListener('DOMContentLoaded', function () {
+            var groupSelect = document.getElementById('activityGroup');
+
+            if (groupSelect) {
+                groupSelect.addEventListener('change', function () {
+                    var grupoId = parseInt(this.value);
+                    var materiaSelect = document.getElementById('activityMateria');
+
+                    materiaSelect.innerHTML = '<option value="">Selecciona una materia</option>';
+                    materiaSelect.disabled = true;
+
+                    if (!grupoId) return;
+
+                    var grupo = null;
+                    for (var i = 0; i < gruposData.length; i++) {
+                        if (gruposData[i].id === grupoId) {
+                            grupo = gruposData[i];
+                            break;
+                        }
+                    }
+
+                    if (grupo && grupo.materias && grupo.materias.length > 0) {
+                        var materiasConParcial = [];
+                        for (var j = 0; j < grupo.materias.length; j++) {
+                            if (grupo.materias[j].tiene_parcial === true) {
+                                materiasConParcial.push(grupo.materias[j]);
+                            }
+                        }
+
+                        if (materiasConParcial.length === 0) {
+                            materiaSelect.innerHTML = '<option value="">No hay materias con parciales</option>';
+                            materiaSelect.disabled = true;
+                            return;
+                        }
+
+                        for (var k = 0; k < materiasConParcial.length; k++) {
+                            var materia = materiasConParcial[k];
+                            var option = document.createElement('option');
+                            option.value = materia.relacion_id;
+                            var parcialNombre = 'Parcial';
+                            if (materia.parcial_info && materia.parcial_info.nombre) {
+                                parcialNombre = materia.parcial_info.nombre;
+                                if (materia.parcial_info.cerrado) {
+                                    parcialNombre += ' (Cerrado)';
+                                }
+                            }
+                            option.textContent = materia.nombre;
+                            materiaSelect.appendChild(option);
+                        }
+                        materiaSelect.disabled = false;
+                    } else {
+                        materiaSelect.innerHTML = '<option value="">No hay materias disponibles</option>';
+                        materiaSelect.disabled = true;
+                    }
+                });
+            }
+
+            var form = document.getElementById("activityForm");
+            if (form) {
+                form.addEventListener("submit", function (e) {
+                    e.preventDefault();
+                    var formData = new FormData(form);
+                    var csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                    var submitBtn = document.getElementById('submitBtn');
+
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Creando...';
+
+                    fetch("/actividades", {
+                        method: "POST",
+                        headers: { "X-CSRFToken": csrfToken },
+                        body: formData
+                    })
+                        .then(function (response) { return response.json(); })
+                        .then(function (data) {
+                            if (data.error) {
+                                alert("Error: " + data.error);
+                                submitBtn.disabled = false;
+                                submitBtn.textContent = 'Crear Actividad';
+                                return;
+                            }
+                            if (data.success) {
+                                alert("Actividad creada correctamente");
+                                location.reload();
+                            }
+                        })
+                        .catch(function (error) {
+                            alert("Error al crear: " + error.message);
+                            submitBtn.disabled = false;
+                            submitBtn.textContent = 'Crear Actividad';
+                        });
+                });
+            }
+
+            var editForm = document.getElementById("editActivityFormElement");
+            if (editForm) {
+                editForm.addEventListener("submit", function (e) {
+                    e.preventDefault();
+                    var actividadId = document.getElementById('editActivityId').value;
+                    var titulo = document.getElementById('editActivityName').value;
+                    var descripcion = document.getElementById('editActivityDesc').value;
+                    var fechaEntrega = document.getElementById('editActivityDueDate').value;
+                    var csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+                    if (!titulo || !descripcion || !fechaEntrega) {
+                        alert("Completa todos los campos");
+                        return;
+                    }
+
+                    fetch(`/actividades/editar/${actividadId}/`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": csrfToken
+                        },
+                        body: JSON.stringify({
+                            titulo: titulo,
+                            descripcion: descripcion,
+                            fecha_entrega: fechaEntrega
+                        })
+                    })
+                        .then(function (response) { return response.json(); })
+                        .then(function (data) {
+                            if (data.success) {
+                                alert("Actividad actualizada correctamente");
+                                closeEditActivityForm();
+                                location.reload();
+                            } else {
+                                alert("Error: " + data.error);
+                            }
+                        })
+                        .catch(function (error) {
+                            alert("Error al guardar: " + error.message);
+                        });
+                });
+            }
+
+            var modals = ['activityModal', 'editActivityModal', 'activityDetailModal', 'reportModal', 'statsActivityModal', 'statsAlumnoModal'];
+            for (var i = 0; i < modals.length; i++) {
+                var modal = document.getElementById(modals[i]);
+                if (modal) {
+                    modal.addEventListener('click', function (event) {
+                        if (event.target === this) {
+                            if (this.id === 'activityModal') closeActivityForm();
+                            if (this.id === 'editActivityModal') closeEditActivityForm();
+                            if (this.id === 'activityDetailModal') closeActivityDetail();
+                            if (this.id === 'reportModal') closeReportModal();
+                            if (this.id === 'statsActivityModal') closeStatsModal();
+                            if (this.id === 'statsAlumnoModal') closeAlumnoStatsModal();
+                        }
+                    });
+                }
+            }
         });
+    </script>
 
-    });
-</script>
-
-
-
-{% endblock %}
+    {% endblock %}
