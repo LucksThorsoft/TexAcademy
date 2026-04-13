@@ -1,5 +1,545 @@
 {% extends 'sidebar.html' %}
 
 {% block content %}
-    <h1>Aqui va el Dashboard</h1>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Educativo</title>
+    <script src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/js/all.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+            margin: 0;
+            display: flex;
+        }
+
+        .dashboard-container {
+            width: 100%;
+            max-width: 1400px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* Summary Cards */
+        .summary-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
+        .card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            position: relative;
+        }
+
+        .card-title {
+            font-size: 13px;
+            font-weight: 500;
+            color: #64748b;
+            margin-bottom: 12px;
+        }
+
+        .card-icon {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: #94a3b8;
+            font-size: 14px;
+        }
+
+        .card-value {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .card-value.danger {
+            color: #dc2626;
+        }
+
+        .card-subtitle {
+            font-size: 11px;
+            color: #94a3b8;
+        }
+
+        /* Main Content Grid */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .section-subtitle {
+            font-size: 13px;
+            color: #64748b;
+            margin: 4px 0 0 0;
+        }
+
+        .link-all {
+            font-size: 13px;
+            color: #1e293b;
+            text-decoration: none;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .link-all:hover {
+            color: #0f172a;
+        }
+
+        /* Groups Section */
+        .group-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            border: 1px solid #f1f5f9;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            background-color: #fcfdfe;
+            transition: all 0.2s ease;
+        }
+
+        .group-item:hover {
+            background-color: #f8fafc;
+            border-color: #cbd5e1;
+        }
+
+        .group-info h4 {
+            margin: 0;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .group-info p {
+            margin: 4px 0 0 0;
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .group-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .risk-badge {
+        background-color: #fee2e2;
+        color: #b91c1c;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        border: 1px solid #fecaca;
+        }
+
+        .estable-badge {
+        background-color: #e8f5e9;
+        color: #2e7d32;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        border: 1px solid #c8e6c9;
+        }
+
+        .risk-badge.success {
+        background-color: #10b981;
+        color: white;
+        }
+
+        .arrow-icon {
+            color: #94a3b8;
+            font-size: 14px;
+            transition: transform 0.2s ease;
+        }
+
+        .group-actions a:hover .arrow-icon {
+            transform: translateX(4px);
+            color: #1e293b;
+        }
+
+        /* Activities Section */
+        .activity-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .activity-card:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .activity-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .activity-title {
+            font-size: 13px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .activity-group {
+            font-size: 11px;
+            color: #64748b;
+            margin-top: 2px;
+        }
+
+        .days-badge {
+            background-color: #FFEBEE;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            height: fit-content;
+        }
+
+        .days-badge.warning {
+            background-color: #f59e0b;
+        }
+
+        .days-badge.success {
+            background-color: #10b981;
+        }
+
+        .progress-container {
+            margin-top: 12px;
+        }
+
+        .progress-bar-bg {
+            height: 6px;
+            background-color: #f1f5f9;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background-color: #1e3a8a;
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        .progress-stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            color: #94a3b8;
+        }
+
+        /* Alerts Section */
+        .alerts-container {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 24px;
+        }
+
+        .alert-item {
+            display: flex;
+            align-items: center;
+            padding: 16px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .alert-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .alert-icon-box {
+            width: 36px;
+            height: 36px;
+            background-color: #fef2f2;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #dc2626;
+            margin-right: 16px;
+            border: 1px solid #fee2e2;
+        }
+
+        .alert-content {
+            flex-grow: 1;
+        }
+
+        .alert-name {
+            font-size: 14px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .alert-desc {
+            font-size: 12px;
+            color: #64748b;
+            margin: 4px 0;
+        }
+
+        .alert-time {
+            font-size: 11px;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .group-tag {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            color: #64748b;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #94a3b8;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .empty-state p {
+            margin: 0;
+            font-size: 14px;
+        }
+
+        @media (max-width: 1024px) {
+            .summary-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .summary-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Top Summary Cards -->
+        <div class="summary-row">
+            <div class="card">
+                <div class="card-title">Total Grupos</div>
+                <div class="card-icon"><i class="fa-solid fa-users-rectangle"></i></div>
+                <div class="card-value">{{ total_grupos|default:0 }}</div>
+                <div class="card-subtitle">Grupos activos asignados</div>
+            </div>
+            <div class="card">
+                <div class="card-title">Total Alumnos</div>
+                <div class="card-icon"><i class="fa-solid fa-user-group"></i></div>
+                <div class="card-value">{{ total_alumnos|default:0 }}</div>
+                <div class="card-subtitle">Estudiantes registrados</div>
+            </div>
+            <div class="card">
+                <div class="card-title">Alumnos en Riesgo</div>
+                <div class="card-icon"><i class="fa-solid fa-triangle-exclamation" style="color: #dc2626;"></i></div>
+                <div class="card-value danger">{{ alumnos_riesgo|default:0 }}</div>
+                <div class="card-subtitle">Requieren atención urgente</div>
+            </div>
+            <div class="card">
+                <div class="card-title">Total de Actividades</div>
+                <div class="card-icon"><i class="fa-solid fa-clipboard-list"></i></div>
+                <div class="card-value">{{ actividades_pendientes|default:0 }}</div>
+                <div class="card-subtitle">Con fecha límite próxima</div>
+            </div>
+        </div>
+
+        <!-- Middle Section -->
+        <div class="main-grid">
+            <!-- Grupos Asignados -->
+            <div class="card">
+                <div class="section-header">
+                    <div>
+                        <h3 class="section-title">Grupos Asignados</h3>
+                        <p class="section-subtitle">Resumen de tus grupos y su estado</p>
+                    </div>
+                    <a href="/grupos-alumnos" class="link-all">Ver todos <i class="fa-solid fa-arrow-right"></i></a>
+                </div>
+
+                {% if grupos %}
+{% for grupo in grupos %}
+    <div class="group-item">
+        <div class="group-info">
+            <h4>{{ grupo.nombre_completo }}</h4>
+            <p>
+                {{ grupo.num_alumnos }} alumnos | 
+                Materias: {{ grupo.materias|join:", " }}
+            </p>
+        </div>
+        <div class="group-actions">
+            {% if grupo.alumnos_riesgo > 0 %}
+                <div class="risk-badge">
+                    <i class="fa-solid fa-triangle-exclamation"></i> {{ grupo.alumnos_riesgo }} en riesgo
+                </div>
+            {% else %}
+                <div class="estable-badge">
+                    <i class="fa-solid fa-check-circle"></i> Grupo estable
+                </div>
+            {% endif %}
+            <a href="/grupos-alumnos?grupo={{ grupo.id }}" style="text-decoration: none; color: inherit;">
+                <i class="fa-solid fa-arrow-right arrow-icon"></i>
+            </a>
+        </div>
+    </div>
+{% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fa-solid fa-users-slash"></i>
+                        <p>No tienes grupos asignados</p>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <!-- Actividades por Revisar -->
+            <div class="card">
+                <div class="section-header">
+                    <div>
+                        <h3 class="section-title">Actividades por Revisar</h3>
+                        <p class="section-subtitle">Entregas recientes de actividades</p>
+                    </div>
+                    <a href="/actividades" class="link-all">Ver todas <i class="fa-solid fa-arrow-right"></i></a>
+                </div>
+
+                {% if actividades %}
+                    {% for actividad in actividades %}
+                        <div class="activity-card">
+                            <div class="activity-header">
+                                <div>
+                                    <h4 class="activity-title">{{ actividad.titulo }}</h4>
+                                    <div class="activity-group">{{ actividad.grupo_clave }}</div>
+                                </div>
+                                {% if actividad.dias_restantes < 0 %}
+                                    <div class="days-badge">Vencida</div>
+                                {% elif actividad.dias_restantes <= 3 %}
+                                    <div class="days-badge warning">{{ actividad.dias_restantes }}d</div>
+                                {% else %}
+                                    <div class="days-badge success">{{ actividad.dias_restantes }}d</div>
+                                {% endif %}
+                            </div>
+                            <div class="progress-container">
+                                <div class="progress-bar-bg">
+                                    <div class="progress-bar-fill" style="width: {{ actividad.porcentaje_entregas }}%;"></div>
+                                </div>
+                                <div class="progress-stats">
+                                    <span>{{ actividad.entregadas }}/{{ actividad.total_alumnos }} entregadas</span>
+                                    <span>{{ actividad.porcentaje_entregas }}%</span>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fa-regular fa-file-lines"></i>
+                        <p>No hay actividades pendientes</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Bottom Section: Alertas Recientes -->
+
+<!-- Bottom Section: Alertas Recientes -->
+<!-- Bottom Section: Alertas Recientes -->
+<div class="alerts-container">
+    <div class="section-header">
+        <div>
+            <h3 class="section-title">Alertas Recientes</h3>
+            <p class="section-subtitle">Alumnos en riesgo que requieren atención inmediata</p>
+        </div>
+        <a href="/alertas" class="link-all">Ver todas <i class="fa-solid fa-arrow-right"></i></a>
+    </div>
+
+    {% if alertas %}
+        {% for alerta in alertas %}
+            <div class="alert-item">
+                <div class="alert-icon-box" style="background-color: #fee2e2; color: #dc2626;">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <div class="alert-content">
+                    <h4 class="alert-name">
+                        <a href="/alumno/{{ alerta.alumno_id }}/perfil/" style="text-decoration: none; color: #1e293b;">
+                            {{ alerta.alumno_nombre }}
+                        </a>
+                        <span style="font-size: 12px; color: #64748b; font-weight: normal;"> ({{ alerta.alumno_matricula }})</span>
+                    </h4>
+                    <p class="alert-desc">
+                        <strong>Motivo:</strong> {{ alerta.descripcion|truncatechars:100 }}
+                    </p>
+                    <div class="alert-time">
+                        <i class="fa-regular fa-clock"></i> {{ alerta.tiempo }}
+                        {% if alerta.materia %}
+                            <span style="margin-left: 12px;"><i class="fa-solid fa-book"></i> {{ alerta.materia }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="group-tag">
+                    <i class="fa-solid fa-users"></i> {{ alerta.grupo_clave }}
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state" style="padding: 20px;">
+            <i class="fa-regular fa-bell"></i>
+            <p>No hay alertas de alumnos en riesgo</p>
+        </div>
+    {% endif %}
+</div>
+
+    </div>
+    
+</body>
+</html>
 {% endblock %}
