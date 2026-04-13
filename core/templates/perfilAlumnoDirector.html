@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ alumno.nombre }} — Vista Director</title>
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font/css/materialdesignicons.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fb;
+            min-height: 100vh;
+            padding: 30px;
+        }
+
+        /* ── HEADER ─────────────────────────────────────────── */
+        .perfil-header {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            border: 2px solid #e4e4e4;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .perfil-avatar {
+            width: 120px; height: 120px;
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 44px; font-weight: 700;
+            box-shadow: 0 4px 12px rgba(37,99,235,0.3);
+            flex-shrink: 0;
+        }
+
+        .perfil-info { flex: 1; }
+
+        .perfil-nombre {
+            font-size: 30px; font-weight: 700; color: #111827; margin-bottom: 6px;
+        }
+
+        .director-badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            background: #eff6ff; color: #1d4ed8;
+            padding: 4px 12px; border-radius: 20px;
+            font-size: 12px; font-weight: 600;
+            border: 1px solid #bfdbfe;
+            margin-bottom: 12px;
+        }
+
+        .perfil-detalles {
+            display: flex; flex-wrap: wrap; gap: 12px 24px; margin-top: 8px;
+        }
+
+        .detalle-item {
+            display: flex; align-items: center; gap: 7px;
+            color: #555; font-size: 14px;
+        }
+
+        .detalle-item .mdi { color: #2563eb; font-size: 17px; }
+        .detalle-item strong { color: #222; margin-right: 3px; }
+
+        .perfil-badge {
+            background: #e8f5e9; color: #2e7d32;
+            padding: 4px 12px; border-radius: 20px;
+            font-size: 12px; font-weight: 500;
+            display: inline-flex; align-items: center; gap: 4px;
+        }
+        .perfil-badge-inactivo { background: #ffebee; color: #c62828; }
+
+        /* ── KPI CARDS ──────────────────────────────────────── */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 16px;
+            margin-bottom: 25px;
+        }
+
+        .kpi-card {
+            background: white;
+            border-radius: 14px;
+            padding: 20px 16px;
+            border: 2px solid #e4e4e4;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .kpi-card:hover {
+            border-color: #2563eb;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+        }
+
+        .kpi-icon {
+            font-size: 28px; margin-bottom: 8px; display: block;
+        }
+
+        .kpi-value {
+            font-size: 28px; font-weight: 700; color: #111827; line-height: 1;
+            margin-bottom: 6px;
+        }
+
+        .kpi-label {
+            font-size: 12px; color: #6b7280; font-weight: 500;
+        }
+
+        .kpi-good   { color: #16a34a; }
+        .kpi-warn   { color: #d97706; }
+        .kpi-danger { color: #dc2626; }
+        .kpi-blue   { color: #2563eb; }
+        .kpi-purple { color: #7c3aed; }
+
+        /* ── STATUS BADGE ───────────────────────────────────── */
+        .status-badge {
+            display: inline-block; padding: 6px 16px;
+            border-radius: 30px; font-size: 13px; font-weight: 600;
+        }
+        .status-good    { background: #e8f5e9; color: #2e7d32; }
+        .status-warning { background: #fff3e0; color: #e65100; }
+        .status-danger  { background: #ffebee; color: #c62828; }
+        .status-info    { background: #e3f2fd; color: #1565c0; }
+
+        /* ── SECCIÓN GENÉRICA ───────────────────────────────── */
+        .section-card {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 2px solid #e4e4e4;
+        }
+
+        .section-title {
+            display: flex; justify-content: space-between;
+            align-items: center; flex-wrap: wrap; gap: 12px;
+            font-size: 18px; font-weight: 700; color: #111827;
+            margin-bottom: 20px; padding-bottom: 14px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .section-title-left {
+            display: flex; align-items: center; gap: 9px;
+        }
+
+        .section-title-left .mdi { color: #2563eb; font-size: 22px; }
+
+        /* ── TABLA DE CALIFICACIONES ────────────────────────── */
+        .tabla-wrapper {
+            overflow-x: auto;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+        }
+
+        .calif-table {
+            width: 100%; border-collapse: collapse; min-width: 600px;
+        }
+
+        .calif-table th, .calif-table td {
+            padding: 12px 16px;
+            border: 1px solid #e5e7eb;
+            text-align: center; vertical-align: middle;
+        }
+
+        .calif-table thead tr:first-child th {
+            background: #1e40af; color: white;
+            font-size: 13px; font-weight: 600;
+        }
+
+        .calif-table thead tr:nth-child(2) th {
+            background: #eff6ff; color: #1e40af;
+            font-size: 12px; font-weight: 500;
+        }
+
+        .calif-table td:first-child {
+            text-align: left; background: #f8f9fa;
+            font-weight: 600; color: #111827;
+        }
+
+        .calif-table td:first-child small {
+            display: block; font-weight: 400;
+            color: #6b7280; font-size: 12px; margin-top: 2px;
+        }
+
+        .promedio-cell {
+            font-weight: 700; font-size: 16px;
+            background: #f0fdf4 !important;
+            border-left: 2px solid #86efac !important;
+        }
+
+        .promedio-alto  { color: #16a34a; }
+        .promedio-medio { color: #d97706; }
+        .promedio-bajo  { color: #dc2626; }
+
+        /* ── ASISTENCIA POR MATERIA ─────────────────────────── */
+        .asistencia-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 14px; margin-bottom: 20px;
+        }
+
+        .asistencia-materia-card {
+            background: #f8f9fb;
+            border-radius: 12px; padding: 16px;
+            border: 2px solid #e4e4e4;
+            transition: all 0.2s;
+        }
+
+        .asistencia-materia-card:hover {
+            border-color: #2563eb;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.07);
+        }
+
+        .asistencia-materia-nombre {
+            font-weight: 600; color: #111827;
+            font-size: 14px; margin-bottom: 4px;
+        }
+
+        .asistencia-materia-docente {
+            font-size: 12px; color: #6b7280; margin-bottom: 12px;
+        }
+
+        .asistencia-bar-bg {
+            background: #e5e7eb; border-radius: 99px;
+            height: 8px; margin-bottom: 8px; overflow: hidden;
+        }
+
+        .asistencia-bar-fill {
+            height: 100%; border-radius: 99px;
+            transition: width 0.5s ease;
+        }
+
+        .bar-good   { background: #16a34a; }
+        .bar-warn   { background: #d97706; }
+        .bar-danger { background: #dc2626; }
+
+        .asistencia-materia-stats {
+            display: flex; gap: 10px;
+            font-size: 12px; color: #6b7280;
+        }
+
+        .asistencia-materia-stats span { display: flex; align-items: center; gap: 3px; }
+
+        /* ── TABLA ASISTENCIA DETALLE ───────────────────────── */
+        .asistencia-table {
+            width: 100%; border-collapse: collapse; min-width: 480px;
+        }
+
+        .asistencia-table th {
+            padding: 11px 14px; background: #f8f9fa;
+            color: #6b7280; font-size: 12px; font-weight: 600;
+            text-transform: uppercase; letter-spacing: .04em;
+            border-bottom: 2px solid #e5e7eb; text-align: center;
+        }
+
+        .asistencia-table td {
+            padding: 11px 14px; border-bottom: 1px solid #f3f4f6;
+            font-size: 14px; text-align: center; vertical-align: middle;
+        }
+
+        .asistencia-table tr:last-child td { border-bottom: none; }
+
+        .estado-badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 4px 10px; border-radius: 20px;
+            font-size: 12px; font-weight: 500;
+        }
+
+        .estado-asistio  { background: #e8f5e9; color: #2e7d32; }
+        .estado-retardo  { background: #fff3e0; color: #e65100; }
+        .estado-falta    { background: #ffebee; color: #c62828; }
+
+        /* ── SWITCH ─────────────────────────────────────────── */
+        .view-switch {
+            display: inline-flex; background: #f5f5f5;
+            border-radius: 10px; padding: 4px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .view-option {
+            padding: 7px 22px; border-radius: 8px;
+            font-weight: 500; font-size: 13px; cursor: pointer;
+            color: #666; border: none; background: transparent;
+            transition: all 0.2s; white-space: nowrap;
+        }
+
+        .view-option.active { background: white; color: #1e40af; font-weight: 600; }
+
+        /* ── ALERTAS ────────────────────────────────────────── */
+        .alerta-card {
+            display: flex; align-items: flex-start; gap: 14px;
+            padding: 16px; border-radius: 10px;
+            margin-bottom: 10px; border-left: 4px solid;
+            transition: box-shadow 0.2s;
+        }
+
+        .alerta-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .alerta-card.alto  { background: #fff5f5; border-color: #ef4444; }
+        .alerta-card.medio { background: #fffbeb; border-color: #f59e0b; }
+        .alerta-card.bajo  { background: #eff6ff; border-color: #3b82f6; }
+
+        .alerta-icono { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
+        .alerta-card.alto  .alerta-icono { color: #ef4444; }
+        .alerta-card.medio .alerta-icono { color: #f59e0b; }
+        .alerta-card.bajo  .alerta-icono { color: #3b82f6; }
+
+        .alerta-body { flex: 1; min-width: 0; }
+
+        .alerta-materia-tag {
+            display: inline-flex; align-items: center; gap: 4px;
+            background: rgba(255,255,255,0.6); padding: 2px 8px;
+            border-radius: 12px; font-size: 11px; color: #555;
+            margin-bottom: 6px;
+        }
+
+        .alerta-motivos { list-style: none; padding: 0; margin: 0; }
+        .alerta-motivos li {
+            font-size: 13px; color: #444; padding: 3px 0 3px 14px;
+            position: relative; line-height: 1.5;
+        }
+        .alerta-motivos li::before { content: "•"; position: absolute; left: 0; color: #999; }
+
+        .alerta-footer {
+            display: flex; align-items: center;
+            justify-content: space-between; margin-top: 8px;
+            flex-wrap: wrap; gap: 6px;
+        }
+
+        .alerta-fecha { font-size: 11px; color: #aaa; }
+
+        .alertas-empty {
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            padding: 40px; color: #9ca3af; text-align: center; gap: 10px;
+            background: #f8f9fa; border-radius: 12px;
+            border: 2px dashed #e4e4e4;
+        }
+
+        .alertas-empty .mdi { font-size: 48px; color: #bbf7d0; }
+        .alertas-empty h4 { font-size: 15px; color: #374151; margin: 0; }
+
+        .badge-riesgo {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 4px 12px; border-radius: 20px;
+            font-size: 12px; font-weight: 600;
+        }
+
+        .badge-alto  { background: #fee2e2; color: #b91c1c; }
+        .badge-medio { background: #fef3c7; color: #92400e; }
+        .badge-bajo  { background: #dbeafe; color: #1e40af; }
+
+        /* ── STATS MINI BAR ─────────────────────────────────── */
+        .stats-bar {
+            display: grid; grid-template-columns: repeat(5,1fr);
+            gap: 12px; padding: 16px; background: #f8f9fb;
+            border-radius: 12px; margin-bottom: 18px;
+        }
+
+        .stats-bar-item { text-align: center; }
+        .stats-bar-label { font-size: 11px; color: #6b7280; text-transform: uppercase; letter-spacing:.04em; display: block; margin-bottom: 4px; }
+        .stats-bar-value { font-size: 20px; font-weight: 700; color: #111827; }
+
+        /* ── TABLA INFO MSG ─────────────────────────────────── */
+        .info-msg {
+            display: flex; align-items: center; gap: 8px;
+            padding: 8px 12px; background: #eff6ff;
+            border-left: 4px solid #2563eb; border-radius: 6px;
+            font-size: 13px; color: #1e40af; margin-bottom: 14px;
+        }
+
+        /* ── ACTION BUTTONS ─────────────────────────────────── */
+        .action-buttons {
+            display: flex; justify-content: flex-end;
+            gap: 14px; margin-top: 10px;
+        }
+
+        .btn {
+            padding: 11px 28px; border-radius: 10px;
+            font-weight: 600; font-size: 14px; cursor: pointer;
+            transition: all 0.2s; border: 2px solid transparent;
+            display: inline-flex; align-items: center; gap: 8px;
+            text-decoration: none;
+        }
+
+        .btn-primary { background: #1e40af; color: white; border-color: #1e40af; }
+        .btn-primary:hover { background: #1d4ed8; box-shadow: 0 4px 12px rgba(30,64,175,0.3); }
+        .btn-secondary { background: white; color: #374151; border-color: #e5e7eb; }
+        .btn-secondary:hover { border-color: #2563eb; color: #2563eb; }
+
+        .mdi-spin { animation: spin 1s infinite linear; }
+        @keyframes spin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
+
+        @media (max-width: 768px) {
+            body { padding: 15px; }
+            .kpi-grid { grid-template-columns: repeat(2,1fr); }
+            .perfil-header { flex-direction: column; text-align: center; }
+            .asistencia-grid { grid-template-columns: 1fr; }
+            .stats-bar { grid-template-columns: repeat(2,1fr); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ═══ HEADER ═══════════════════════════════════════════ -->
+    <div class="perfil-header">
+        <div class="perfil-avatar">{{ alumno.nombre|slice:":2"|upper }}</div>
+        <div class="perfil-info">
+            <div class="director-badge">
+                <span class="mdi mdi-shield-account"></span> Vista Dirección
+            </div>
+            <div class="perfil-nombre">{{ alumno.nombre }}</div>
+            <div class="perfil-detalles">
+                <div class="detalle-item">
+                    <span class="mdi mdi-card-account-details"></span>
+                    <span><strong>Matrícula:</strong> {{ alumno.matricula }}</span>
+                </div>
+                <div class="detalle-item">
+                    <span class="mdi mdi-account-group"></span>
+                    <span><strong>Grupo:</strong> {{ alumno.grupo.clave }}</span>
+                </div>
+                <div class="detalle-item">
+                    <span class="mdi mdi-calendar-month"></span>
+                    <span><strong>Cuatrimestre:</strong> {{ alumno.grupo.cuatrimestre.nombre }}</span>
+                </div>
+                <div class="detalle-item">
+                    <span class="mdi mdi-book-multiple"></span>
+                    <span><strong>Materias:</strong> {{ total_materias }}</span>
+                </div>
+                <div class="perfil-badge {% if not cuatrimestre_valido %}perfil-badge-inactivo{% endif %}">
+                    <span class="mdi mdi-school"></span>
+                    {% if cuatrimestre_valido %}Activo{% else %}Inactivo{% endif %}
+                </div>
+            </div>
+        </div>
+        <!-- Estado rápido -->
+        <div style="flex-shrink:0;text-align:center;">
+            <div style="font-size:12px;color:#6b7280;margin-bottom:6px;font-weight:500;">ESTADO GENERAL</div>
+            <span class="status-badge {{ estado_clase }}" style="font-size:14px;padding:8px 20px;">
+                {{ estado_alumno }}
+            </span>
+        </div>
+    </div>
+
+    <!-- ═══ KPIs ══════════════════════════════════════════════ -->
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <span class="kpi-icon mdi mdi-star kpi-blue"></span>
+            <div class="kpi-value kpi-blue">
+                {% if promedio_general %}{{ promedio_general }}{% else %}--{% endif %}
+            </div>
+            <div class="kpi-label">Promedio General</div>
+        </div>
+        <div class="kpi-card">
+            <span class="kpi-icon mdi mdi-book-multiple kpi-purple"></span>
+            <div class="kpi-value kpi-purple">{{ total_materias }}</div>
+            <div class="kpi-label">Materias Cursando</div>
+        </div>
+        <div class="kpi-card">
+            <span class="kpi-icon mdi mdi-check-circle kpi-good"></span>
+            <div class="kpi-value {% if stats_generales.porcentaje >= 80 %}kpi-good{% elif stats_generales.porcentaje >= 60 %}kpi-warn{% else %}kpi-danger{% endif %}">
+                {{ stats_generales.porcentaje }}%
+            </div>
+            <div class="kpi-label">Asistencia General</div>
+        </div>
+        <div class="kpi-card">
+            <span class="kpi-icon mdi mdi-close-circle kpi-danger"></span>
+            <div class="kpi-value kpi-danger">{{ stats_generales.faltas }}</div>
+            <div class="kpi-label">Faltas Totales</div>
+        </div>
+        <div class="kpi-card">
+            <span class="kpi-icon mdi mdi-alert-circle {% if total_alertas > 0 %}kpi-warn{% else %}kpi-good{% endif %}"></span>
+            <div class="kpi-value {% if total_alertas > 0 %}kpi-warn{% else %}kpi-good{% endif %}">
+                {{ total_alertas }}
+            </div>
+            <div class="kpi-label">Alertas Activas</div>
+        </div>
+    </div>
+
+    <!-- ═══ CALIFICACIONES POR MATERIA ════════════════════════ -->
+    <div class="section-card">
+        <div class="section-title">
+            <div class="section-title-left">
+                <span class="mdi mdi-star"></span>
+                Calificaciones por Materia
+            </div>
+            {% if promedio_general %}
+            <span style="font-size:14px;color:#6b7280;font-weight:400;">
+                Promedio general:
+                <strong style="color:#1e40af;font-size:16px;">{{ promedio_general }}</strong>
+            </span>
+            {% endif %}
+        </div>
+
+        <div class="tabla-wrapper">
+            <table class="calif-table">
+                <thead>
+                    <tr>
+                        <th style="text-align:left;">Materia / Docente</th>
+                        {% for materia in materias_data %}
+                            {% for parcial in materia.parciales %}
+                                <th>U{{ parcial.numero_parcial }}</th>
+                            {% endfor %}
+                            <th>Promedio</th>
+                            {% if not forloop.last %}<th style="background:#e2e8f0;width:6px;padding:0;border:none;"></th>{% endif %}
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <th style="text-align:left;background:#eff6ff;color:#1e40af;">Parcial / %</th>
+                        {% for materia in materias_data %}
+                            {% for parcial in materia.parciales %}
+                                <th>{{ parcial.nombre|truncatechars:10 }} {{ parcial.porcentaje }}%</th>
+                            {% endfor %}
+                            <th>Final</th>
+                            {% if not forloop.last %}<th style="background:#e2e8f0;width:6px;padding:0;border:none;"></th>{% endif %}
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for materia in materias_data %}
+                    <tr>
+                        <td>
+                            {{ materia.materia_nombre }}
+                            <small>{{ materia.docente_nombre }}</small>
+                        </td>
+                        {% for cal in materia.calificaciones %}
+                        <td>
+                            {% if cal.calificacion is not None %}
+                                {{ cal.calificacion|floatformat:0 }}
+                            {% else %}
+                                <span style="color:#d1d5db;">—</span>
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                        <td class="promedio-cell {% if materia.promedio %}{% if materia.promedio >= 7 %}promedio-alto{% elif materia.promedio >= 6 %}promedio-medio{% else %}promedio-bajo{% endif %}{% endif %}">
+                            {% if materia.promedio %}{{ materia.promedio|floatformat:1 }}{% else %}—{% endif %}
+                        </td>
+                        {% if not forloop.last %}<td style="background:#e2e8f0;padding:0;border:none;"></td>{% endif %}
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="10" style="text-align:center;padding:40px;color:#9ca3af;">
+                            No hay calificaciones registradas
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ═══ ALERTAS ══════════════════════════════════════════ -->
+    <div class="section-card">
+        <div class="section-title">
+            <div class="section-title-left">
+                <span class="mdi mdi-alert-circle"></span>
+                Alertas Activas
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                {% if alertas_alto > 0 %}
+                    <span class="badge-riesgo badge-alto">
+                        <span class="mdi mdi-alert-circle"></span> {{ alertas_alto }} Alto
+                    </span>
+                {% endif %}
+                {% if alertas_medio > 0 %}
+                    <span class="badge-riesgo badge-medio">
+                        <span class="mdi mdi-alert"></span> {{ alertas_medio }} Medio
+                    </span>
+                {% endif %}
+                {% if alertas_bajo > 0 %}
+                    <span class="badge-riesgo badge-bajo">
+                        <span class="mdi mdi-information-outline"></span> {{ alertas_bajo }} Bajo
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if alertas %}
+            {% for alerta in alertas %}
+            <div class="alerta-card {{ alerta.nivel_riesgo|lower }}">
+                <span class="alerta-icono mdi
+                    {% if alerta.nivel_riesgo == 'Alto' %}mdi-alert-circle
+                    {% elif alerta.nivel_riesgo == 'Medio' %}mdi-alert
+                    {% else %}mdi-information-outline{% endif %}">
+                </span>
+                <div class="alerta-body">
+                    <div class="alerta-materia-tag">
+                        <span class="mdi mdi-book-outline"></span>
+                        {{ alerta.materia }}{% if alerta.parcial %} · {{ alerta.parcial }}{% endif %}
+                    </div>
+                    <ul class="alerta-motivos">
+                        {% for motivo in alerta.motivos_lista %}
+                            <li>{{ motivo }}</li>
+                        {% endfor %}
+                    </ul>
+                    <div class="alerta-footer">
+                        <span class="alerta-fecha">
+                            <span class="mdi mdi-calendar-outline"></span> {{ alerta.fecha }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="alertas-empty">
+                <span class="mdi mdi-check-circle-outline"></span>
+                <h4>Sin alertas activas</h4>
+                <p>Este alumno no tiene alertas pendientes en ninguna materia</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- ═══ ASISTENCIA ════════════════════════════════════════ -->
+    <div class="section-card">
+        <div class="section-title">
+            <div class="section-title-left">
+                <span class="mdi mdi-calendar-check"></span>
+                Asistencia
+            </div>
+            <div class="view-switch" id="switchAsistencia">
+                <button class="view-option active" data-view="resumen">Resumen por Materia</button>
+                <button class="view-option" data-view="detalle">Historial Completo</button>
+            </div>
+        </div>
+
+        <!-- Stats generales -->
+        <div class="stats-bar">
+            <div class="stats-bar-item">
+                <span class="stats-bar-label">Asistencias</span>
+                <span class="stats-bar-value" style="color:#16a34a;">{{ stats_generales.asistencias }}</span>
+            </div>
+            <div class="stats-bar-item">
+                <span class="stats-bar-label">Retardos</span>
+                <span class="stats-bar-value" style="color:#d97706;">{{ stats_generales.retardos }}</span>
+            </div>
+            <div class="stats-bar-item">
+                <span class="stats-bar-label">Faltas</span>
+                <span class="stats-bar-value" style="color:#dc2626;">{{ stats_generales.faltas }}</span>
+            </div>
+            <div class="stats-bar-item">
+                <span class="stats-bar-label">Total Clases</span>
+                <span class="stats-bar-value">{{ stats_generales.total_clases }}</span>
+            </div>
+            <div class="stats-bar-item">
+                <span class="stats-bar-label">% Asistencia</span>
+                <span class="stats-bar-value
+                    {% if stats_generales.porcentaje >= 80 %}" style="color:#16a34a;"
+                    {% elif stats_generales.porcentaje >= 60 %}" style="color:#d97706;"
+                    {% else %}" style="color:#dc2626;"{% endif %}>
+                    {{ stats_generales.porcentaje }}%
+                </span>
+            </div>
+        </div>
+
+        <!-- Vista: Resumen por materia -->
+        <div id="vistaResumen">
+            <div class="asistencia-grid" id="asistenciaGrid"></div>
+        </div>
+
+        <!-- Vista: Historial completo -->
+        <div id="vistaDetalle" style="display:none;">
+            <div class="info-msg">
+                <span class="mdi mdi-information-outline"></span>
+                Mostrando solo faltas y retardos
+            </div>
+            <div class="tabla-wrapper">
+                <table class="asistencia-table">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Materia</th>
+                            <th>Docente</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaAsistenciaBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ BOTONES ═══════════════════════════════════════════ -->
+    <div class="action-buttons">
+        <button class="btn btn-secondary" onclick="window.close()">
+            <span class="mdi mdi-close"></span> Cerrar
+        </button>
+        <button class="btn btn-primary" onclick="descargarPDF()">
+            <span class="mdi mdi-file-pdf-box"></span> Descargar PDF
+        </button>
+    </div>
+
+    {{ asistencia_data|json_script:"asistencia-data" }}
+    {{ asistencia_por_materia|json_script:"asistencia-por-materia" }}
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        const asistenciaData      = JSON.parse(document.getElementById('asistencia-data').textContent);
+        const asistenciaPorMat    = JSON.parse(document.getElementById('asistencia-por-materia').textContent);
+
+        // ── Resumen por materia ───────────────────────────────
+        function renderResumen() {
+            const grid = document.getElementById('asistenciaGrid');
+            if (!asistenciaPorMat.length) {
+                grid.innerHTML = '<p style="color:#9ca3af;text-align:center;padding:30px;">Sin registros de asistencia</p>';
+                return;
+            }
+            grid.innerHTML = asistenciaPorMat.map(m => {
+                const pct  = m.porcentaje;
+                const cls  = pct >= 80 ? 'bar-good' : pct >= 60 ? 'bar-warn' : 'bar-danger';
+                const clr  = pct >= 80 ? '#16a34a'  : pct >= 60 ? '#d97706'  : '#dc2626';
+                return `
+                <div class="asistencia-materia-card">
+                    <div class="asistencia-materia-nombre">${m.materia}</div>
+                    <div class="asistencia-materia-docente">
+                        <span class="mdi mdi-account-tie"></span> ${m.docente}
+                    </div>
+                    <div class="asistencia-bar-bg">
+                        <div class="asistencia-bar-fill ${cls}" style="width:${pct}%"></div>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;
+                                font-size:13px;font-weight:700;color:${clr};margin-bottom:8px;">
+                        <span>${pct}% asistencia</span>
+                        <span>${m.total} clases</span>
+                    </div>
+                    <div class="asistencia-materia-stats">
+                        <span style="color:#16a34a;">
+                            <span class="mdi mdi-check-circle"></span> ${m.asistencias} asistencias
+                        </span>
+                        <span style="color:#d97706;">
+                            <span class="mdi mdi-clock"></span> ${m.retardos} retardos
+                        </span>
+                        <span style="color:#dc2626;">
+                            <span class="mdi mdi-close-circle"></span> ${m.faltas} faltas
+                        </span>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        // ── Historial detalle ─────────────────────────────────
+        function renderDetalle() {
+            const tbody  = document.getElementById('tablaAsistenciaBody');
+            const filtro = asistenciaData.filter(
+                a => a.estado === 'No asistió' || a.estado === 'Retardo'
+            );
+
+            if (!filtro.length) {
+                tbody.innerHTML = `<tr><td colspan="4"
+                    style="text-align:center;padding:30px;color:#9ca3af;">
+                    Sin faltas ni retardos registrados
+                </td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = filtro.map(a => {
+                const cls = a.estado === 'Retardo' ? 'estado-retardo' : 'estado-falta';
+                const ico = a.estado === 'Retardo' ? 'mdi-clock' : 'mdi-close-circle';
+                return `
+                <tr>
+                    <td><span class="mdi mdi-calendar" style="color:#2563eb;margin-right:5px;"></span>${a.fecha}</td>
+                    <td>${a.materia}</td>
+                    <td style="color:#6b7280;">${a.docente}</td>
+                    <td>
+                        <span class="estado-badge ${cls}">
+                            <span class="mdi ${ico}"></span> ${a.estado}
+                        </span>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        // ── Switch asistencia ─────────────────────────────────
+        document.getElementById('switchAsistencia')
+            .querySelectorAll('.view-option').forEach(btn => {
+            btn.addEventListener('click', function () {
+                document.querySelectorAll('#switchAsistencia .view-option')
+                    .forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+
+                const vista = this.dataset.view;
+                document.getElementById('vistaResumen').style.display =
+                    vista === 'resumen' ? 'block' : 'none';
+                document.getElementById('vistaDetalle').style.display =
+                    vista === 'detalle' ? 'block' : 'none';
+            });
+        });
+
+        // Inicializar
+        renderResumen();
+        renderDetalle();
+    });
+
+    // ── PDF ───────────────────────────────────────────────────
+    function descargarPDF() {
+        const btn = event.target.closest('button');
+        const txt = btn.innerHTML;
+        btn.innerHTML = '<span class="mdi mdi-loading mdi-spin"></span> Generando...';
+        btn.disabled  = true;
+
+        html2pdf().set({
+            margin:      [0.5, 0.5, 0.5, 0.5],
+            filename:    'director_perfil_{{ alumno.matricula }}.pdf',
+            image:       { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true, logging: false },
+            jsPDF:       { unit: 'in', format: 'a4', orientation: 'portrait' }
+        }).from(document.body).save()
+        .then(() => { btn.innerHTML = txt; btn.disabled = false; })
+        .catch(() => { btn.innerHTML = txt; btn.disabled = false; });
+    }
+    </script>
+</body>
+</html>
