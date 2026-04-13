@@ -1065,50 +1065,71 @@
                     <div id="acciones-dir-${uid}"
                         style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
                         <button class="btn-accion btn-cerrar"
-                                onclick="_mostrarFormDir('${uid}','cerrar')">
+                                onclick="_mostrarFormDir('${uid}','cerrar',${a.id})">
                             <span class="mdi mdi-check"></span> Cerrar alerta
                         </button>
+                        <button class="btn-accion btn-cita"
+                                onclick="_mostrarFormDir('${uid}','cita',${a.id})">
+                            <span class="mdi mdi-calendar-plus"></span> Agendar cita
+                        </button>
                         <button class="btn-accion btn-pedagogia"
-                                onclick="_mostrarFormDir('${uid}','Pedagogia')">
+                                onclick="_mostrarFormDir('${uid}','Pedagogia',${a.id})">
                             <span class="mdi mdi-school-outline"></span> Pedagogía
                         </button>
                         <button class="btn-accion btn-psicologia"
-                                onclick="_mostrarFormDir('${uid}','Psicologia')">
+                                onclick="_mostrarFormDir('${uid}','Psicologia',${a.id})">
                             <span class="mdi mdi-head-heart-outline"></span> Psicología
                         </button>
                         <button class="btn-accion"
                                 style="background:#fff7ed;border-color:#fed7aa;color:#c2410c;"
-                                onclick="_mostrarFormDir('${uid}','Tutor')">
+                                onclick="_mostrarFormDir('${uid}','Tutor',${a.id})">
                             <span class="mdi mdi-account-tie-outline"></span> Tutor
                         </button>
                     </div>
 
-                    <div id="form-dir-${uid}"
-                        style="display:none;margin-top:12px;background:#f8f9fb;
-                                border:1px solid #e5e7eb;border-radius:10px;padding:14px;">
+                    <div id="form-dir-${uid}" style="display:none;margin-top:12px;background:#f8f9fb;
+                            border:1px solid #e5e7eb;border-radius:10px;padding:14px;">
                         <div style="display:flex;align-items:center;gap:7px;margin-bottom:10px;">
                             <span class="mdi mdi-comment-text-outline" style="color:#6b7280;"></span>
-                            <span id="form-dir-label-${uid}"
-                                style="font-size:13px;font-weight:600;color:#374151;">
+                            <span id="form-dir-label-${uid}" style="font-size:13px;font-weight:600;color:#374151;">
                                 Comentario
                             </span>
+                        </div>
+                        <!-- Campos de fecha/hora para cita -->
+                        <div id="campos-cita-dir-${uid}" style="display:none;margin-bottom:10px;">
+                            <div style="display:flex;gap:10px;">
+                                <div style="flex:1;">
+                                    <label style="font-size:12px;font-weight:600;color:#6b7280;display:block;margin-bottom:4px;">
+                                        Fecha de la cita
+                                    </label>
+                                    <input type="date" id="fecha-cita-dir-${uid}"
+                                        style="width:100%;padding:8px 12px;border:1px solid #e5e7eb;
+                                                border-radius:8px;font-size:13px;outline:none;box-sizing:border-box;">
+                                </div>
+                                <div style="flex:1;">
+                                    <label style="font-size:12px;font-weight:600;color:#6b7280;display:block;margin-bottom:4px;">
+                                        Hora de la cita
+                                    </label>
+                                    <input type="time" id="hora-cita-dir-${uid}"
+                                        style="width:100%;padding:8px 12px;border:1px solid #e5e7eb;
+                                                border-radius:8px;font-size:13px;outline:none;box-sizing:border-box;">
+                                </div>
+                            </div>
                         </div>
                         <textarea id="textarea-dir-${uid}"
                                 placeholder="Describe el motivo de la acción..."
                                 rows="3"
                                 style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;
                                         border-radius:8px;font-size:13px;font-family:inherit;
-                                        color:#111827;resize:vertical;outline:none;
-                                        background:white;box-sizing:border-box;line-height:1.5;
-                                        transition:border-color .2s,box-shadow .2s;">
-                        </textarea>
+                                        color:#111827;resize:vertical;outline:none;background:white;
+                                        box-sizing:border-box;line-height:1.5;
+                                        transition:border-color .2s,box-shadow .2s;"></textarea>
                         <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px;">
                             <button class="btn-accion btn-secondary" style="height:auto;"
                                     onclick="_cancelarFormDir('${uid}')">
                                 Cancelar
                             </button>
-                            <button id="btn-dir-${uid}"
-                                    class="btn-accion btn-primary" style="height:auto;"
+                            <button id="btn-dir-${uid}" class="btn-accion btn-primary" style="height:auto;"
                                     onclick="_confirmarAccionDir('${uid}', ${a.id})">
                                 <span class="mdi mdi-check"></span>
                                 <span id="btn-dir-label-${uid}">Confirmar</span>
@@ -1122,19 +1143,29 @@
     }
 
     // ── Mostrar / cancelar formulario ────────────────────────────────────────────
-    function _mostrarFormDir(uid, accion) {
+    function _mostrarFormDir(uid, accion, alertaId) {
         _dirAccionPendiente[uid] = accion;
         document.getElementById(`acciones-dir-${uid}`).style.display = 'none';
 
         const configs = {
-            'cerrar':    { label:'Comentario de cierre',       btn:'Cerrar alerta'      },
-            'Pedagogia': { label:'Comentario para Pedagogía',  btn:'Enviar a Pedagogía' },
-            'Psicologia':{ label:'Comentario para Psicología', btn:'Enviar a Psicología'},
-            'Tutor':     { label:'Comentario para Tutor',      btn:'Enviar a Tutor'     },
+            'cerrar':    { label:'Comentario de cierre',       btn:'Cerrar alerta'       },
+            'cita':      { label:'Comentario sobre la sesión', btn:'Agendar y notificar' },
+            'Pedagogia': { label:'Comentario para Pedagogía',  btn:'Enviar a Pedagogía'  },
+            'Psicologia':{ label:'Comentario para Psicología', btn:'Enviar a Psicología' },
+            'Tutor':     { label:'Comentario para Tutor',      btn:'Enviar a Tutor'      },
         };
         const cfg = configs[accion] || {};
         document.getElementById(`form-dir-label-${uid}`).textContent = cfg.label;
         document.getElementById(`btn-dir-label-${uid}`).textContent  = cfg.btn;
+
+        // Mostrar/ocultar campos de fecha/hora
+        const camposCita = document.getElementById(`campos-cita-dir-${uid}`);
+        if (camposCita) camposCita.style.display = accion === 'cita' ? 'block' : 'none';
+
+        const textarea = document.getElementById(`textarea-dir-${uid}`);
+        textarea.placeholder = accion === 'cita'
+            ? 'Describe lo tratado con el alumno, motivo de la cita...'
+            : 'Describe el motivo de la acción...';
 
         const form = document.getElementById(`form-dir-${uid}`);
         form.style.display   = 'block';
@@ -1145,7 +1176,7 @@
             form.style.opacity    = '1';
             form.style.transform  = 'translateY(0)';
         });
-        setTimeout(() => document.getElementById(`textarea-dir-${uid}`).focus(), 150);
+        setTimeout(() => textarea.focus(), 150);
     }
 
     function _cancelarFormDir(uid) {
@@ -1168,9 +1199,59 @@
         }
         document.getElementById(`textarea-dir-${uid}`).style.borderColor = '';
 
+        // Validar fecha/hora si es cita
+        if (accion === 'cita') {
+            const fecha = document.getElementById(`fecha-cita-dir-${uid}`).value;
+            const hora  = document.getElementById(`hora-cita-dir-${uid}`).value;
+            if (!fecha) {
+                document.getElementById(`fecha-cita-dir-${uid}`).style.borderColor = '#ef4444';
+                _snackDir('Selecciona una fecha para la cita', 'error');
+                return;
+            }
+            if (!hora) {
+                document.getElementById(`hora-cita-dir-${uid}`).style.borderColor = '#ef4444';
+                _snackDir('Selecciona una hora para la cita', 'error');
+                return;
+            }
+        }
+
         btn.disabled  = true;
         btn.innerHTML = '<span class="mdi mdi-loading mdi-spin"></span> Guardando…';
 
+        // ── Cita ──────────────────────────────────────────────────
+        if (accion === 'cita') {
+            const fecha = document.getElementById(`fecha-cita-dir-${uid}`).value;
+            const hora  = document.getElementById(`hora-cita-dir-${uid}`).value;
+            try {
+                const res  = await fetch('/agendar-cita/', {
+                    method:  'POST',
+                    headers: { 'Content-Type':'application/json', 'X-CSRFToken':_getCsrfDir() },
+                    body:    JSON.stringify({ alerta_id: alertaId, fecha, hora, comentario }),
+                });
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById(`form-dir-${uid}`).style.display     = 'none';
+                    document.getElementById(`textarea-dir-${uid}`).value         = '';
+                    document.getElementById(`fecha-cita-dir-${uid}`).value       = '';
+                    document.getElementById(`hora-cita-dir-${uid}`).value        = '';
+                    document.getElementById(`acciones-dir-${uid}`).style.display = 'flex';
+                    btn.disabled  = false;
+                    btn.innerHTML = '<span class="mdi mdi-check"></span> <span>Confirmar</span>';
+                    _snackDir(`✅ Cita agendada: ${data.fecha} a las ${data.hora}. Alumno notificado.`, 'success');
+                } else {
+                    btn.disabled  = false;
+                    btn.innerHTML = '<span class="mdi mdi-check"></span> <span>Confirmar</span>';
+                    _snackDir(data.error || 'Error al agendar', 'error');
+                }
+            } catch {
+                btn.disabled  = false;
+                btn.innerHTML = '<span class="mdi mdi-check"></span> <span>Confirmar</span>';
+                _snackDir('Error de conexión', 'error');
+            }
+            return;
+        }
+
+        // ── Cerrar / Derivar (lógica existente) ───────────────────
         const url  = accion === 'cerrar' ? '/cerrar-alerta-direccion/' : '/derivar-alerta-direccion/';
         const body = accion === 'cerrar'
             ? { alerta_id: alertaId, comentario }
@@ -1194,21 +1275,17 @@
                     const lista     = document.getElementById(`lista-${seccion}`);
                     const restantes = lista.querySelectorAll('.alerta-dir-card').length;
                     document.getElementById(`badge-${seccion}`).textContent = restantes;
-
                     if (!restantes) {
                         lista.innerHTML = `
-                            <div style="background:#f8f9fb;border-radius:10px;
-                                        padding:40px;text-align:center;">
+                            <div style="background:#f8f9fb;border-radius:10px;padding:40px;text-align:center;">
                                 <span class="mdi mdi-check-circle-outline"
-                                    style="font-size:36px;color:#bbf7d0;
-                                            display:block;margin-bottom:12px;"></span>
+                                    style="font-size:36px;color:#bbf7d0;display:block;margin-bottom:12px;"></span>
                                 <p style="font-size:14px;color:#6b7280;margin:0;">
                                     Todas las alertas han sido atendidas.
                                 </p>
                             </div>`;
                     }
                 }, 300);
-
                 _snackDir(accion === 'cerrar'
                     ? 'Alerta cerrada correctamente'
                     : `Alerta derivada a ${accion}`, 'success');
@@ -2122,6 +2199,9 @@ function toggleFiltrosGrupo() {
     from { opacity:0; transform:translateY(-6px); }
     to   { opacity:1; transform:translateY(0); }
 }
+
+.btn-cita { background:#f0fdf4; border-color:#bbf7d0; color:#15803d; }
+.btn-cita:hover:not(:disabled) { background:#dcfce7; border-color:#86efac; }
 
 </style>
 

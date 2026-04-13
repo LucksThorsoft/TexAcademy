@@ -140,6 +140,11 @@
                                 onclick="mostrarFormComentario({{ alerta.id }}, 'cerrar')">
                             <span class="mdi mdi-check"></span> Cerrar alerta
                         </button>
+                        <!-- ← NUEVO -->
+                        <button class="btn-accion btn-cita"
+                                onclick="mostrarFormComentario({{ alerta.id }}, 'cita')">
+                            <span class="mdi mdi-calendar-plus"></span> Agendar cita
+                        </button>
                         <button class="btn-accion btn-pedagogia"
                                 onclick="mostrarFormComentario({{ alerta.id }}, 'Tutor')">
                             <span class="mdi mdi-account-tie-outline"></span> Tutor
@@ -162,12 +167,34 @@
                                 Escribe un comentario
                             </span>
                         </div>
-                        <textarea
-                            id="textarea-{{ alerta.id }}"
-                            class="comentario-textarea"
-                            placeholder="Describe las acciones tomadas, observaciones, acuerdos..."
-                            rows="3"
-                        ></textarea>
+
+                        <!-- Campos fecha/hora solo para citas -->
+                        <div id="campos-cita-{{ alerta.id }}" style="display:none;margin-bottom:10px;">
+                            <div style="display:flex;gap:10px;">
+                                <div style="flex:1;">
+                                    <label style="font-size:12px;font-weight:600;color:#6b7280;display:block;margin-bottom:4px;">
+                                        Fecha de la cita
+                                    </label>
+                                    <input type="date" id="fecha-cita-{{ alerta.id }}"
+                                        style="width:100%;padding:8px 12px;border:1px solid #e5e7eb;
+                                                border-radius:8px;font-size:13px;font-family:inherit;
+                                                outline:none;box-sizing:border-box;">
+                                </div>
+                                <div style="flex:1;">
+                                    <label style="font-size:12px;font-weight:600;color:#6b7280;display:block;margin-bottom:4px;">
+                                        Hora de la cita
+                                    </label>
+                                    <input type="time" id="hora-cita-{{ alerta.id }}"
+                                        style="width:100%;padding:8px 12px;border:1px solid #e5e7eb;
+                                                border-radius:8px;font-size:13px;font-family:inherit;
+                                                outline:none;box-sizing:border-box;">
+                                </div>
+                            </div>
+                        </div>
+
+                        <textarea id="textarea-{{ alerta.id }}" class="comentario-textarea"
+                                placeholder="Describe las acciones tomadas, observaciones, acuerdos..."
+                                rows="3"></textarea>
                         <div class="form-comentario-acciones">
                             <button class="btn-accion btn-cancelar"
                                     onclick="cancelarFormComentario({{ alerta.id }})">
@@ -255,17 +282,26 @@ function mostrarFormComentario(alertaId, accion) {
     const label    = document.getElementById(`form-label-${alertaId}`);
     const btnLabel = document.getElementById(`btn-confirmar-label-${alertaId}`);
     const btn      = document.getElementById(`btn-confirmar-${alertaId}`);
+    const camposCita = document.getElementById(`campos-cita-${alertaId}`);
 
     const configs = {
-        'cerrar':     { label: 'Comentario de cierre',       btn: 'Cerrar alerta',       cls: 'btn-confirmar-cerrar'     },
-        'Tutor':      { label: 'Comentario para el Tutor',   btn: 'Derivar al Tutor',    cls: 'btn-confirmar-tutor'      },
-        'Psicologia': { label: 'Comentario para Psicología', btn: 'Derivar a Psicología', cls: 'btn-confirmar-psicologia' },
-        'Direccion':  { label: 'Comentario para Dirección',  btn: 'Derivar a Dirección',  cls: 'btn-confirmar-direccion'  },
+        'cerrar':     { label: 'Comentario de cierre',        btn: 'Cerrar alerta',        cls: 'btn-confirmar-cerrar'     },
+        'cita':       { label: 'Comentario sobre la sesión',  btn: 'Agendar y notificar',  cls: 'btn-confirmar-cita'       },
+        'Tutor':      { label: 'Comentario para el Tutor',    btn: 'Derivar al Tutor',     cls: 'btn-confirmar-tutor'      },
+        'Psicologia': { label: 'Comentario para Psicología',  btn: 'Derivar a Psicología', cls: 'btn-confirmar-psicologia' },
+        'Direccion':  { label: 'Comentario para Dirección',   btn: 'Derivar a Dirección',  cls: 'btn-confirmar-direccion'  },
     };
     const config = configs[accion] || configs['cerrar'];
     label.textContent    = config.label;
     btnLabel.textContent = config.btn;
     btn.className        = `btn-accion btn-confirmar ${config.cls}`;
+
+    camposCita.style.display = accion === 'cita' ? 'block' : 'none';
+
+    const textarea = document.getElementById(`textarea-${alertaId}`);
+    textarea.placeholder = accion === 'cita'
+        ? 'Describe lo tratado en sesiones previas, motivo de la cita...'
+        : 'Describe las acciones tomadas, observaciones, acuerdos...';
 
     const form = document.getElementById(`form-${alertaId}`);
     form.style.display   = 'block';
@@ -276,18 +312,10 @@ function mostrarFormComentario(alertaId, accion) {
         form.style.opacity    = '1';
         form.style.transform  = 'translateY(0)';
     });
-    setTimeout(() => document.getElementById(`textarea-${alertaId}`).focus(), 150);
+    setTimeout(() => textarea.focus(), 150);
 }
 
 // ── Cancelar ─────────────────────────────────────────────────────────────
-function cancelarFormComentario(alertaId) {
-    document.getElementById(`form-${alertaId}`).style.display     = 'none';
-    document.getElementById(`textarea-${alertaId}`).value         = '';
-    document.getElementById(`acciones-${alertaId}`).style.display = 'flex';
-    delete accionPendiente[alertaId];
-}
-
-// ── Confirmar ────────────────────────────────────────────────────────────
 function confirmarAccion(alertaId) {
     const comentario = document.getElementById(`textarea-${alertaId}`).value.trim();
     const accion     = accionPendiente[alertaId];
@@ -300,13 +328,32 @@ function confirmarAccion(alertaId) {
         mostrarSnack('Escribe un comentario antes de continuar', 'error');
         return;
     }
-
     textarea.style.borderColor = '';
+
+    if (accion === 'cita') {
+        const fecha = document.getElementById(`fecha-cita-${alertaId}`).value;
+        const hora  = document.getElementById(`hora-cita-${alertaId}`).value;
+        if (!fecha) {
+            document.getElementById(`fecha-cita-${alertaId}`).style.borderColor = '#ef4444';
+            mostrarSnack('Selecciona una fecha para la cita', 'error');
+            return;
+        }
+        if (!hora) {
+            document.getElementById(`hora-cita-${alertaId}`).style.borderColor = '#ef4444';
+            mostrarSnack('Selecciona una hora para la cita', 'error');
+            return;
+        }
+        document.getElementById(`fecha-cita-${alertaId}`).style.borderColor = '';
+        document.getElementById(`hora-cita-${alertaId}`).style.borderColor  = '';
+    }
+
     btn.disabled  = true;
     btn.innerHTML = '<span class="mdi mdi-loading mdi-spin"></span> Guardando…';
 
     if (accion === 'cerrar') {
         _cerrarAlerta(alertaId, comentario, btn);
+    } else if (accion === 'cita') {
+        _agendarCita(alertaId, comentario, btn);
     } else {
         _derivarAlerta(alertaId, comentario, btn);
     }
@@ -399,6 +446,53 @@ function mostrarSnack(msg, tipo) {
 function getCsrf() {
     const m = document.cookie.match(/csrftoken=([^;]+)/);
     return m ? m[1] : '';
+}
+
+function _agendarCita(alertaId, comentario, btn) {
+    const fecha = document.getElementById(`fecha-cita-${alertaId}`).value;
+    const hora  = document.getElementById(`hora-cita-${alertaId}`).value;
+
+    fetch('/agendar-cita/', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrf() },
+        body:    JSON.stringify({ alerta_id: alertaId, fecha, hora, comentario })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById(`form-${alertaId}`).style.display     = 'none';
+            document.getElementById(`textarea-${alertaId}`).value         = '';
+            document.getElementById(`fecha-cita-${alertaId}`).value       = '';
+            document.getElementById(`hora-cita-${alertaId}`).value        = '';
+            document.getElementById(`acciones-${alertaId}`).style.display = 'flex';
+
+            // Agregar badge de cita
+            const card = document.getElementById(`alerta-${alertaId}`);
+            const badgesDiv = card.querySelector('.alerta-badges');
+            if (badgesDiv) {
+                const anterior = badgesDiv.querySelector('.badge-cita');
+                if (anterior) anterior.remove();
+                badgesDiv.insertAdjacentHTML('afterbegin',
+                    `<span class="badge badge-cita">
+                        <span class="mdi mdi-calendar-check"></span>
+                        Cita ${data.fecha} ${data.hora}
+                    </span>`);
+            }
+
+            btn.disabled  = false;
+            btn.innerHTML = '<span class="mdi mdi-calendar-plus"></span> <span>Agendar cita</span>';
+            mostrarSnack(`✅ Cita agendada para el ${data.fecha} a las ${data.hora}. Alumno notificado.`, 'success');
+        } else {
+            btn.disabled  = false;
+            btn.innerHTML = '<span class="mdi mdi-calendar-plus"></span> <span>Agendar cita</span>';
+            mostrarSnack(data.error || 'Error al agendar la cita', 'error');
+        }
+    })
+    .catch(() => {
+        btn.disabled  = false;
+        btn.innerHTML = '<span class="mdi mdi-calendar-plus"></span> <span>Agendar cita</span>';
+        mostrarSnack('Error de conexión', 'error');
+    });
 }
 </script>
 
@@ -830,5 +924,11 @@ function getCsrf() {
 
 .btn-confirmar-psicologia { background: #9d174d; border-color: #9d174d; color: white; }
 .btn-confirmar-psicologia:hover:not(:disabled) { background: #831843; }
+
+.btn-cita { background:#f0fdf4; border-color:#bbf7d0; color:#15803d; }
+.btn-cita:hover:not(:disabled) { background:#dcfce7; border-color:#86efac; }
+.btn-confirmar-cita { background:#15803d; border-color:#15803d; color:white; }
+.btn-confirmar-cita:hover:not(:disabled) { background:#166534; }
+.badge-cita { background:#dcfce7; color:#15803d; border-color:#86efac; }
 </style>
 {% endblock %}
