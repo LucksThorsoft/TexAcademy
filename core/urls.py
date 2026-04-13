@@ -43,4 +43,6 @@ urlpatterns = [
     path('director/alertas/direccion/',  views.director_alertas_direccion_view, name='director_alertas_direccion'),
     path('cerrar-alerta-direccion/',     views.cerrar_alerta_direccion,         name='cerrar_alerta_direccion'),
     path('derivar-alerta-direccion/',    views.derivar_alerta_direccion,        name='derivar_alerta_direccion'),
+    path('obtener-estadisticas-desempeno/', views.obtener_estadisticas_desempeno, name='estadisticas'),
+    path('obtener-datos-graficas-asistencia/', views.obtener_datos_graficas_asistencia, name='obtener_datos_graficas_asistencia'),
 ]

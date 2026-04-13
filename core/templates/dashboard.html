@@ -150,19 +150,34 @@
         }
 
         .risk-badge {
-            background-color: #dc2626;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 6px;
+        background-color: #fee2e2;
+        color: #b91c1c;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        border: 1px solid #fecaca;
+        }
+
+        .estable-badge {
+        background-color: #e8f5e9;
+        color: #2e7d32;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        border: 1px solid #c8e6c9;
         }
 
         .risk-badge.success {
-            background-color: #10b981;
+        background-color: #10b981;
+        color: white;
         }
 
         .arrow-icon {
@@ -210,7 +225,7 @@
         }
 
         .days-badge {
-            background-color: #dc2626;
+            background-color: #FFEBEE;
             color: white;
             padding: 2px 8px;
             border-radius: 4px;
@@ -375,7 +390,7 @@
                 <div class="card-subtitle">Requieren atención urgente</div>
             </div>
             <div class="card">
-                <div class="card-title">Actividades Pendientes</div>
+                <div class="card-title">Total de Actividades</div>
                 <div class="card-icon"><i class="fa-solid fa-clipboard-list"></i></div>
                 <div class="card-value">{{ actividades_pendientes|default:0 }}</div>
                 <div class="card-subtitle">Con fecha límite próxima</div>
@@ -395,31 +410,31 @@
                 </div>
 
                 {% if grupos %}
-                    {% for grupo in grupos %}
-                        <div class="group-item">
-                            <div class="group-info">
-                                <h4>{{ grupo.nombre_completo }}</h4>
-                                <p>
-                                    {{ grupo.num_alumnos }} alumnos | 
-                                    Materias: {{ grupo.materias|join:", " }}
-                                </p>
-                            </div>
-                            <div class="group-actions">
-                                {% if grupo.alumnos_riesgo > 0 %}
-                                    <div class="risk-badge">
-                                        <i class="fa-solid fa-triangle-exclamation"></i> {{ grupo.alumnos_riesgo }} en riesgo
-                                    </div>
-                                {% else %}
-                                    <div class="risk-badge success">
-                                        <i class="fa-solid fa-check"></i> Sin riesgo
-                                    </div>
-                                {% endif %}
-                                <a href="/grupos-alumnos?grupo={{ grupo.id }}" style="text-decoration: none; color: inherit;">
-                                    <i class="fa-solid fa-arrow-right arrow-icon"></i>
-                                </a>
-                            </div>
-                        </div>
-                    {% endfor %}
+{% for grupo in grupos %}
+    <div class="group-item">
+        <div class="group-info">
+            <h4>{{ grupo.nombre_completo }}</h4>
+            <p>
+                {{ grupo.num_alumnos }} alumnos | 
+                Materias: {{ grupo.materias|join:", " }}
+            </p>
+        </div>
+        <div class="group-actions">
+            {% if grupo.alumnos_riesgo > 0 %}
+                <div class="risk-badge">
+                    <i class="fa-solid fa-triangle-exclamation"></i> {{ grupo.alumnos_riesgo }} en riesgo
+                </div>
+            {% else %}
+                <div class="estable-badge">
+                    <i class="fa-solid fa-check-circle"></i> Grupo estable
+                </div>
+            {% endif %}
+            <a href="/grupos-alumnos?grupo={{ grupo.id }}" style="text-decoration: none; color: inherit;">
+                <i class="fa-solid fa-arrow-right arrow-icon"></i>
+            </a>
+        </div>
+    </div>
+{% endfor %}
                 {% else %}
                     <div class="empty-state">
                         <i class="fa-solid fa-users-slash"></i>
@@ -433,7 +448,7 @@
                 <div class="section-header">
                     <div>
                         <h3 class="section-title">Actividades por Revisar</h3>
-                        <p class="section-subtitle">Entregas recientes pendientes</p>
+                        <p class="section-subtitle">Entregas recientes de actividades</p>
                     </div>
                     <a href="/actividades" class="link-all">Ver todas <i class="fa-solid fa-arrow-right"></i></a>
                 </div>
@@ -475,37 +490,56 @@
         </div>
 
         <!-- Bottom Section: Alertas Recientes -->
-        <div class="alerts-container">
-            <div class="section-header">
-                <div>
-                    <h3 class="section-title">Alertas Recientes</h3>
-                    <p class="section-subtitle">Alumnos que requieren atención o seguimiento</p>
-                </div>
-                <a href="/alertas" class="link-all">Ver todas <i class="fa-solid fa-arrow-right"></i></a>
-            </div>
 
-            {% if alertas %}
-                {% for alerta in alertas %}
-                    <div class="alert-item">
-                        <div class="alert-icon-box">
-                            <i class="fa-solid fa-triangle-exclamation"></i>
-                        </div>
-                        <div class="alert-content">
-                            <h4 class="alert-name">{{ alerta.alumno_nombre }}</h4>
-                            <p class="alert-desc">{{ alerta.descripcion }}</p>
-                            <div class="alert-time"><i class="fa-regular fa-clock"></i> {{ alerta.tiempo }}</div>
-                        </div>
-                        <div class="group-tag">{{ alerta.grupo_clave }}</div>
-                    </div>
-                {% endfor %}
-            {% else %}
-                <div class="empty-state" style="padding: 20px;">
-                    <i class="fa-regular fa-bell"></i>
-                    <p>No hay alertas nuevas</p>
-                </div>
-            {% endif %}
+<!-- Bottom Section: Alertas Recientes -->
+<!-- Bottom Section: Alertas Recientes -->
+<div class="alerts-container">
+    <div class="section-header">
+        <div>
+            <h3 class="section-title">Alertas Recientes</h3>
+            <p class="section-subtitle">Alumnos en riesgo que requieren atención inmediata</p>
         </div>
+        <a href="/alertas" class="link-all">Ver todas <i class="fa-solid fa-arrow-right"></i></a>
     </div>
+
+    {% if alertas %}
+        {% for alerta in alertas %}
+            <div class="alert-item">
+                <div class="alert-icon-box" style="background-color: #fee2e2; color: #dc2626;">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <div class="alert-content">
+                    <h4 class="alert-name">
+                        <a href="/alumno/{{ alerta.alumno_id }}/perfil/" style="text-decoration: none; color: #1e293b;">
+                            {{ alerta.alumno_nombre }}
+                        </a>
+                        <span style="font-size: 12px; color: #64748b; font-weight: normal;"> ({{ alerta.alumno_matricula }})</span>
+                    </h4>
+                    <p class="alert-desc">
+                        <strong>Motivo:</strong> {{ alerta.descripcion|truncatechars:100 }}
+                    </p>
+                    <div class="alert-time">
+                        <i class="fa-regular fa-clock"></i> {{ alerta.tiempo }}
+                        {% if alerta.materia %}
+                            <span style="margin-left: 12px;"><i class="fa-solid fa-book"></i> {{ alerta.materia }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="group-tag">
+                    <i class="fa-solid fa-users"></i> {{ alerta.grupo_clave }}
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state" style="padding: 20px;">
+            <i class="fa-regular fa-bell"></i>
+            <p>No hay alertas de alumnos en riesgo</p>
+        </div>
+    {% endif %}
+</div>
+
+    </div>
+    
 </body>
 </html>
 {% endblock %}
